@@ -31,6 +31,50 @@ chmod +x vm-deploy.sh
 ./vm-deploy.sh
 ```
 
+## How It Works Now
+
+The deployment script now uses **GitHub-based deployment** for easier management and updates:
+
+### Initial Deployment Process:
+1. **Installs Docker, Docker Compose, and Git** on your VM
+2. **Clones the repository** from GitHub: `https://github.com/leadvantageadmin/hailmary.git`
+3. **Sets up the environment** and starts all services
+4. **Makes everything ready** for your application
+
+### Easy Updates:
+```bash
+./vm-manage.sh update
+```
+This will:
+1. **Pull latest code** from GitHub
+2. **Rebuild and restart** all services
+3. **Keep your data** intact
+
+### Data Upload & Ingestion:
+```bash
+# Upload your CSV file
+./vm-upload-csv.sh data/customers.csv
+
+# Ingest the data
+./vm-manage.sh ingest
+```
+
+### Complete Workflow:
+1. **Deploy**: `./vm-deploy.sh`
+2. **Upload Data**: `./vm-upload-csv.sh data/customers.csv`
+3. **Ingest Data**: `./vm-manage.sh ingest`
+4. **Access App**: http://YOUR_VM_IP:3000
+
+### Benefits of GitHub-Based Deployment:
+
+- ✅ **Always Latest Code**: Gets the most recent version from GitHub
+- ✅ **Easy Updates**: Just run `./vm-manage.sh update`
+- ✅ **Version Control**: Full git history on your VM
+- ✅ **Collaborative**: Multiple developers can contribute
+- ✅ **Backup**: Your code is safely stored on GitHub
+- ✅ **Rollback**: Easy to revert to previous versions
+- ✅ **Automated**: No manual file copying required
+
 ## Manual Deployment Steps
 
 If you prefer to deploy manually:
@@ -41,7 +85,7 @@ If you prefer to deploy manually:
 gcloud compute ssh your-username@your-vm-name --zone=your-zone
 ```
 
-### 2. Install Docker and Docker Compose
+### 2. Install Docker, Docker Compose, and Git
 
 ```bash
 # Update system
@@ -55,6 +99,9 @@ sudo usermod -aG docker $USER
 # Install Docker Compose
 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
+
+# Install Git
+sudo apt-get install -y git
 
 # Logout and login again to apply docker group changes
 exit
@@ -119,12 +166,44 @@ Use the `vm-manage.sh` script to manage your deployment:
 # Restore database
 ./vm-manage.sh restore backup_20240101_120000.sql
 
+# Ingest customer data from CSV
+./vm-manage.sh ingest
+
 # Monitor health
 ./vm-manage.sh monitor
 
 # Show help
 ./vm-manage.sh help
 ```
+
+## Data Management
+
+### Upload CSV Files
+
+Use the `vm-upload-csv.sh` script to upload your customer data:
+
+```bash
+# Upload CSV file to VM
+./vm-upload-csv.sh data/customers.csv
+
+# Upload from any location
+./vm-upload-csv.sh /path/to/your/customers.csv
+```
+
+### Ingest Data
+
+After uploading your CSV file, ingest it into the system:
+
+```bash
+# Ingest customer data
+./vm-manage.sh ingest
+```
+
+This will:
+1. Check if `data/customers.csv` exists on the VM
+2. Run the ingestion process
+3. Clear existing data and load new data
+4. Update both PostgreSQL and OpenSearch
 
 ## Service URLs
 
@@ -137,7 +216,17 @@ After deployment, your services will be available at:
 
 ## Data Ingestion
 
-To ingest your customer data:
+### Method 1: Using Management Scripts (Recommended)
+
+```bash
+# Upload your CSV file
+./vm-upload-csv.sh data/customers.csv
+
+# Ingest the data
+./vm-manage.sh ingest
+```
+
+### Method 2: Manual Ingestion
 
 ```bash
 # Connect to VM
