@@ -1,23 +1,20 @@
 # Install deps
-FROM node:18-alpine AS deps
+FROM node:18-slim AS deps
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml* ./
 COPY apps/web/package.json apps/web/package.json
 RUN corepack enable && corepack prepare pnpm@9.11.0 --activate && pnpm install --filter @app/web
 
 # Build
-FROM node:18-alpine AS builder
+FROM node:18-slim AS builder
 WORKDIR /app
 COPY . .
 WORKDIR /app/apps/web
 RUN corepack enable && pnpm install && pnpm prisma:generate && pnpm build
 
 # Run
-FROM node:18-alpine AS runner
+FROM node:18-slim AS runner
 WORKDIR /app
-
-# Install required SSL libraries for Prisma
-RUN apk add --no-cache openssl libc6-compat
 
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/web/.next/standalone .
