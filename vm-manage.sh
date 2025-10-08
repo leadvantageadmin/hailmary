@@ -47,7 +47,7 @@ show_help() {
 # Function to show status
 show_status() {
     echo -e "${BLUE}📊 Service Status${NC}"
-    execute_on_vm "docker-compose ps"
+    execute_on_vm "docker-compose -f docker-compose.prod.yml ps"
     echo ""
     echo -e "${BLUE}💾 Disk Usage${NC}"
     execute_on_vm "df -h"
@@ -62,27 +62,27 @@ show_status() {
 # Function to show logs
 show_logs() {
     echo -e "${BLUE}📋 Service Logs${NC}"
-    execute_on_vm "docker-compose logs --tail=50 -f"
+    execute_on_vm "docker-compose -f docker-compose.prod.yml logs --tail=50 -f"
 }
 
 # Function to restart services
 restart_services() {
     echo -e "${YELLOW}🔄 Restarting services...${NC}"
-    execute_on_vm "docker-compose restart"
+    execute_on_vm "docker-compose -f docker-compose.prod.yml restart"
     echo -e "${GREEN}✅ Services restarted${NC}"
 }
 
 # Function to stop services
 stop_services() {
     echo -e "${YELLOW}⏹️ Stopping services...${NC}"
-    execute_on_vm "docker-compose down"
+    execute_on_vm "docker-compose -f docker-compose.prod.yml down"
     echo -e "${GREEN}✅ Services stopped${NC}"
 }
 
 # Function to start services
 start_services() {
     echo -e "${YELLOW}▶️ Starting services...${NC}"
-    execute_on_vm "docker-compose up -d"
+    execute_on_vm "docker-compose -f docker-compose.prod.yml up -d"
     echo -e "${GREEN}✅ Services started${NC}"
 }
 
@@ -97,15 +97,10 @@ update_services() {
         echo 'Pulling latest changes from GitHub...'
         git pull origin main
         
-        # Recreate production environment files
-        echo 'Recreating production environment files...'
-        cp apps/web/env.production apps/web/.env.local
-        cp apps/ingestor/env.production apps/ingestor/.env.local
-        
-        # Rebuild and restart services
+        # Rebuild and restart services using production configuration
         echo 'Rebuilding and restarting services...'
-        docker-compose down
-        docker-compose up -d --build
+        docker-compose -f docker-compose.prod.yml -f docker-compose -f docker-compose.prod.yml.prod.yml down
+        docker-compose -f docker-compose.prod.yml -f docker-compose -f docker-compose.prod.yml.prod.yml up -d --build
         
         # Wait for services to be ready
         echo 'Waiting for services to start...'
@@ -113,7 +108,7 @@ update_services() {
         
         # Show status
         echo 'Service status:'
-        docker-compose ps
+        docker-compose -f docker-compose.prod.yml -f docker-compose -f docker-compose.prod.yml.prod.yml ps
     "
     echo -e "${GREEN}✅ Services updated${NC}"
 }
@@ -132,7 +127,7 @@ backup_database() {
         mkdir -p backups
         
         # Create backup
-        docker-compose exec -T postgres pg_dump -U app app > backups/backup_\$(date +%Y%m%d_%H%M%S).sql
+        docker-compose -f docker-compose.prod.yml exec -T postgres pg_dump -U app app > backups/backup_\$(date +%Y%m%d_%H%M%S).sql
         
         echo 'Backup created successfully'
         ls -la backups/
@@ -151,19 +146,19 @@ restore_database() {
     echo -e "${YELLOW}🔄 Restoring database from $1...${NC}"
     execute_on_vm "
         # Stop services
-        docker-compose down
+        docker-compose -f docker-compose.prod.yml down
         
         # Start only postgres
-        docker-compose up -d postgres
+        docker-compose -f docker-compose.prod.yml up -d postgres
         
         # Wait for postgres to be ready
         sleep 10
         
         # Restore database
-        docker-compose exec -T postgres psql -U app -d app < backups/$1
+        docker-compose -f docker-compose.prod.yml exec -T postgres psql -U app -d app < backups/$1
         
         # Start all services
-        docker-compose up -d
+        docker-compose -f docker-compose.prod.yml up -d
         
         echo 'Database restored successfully'
     "
@@ -186,7 +181,7 @@ ingest_data() {
         
         # Run data ingestion
         echo 'Running data ingestion...'
-        docker-compose run --rm ingestor python app.py /data/customers.csv --clear
+        docker-compose -f docker-compose.prod.yml run --rm ingestor python app.py /data/customers.csv --clear
         
         echo 'Data ingestion completed successfully'
     "
@@ -214,14 +209,14 @@ monitor_health() {
         fi
         
         # Check Redis
-        if docker-compose exec -T redis redis-cli ping | grep -q PONG; then
+        if docker-compose -f docker-compose.prod.yml exec -T redis redis-cli ping | grep -q PONG; then
             echo '✅ Redis: Healthy'
         else
             echo '❌ Redis: Unhealthy'
         fi
         
         # Check PostgreSQL
-        if docker-compose exec -T postgres pg_isready -U app > /dev/null 2>&1; then
+        if docker-compose -f docker-compose.prod.yml exec -T postgres pg_isready -U app > /dev/null 2>&1; then
             echo '✅ PostgreSQL: Healthy'
         else
             echo '❌ PostgreSQL: Unhealthy'
