@@ -99,8 +99,8 @@ update_services() {
         
         # Rebuild and restart services using production configuration
         echo 'Rebuilding and restarting services...'
-        docker-compose -f docker-compose.prod.yml -f docker-compose -f docker-compose.prod.yml.prod.yml down
-        docker-compose -f docker-compose.prod.yml -f docker-compose -f docker-compose.prod.yml.prod.yml up -d --build
+        docker-compose -f docker-compose.prod.yml down
+        docker-compose -f docker-compose.prod.yml up -d --build
         
         # Wait for services to be ready
         echo 'Waiting for services to start...'
@@ -108,7 +108,7 @@ update_services() {
         
         # Show status
         echo 'Service status:'
-        docker-compose -f docker-compose.prod.yml -f docker-compose -f docker-compose.prod.yml.prod.yml ps
+        docker-compose -f docker-compose.prod.yml ps
     "
     echo -e "${GREEN}✅ Services updated${NC}"
 }
