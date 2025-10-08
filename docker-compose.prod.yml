@@ -5,8 +5,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: hailmary
-    ports:
-      - "5432:5432"
+    # ports:
+      # - "5432:5432"  # Only accessible within Docker network
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -27,8 +27,8 @@ services:
       memlock:
         soft: -1
         hard: -1
-    ports:
-      - "9200:9200"
+    # ports:
+      # - "9200:9200"  # Only accessible within Docker network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
       interval: 15s
@@ -37,8 +37,8 @@ services:
 
   redis:
     image: redis:7
-    ports:
-      - "6379:6379"
+    # ports:
+      # - "6379:6379"  # Only accessible within Docker network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
