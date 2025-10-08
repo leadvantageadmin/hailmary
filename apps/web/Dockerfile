@@ -8,10 +8,9 @@ RUN corepack enable && corepack prepare pnpm@9.11.0 --activate && pnpm install -
 # Build
 FROM node:18-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules /app/node_modules
 COPY . .
 WORKDIR /app/apps/web
-RUN corepack enable && pnpm install --prefer-offline  && pnpm prisma:generate && pnpm build
+RUN corepack enable && pnpm install && pnpm prisma:generate && pnpm build
 
 # Run
 FROM node:18-alpine AS runner

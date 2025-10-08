@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getOpenSearchClient, ensureIndex } from '@/lib/opensearch';
 import { getRedis } from '@/lib/redis';
+import { withAuth, AuthenticatedRequest } from '@/lib/middleware';
 
 const FilterSchema = z.object({
   company: z.array(z.string()).optional(),
@@ -34,7 +35,7 @@ function stableStringify(value: unknown): string {
   }
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: AuthenticatedRequest) => {
   let body: unknown;
   try {
     body = await req.json();
@@ -127,9 +128,9 @@ export async function POST(req: NextRequest) {
     const message = e?.message || 'Search failed';
     return NextResponse.json({ error: message }, { status: 502 });
   }
-}
+});
 
-export async function GET(req: NextRequest) {
+export const GET = withAuth(async (req: AuthenticatedRequest) => {
   const url = new URL(req.url);
   const company = url.searchParams.getAll('company');
   const country = url.searchParams.getAll('country');
@@ -152,4 +153,4 @@ export async function GET(req: NextRequest) {
   
   const body = { filters, page: { size: 10 } };
   return POST(new NextRequest(req.url, { method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }));
-}
+});
