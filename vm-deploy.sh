@@ -34,25 +34,10 @@ fi
 
 echo "📍 VM IP: $VM_IP"
 
-# Create deployment package
-echo "📦 Creating deployment package..."
-tar -czf hailmary-deployment.tar.gz \
-    --exclude='.git' \
-    --exclude='node_modules' \
-    --exclude='.next' \
-    --exclude='*.log' \
-    --exclude='.env*' \
-    .
-
-# Copy files to VM
-echo "📤 Copying files to VM..."
-gcloud compute scp hailmary-deployment.tar.gz $SSH_USER@$VM_NAME:/home/$SSH_USER/ --zone=$ZONE
-
-# Copy docker-compose file
+# Copy only essential files to VM
+echo "📤 Copying essential files to VM..."
 gcloud compute scp docker-compose.yml $SSH_USER@$VM_NAME:/home/$SSH_USER/ --zone=$ZONE
-
-# Copy environment template
-gcloud compute scp env.gcp.example $SSH_USER@$VM_NAME:/home/$SSH_USER/ --zone=$ZONE
+gcloud compute scp env.vm.example $SSH_USER@$VM_NAME:/home/$SSH_USER/ --zone=$ZONE
 
 # Execute deployment on VM
 echo "🔧 Executing deployment on VM..."
@@ -75,11 +60,25 @@ gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command="
         sudo chmod +x /usr/local/bin/docker-compose
     fi
     
-    # Extract deployment files
-    tar -xzf hailmary-deployment.tar.gz
+    # Install Git if not present
+    if ! command -v git &> /dev/null; then
+        echo 'Installing Git...'
+        sudo apt-get install -y git
+    fi
+    
+    # Clone or update the repository
+    if [ -d 'hailmary' ]; then
+        echo 'Updating existing repository...'
+        cd hailmary
+        git pull origin main
+    else
+        echo 'Cloning repository from GitHub...'
+        git clone https://github.com/leadvantageadmin/hailmary.git
+        cd hailmary
+    fi
     
     # Create environment file
-    cp env.gcp.example .env
+    cp env.vm.example .env
     
     # Create data directory
     mkdir -p data
@@ -119,5 +118,5 @@ echo ""
 echo "📋 To restart services:"
 echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='docker-compose up -d'"
 
-# Clean up local files
-rm -f hailmary-deployment.tar.gz
+# Clean up local files (no longer needed)
+echo "✅ Deployment files prepared"

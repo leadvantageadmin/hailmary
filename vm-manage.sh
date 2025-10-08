@@ -38,6 +38,7 @@ show_help() {
     echo "  shell      - Open SSH shell to VM"
     echo "  backup     - Backup database"
     echo "  restore    - Restore database from backup"
+    echo "  ingest     - Ingest customer data from CSV"
     echo "  monitor    - Monitor service health"
     echo "  help       - Show this help message"
     echo ""
@@ -89,17 +90,24 @@ start_services() {
 update_services() {
     echo -e "${YELLOW}🔄 Updating services...${NC}"
     execute_on_vm "
+        # Navigate to project directory
+        cd hailmary || { echo 'Project directory not found'; exit 1; }
+        
         # Pull latest changes
-        git pull origin main || echo 'No git repo or already up to date'
+        echo 'Pulling latest changes from GitHub...'
+        git pull origin main
         
         # Rebuild and restart services
+        echo 'Rebuilding and restarting services...'
         docker-compose down
         docker-compose up -d --build
         
         # Wait for services to be ready
+        echo 'Waiting for services to start...'
         sleep 30
         
         # Show status
+        echo 'Service status:'
         docker-compose ps
     "
     echo -e "${GREEN}✅ Services updated${NC}"
@@ -155,6 +163,29 @@ restore_database() {
         echo 'Database restored successfully'
     "
     echo -e "${GREEN}✅ Database restored${NC}"
+}
+
+# Function to ingest data
+ingest_data() {
+    echo -e "${YELLOW}📥 Ingesting customer data...${NC}"
+    execute_on_vm "
+        # Navigate to project directory
+        cd hailmary || { echo 'Project directory not found'; exit 1; }
+        
+        # Check if data file exists
+        if [ ! -f 'data/customers.csv' ]; then
+            echo '❌ customers.csv not found in data/ directory'
+            echo 'Please upload your CSV file to the VM first'
+            exit 1
+        fi
+        
+        # Run data ingestion
+        echo 'Running data ingestion...'
+        docker-compose run --rm ingestor python app.py /data/customers.csv --clear
+        
+        echo 'Data ingestion completed successfully'
+    "
+    echo -e "${GREEN}✅ Data ingestion completed${NC}"
 }
 
 # Function to monitor health
@@ -225,6 +256,9 @@ case "$1" in
         ;;
     restore)
         restore_database "$2"
+        ;;
+    ingest)
+        ingest_data
         ;;
     monitor)
         monitor_health
