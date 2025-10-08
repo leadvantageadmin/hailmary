@@ -15,6 +15,10 @@ RUN corepack enable && pnpm install && pnpm prisma:generate && pnpm build
 # Run
 FROM node:18-alpine AS runner
 WORKDIR /app
+
+# Install required SSL libraries for Prisma
+RUN apk add --no-cache openssl1.1-compat
+
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/web/.next/standalone .
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
