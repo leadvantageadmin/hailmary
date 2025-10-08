@@ -9,7 +9,7 @@ set -e
 VM_NAME="hail-mary"
 ZONE="asia-south1-c"  # Change to your VM's zone
 PROJECT_ID="leadvantage-global"
-SSH_USER="pmomale2024"  # Replace with your VM username
+SSH_USER="pmomale2024"  # Your VM username
 
 echo "🚀 Starting VM deployment for HailMary Customer Search Platform..."
 
@@ -79,6 +79,11 @@ gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command="
     
     # Create environment file
     cp env.vm.example .env
+    
+    # Create web app environment file
+    echo 'DATABASE_URL=\"postgresql://postgres:password@postgres:5432/hailmary\"' > apps/web/.env.local
+    echo 'OPENSEARCH_URL=\"http://opensearch:9200\"' >> apps/web/.env.local
+    echo 'REDIS_URL=\"redis://redis:6379\"' >> apps/web/.env.local
     
     # Create data directory
     mkdir -p data
