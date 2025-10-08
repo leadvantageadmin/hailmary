@@ -17,7 +17,7 @@ FROM node:18-alpine AS runner
 WORKDIR /app
 
 # Install required SSL libraries for Prisma
-RUN apk add --no-cache openssl1.1-compat
+RUN apk add --no-cache openssl libc6-compat
 
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/web/.next/standalone .
