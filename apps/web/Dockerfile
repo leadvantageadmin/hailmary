@@ -16,6 +16,9 @@ RUN corepack enable && pnpm install && pnpm prisma:generate && pnpm build
 FROM node:18-slim AS runner
 WORKDIR /app
 
+# Install OpenSSL for Prisma
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/web/.next/standalone .
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
