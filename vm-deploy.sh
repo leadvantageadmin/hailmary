@@ -80,10 +80,9 @@ gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command="
     # Create environment file
     cp env.vm.example .env
     
-    # Create web app environment file
-    echo 'DATABASE_URL=\"postgresql://postgres:password@postgres:5432/hailmary\"' > apps/web/.env.local
-    echo 'OPENSEARCH_URL=\"http://opensearch:9200\"' >> apps/web/.env.local
-    echo 'REDIS_URL=\"redis://redis:6379\"' >> apps/web/.env.local
+    # Create production environment files
+    cp apps/web/env.production apps/web/.env.local
+    cp apps/ingestor/env.production apps/ingestor/.env.local
     
     # Create data directory
     mkdir -p data

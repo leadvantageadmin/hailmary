@@ -97,6 +97,11 @@ update_services() {
         echo 'Pulling latest changes from GitHub...'
         git pull origin main
         
+        # Recreate production environment files
+        echo 'Recreating production environment files...'
+        cp apps/web/env.production apps/web/.env.local
+        cp apps/ingestor/env.production apps/ingestor/.env.local
+        
         # Rebuild and restart services
         echo 'Rebuilding and restarting services...'
         docker-compose down
