@@ -46,6 +46,32 @@ export function withAdminAuth(handler: (req: AuthenticatedRequest) => Promise<Ne
   });
 }
 
+// Middleware to check admin role for dynamic routes
+export function withAdminAuthDynamic(handler: (req: AuthenticatedRequest, context: { params: { id: string } }) => Promise<NextResponse>) {
+  return async (req: NextRequest, context: { params: { id: string } }): Promise<NextResponse> => {
+    const user = getUserFromRequest(req);
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    if (user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const authenticatedReq = req as AuthenticatedRequest;
+    authenticatedReq.user = user;
+
+    return handler(authenticatedReq, context);
+  };
+}
+
 // Helper to get user from request
 export function getUserFromRequest(req: NextRequest): AuthUser | null {
   const token = req.cookies.get('auth-token')?.value;

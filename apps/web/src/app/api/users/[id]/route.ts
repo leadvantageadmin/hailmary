@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAdminAuth, AuthenticatedRequest } from '@/lib/middleware';
+import { withAdminAuthDynamic, AuthenticatedRequest } from '@/lib/middleware';
 import { updateUser, deleteUser, getUserById } from '@/lib/auth';
 import { z } from 'zod';
 
@@ -29,7 +29,7 @@ export async function GET(
 }
 
 // PUT /api/users/[id] - Update user (admin only)
-export const PUT = withAdminAuth(async (req: AuthenticatedRequest, { params }: { params: { id: string } }) => {
+export const PUT = withAdminAuthDynamic(async (req: AuthenticatedRequest, { params }: { params: { id: string } }) => {
   try {
     const body = await req.json();
     const updates = updateUserSchema.parse(body);
@@ -70,7 +70,7 @@ export const PUT = withAdminAuth(async (req: AuthenticatedRequest, { params }: {
 });
 
 // DELETE /api/users/[id] - Delete user (admin only)
-export const DELETE = withAdminAuth(async (req: AuthenticatedRequest, { params }: { params: { id: string } }) => {
+export const DELETE = withAdminAuthDynamic(async (req: AuthenticatedRequest, { params }: { params: { id: string } }) => {
   try {
     const success = await deleteUser(params.id);
     
