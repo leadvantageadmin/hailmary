@@ -162,9 +162,9 @@ deploy_vm() {
     "
 
     echo "✅ Deployment completed!"
-    echo "🌐 Your application should be available at: http://$VM_IP:8080 (via nginx)"
-    echo "📊 OpenSearch should be available at: http://$VM_IP:9200"
-    echo "🔴 Redis should be available at: $VM_IP:6379"
+    echo "🌐 Your application should be available at: http://portal.leadvantageglobal.com"
+    echo "🔐 Login page: http://portal.leadvantageglobal.com/login"
+    echo "📝 Note: OpenSearch and Redis are only accessible within the VM (ports blocked in GCP)"
     echo ""
     echo "📋 To manage the VM, use: ./scripts/hailmary.sh vm manage"
 }

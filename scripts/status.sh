@@ -115,23 +115,17 @@ status_vm() {
     # Check if application is accessible
     echo ""
     echo "🌐 Application Access:"
-    if curl -s --connect-timeout 5 http://$VM_IP:8080 > /dev/null 2>&1; then
-        echo "✅ Application is accessible at http://$VM_IP:8080"
+    if curl -s --connect-timeout 5 http://portal.leadvantageglobal.com > /dev/null 2>&1; then
+        echo "✅ Application is accessible at http://portal.leadvantageglobal.com"
     else
-        echo "❌ Application is not accessible at http://$VM_IP:8080"
-    fi
-
-    if curl -s --connect-timeout 5 http://$VM_IP:9200 > /dev/null 2>&1; then
-        echo "✅ OpenSearch is accessible at http://$VM_IP:9200"
-    else
-        echo "❌ OpenSearch is not accessible at http://$VM_IP:9200"
+        echo "❌ Application is not accessible at http://portal.leadvantageglobal.com"
     fi
 
     echo ""
     echo "📋 Access Points:"
-    echo "  - Application: http://$VM_IP:8080"
-    echo "  - OpenSearch: http://$VM_IP:9200"
-    echo "  - Redis: $VM_IP:6379"
+    echo "  - Application: http://portal.leadvantageglobal.com (via Nginx)"
+    echo "  - Login: http://portal.leadvantageglobal.com/login"
+    echo "  - Note: OpenSearch and Redis are only accessible within the VM (ports blocked in GCP)"
     echo ""
     echo "💡 To manage the VM, use: ./scripts/hailmary.sh vm manage"
 }

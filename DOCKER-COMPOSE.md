@@ -56,8 +56,7 @@ docker-compose -f deployment/docker-compose.production.yml up -d --build
 
 ### Production (via Nginx)
 - Web App: http://VM_IP:8080 (HTTP) / https://VM_IP:8443 (HTTPS)
-- OpenSearch: http://VM_IP:9200 (if exposed)
-- Redis: VM_IP:6379 (if exposed)
+- Note: OpenSearch and Redis are only accessible within the VM (ports blocked in GCP)
 
 ## Key Differences
 
