@@ -9,8 +9,11 @@ RUN corepack enable && corepack prepare pnpm@9.11.0 --activate && pnpm install -
 FROM node:18-slim AS builder
 WORKDIR /app
 COPY . .
+RUN corepack enable && pnpm install --no-frozen-lockfile
 WORKDIR /app/apps/web
-RUN corepack enable && pnpm install && pnpm prisma:generate && pnpm build
+RUN ls -la ../../node_modules/.pnpm/ | grep -E "(bcryptjs|jsonwebtoken)" || echo "Dependencies not found in workspace"
+RUN pnpm prisma:generate
+RUN pnpm build
 
 # Run
 FROM node:18-slim AS runner
@@ -22,6 +25,7 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/web/.next/standalone .
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
 RUN mkdir -p ./apps/web/public
 COPY --from=builder /app/apps/web/public ./apps/web/public
 EXPOSE 3000

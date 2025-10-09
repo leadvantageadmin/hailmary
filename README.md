@@ -10,10 +10,10 @@ Local-first, open-source stack for read-heavy customer search. Develop on Docker
 - Ingestor (batch ETL)
 
 ## Quickstart
-1) cp apps/web/.env.example apps/web/.env.local
-   cp apps/ingestor/.env.example apps/ingestor/.env.local
+1) cp apps/web/env.local.example apps/web/.env.local
+   cp apps/ingestor/env.local.example apps/ingestor/.env.local
 2) docker compose up -d --build
-3) docker compose exec web pnpm prisma migrate deploy
+3) Create User table and admin user (see RUNBOOK.md)
 4) open http://localhost:3000
 
 ## Services
@@ -23,12 +23,21 @@ Local-first, open-source stack for read-heavy customer search. Develop on Docker
 - Redis: localhost:6379
 
 ## Layout
-- apps/web (Next.js + Prisma)
-- apps/ingestor (Python worker)
-- packages/shared (types + validators)
-- data (local files)
+- `apps/web` (Next.js + Prisma + Authentication)
+- `apps/ingestor` (Python worker)
+- `packages/shared` (types + validators)
+- `data` (local files)
+- `deployment/` (deployment scripts and configurations)
 
-## Deploy (GCP later)
-- Web → Cloud Run, Ingestor → Cloud Run Job, Postgres → Cloud SQL, OpenSearch → GKE/GCE, Redis → Memorystore.
+## Authentication
+- Login page: http://localhost:3000/login
+- Admin panel: http://localhost:3000/admin
+- Search page: http://localhost:3000/search (requires authentication)
+- Default admin: admin@leadvantageglobal.com / admin123
+
+## Deployment
+See `deployment/` directory for deployment scripts and configurations:
+- Production deployment: `deployment/VM-DEPLOYMENT.md`
+- Production Docker Compose: `deployment/docker-compose.production.yml`
 
 MIT

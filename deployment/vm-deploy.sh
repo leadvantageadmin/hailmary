@@ -78,45 +78,50 @@ gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command="
     fi
     
     # Create environment file
-    cp env.vm.example .env
+    cp deployment/env.production.example .env
     
     # Create data directory
     mkdir -p data
     
+    # Run environment verification
+    echo 'Running environment verification...'
+    chmod +x deployment/verify-environment.sh
+    ./deployment/verify-environment.sh
+    
     # Stop any existing containers
-    docker-compose -f docker-compose.prod.yml down || true
+    docker-compose -f deployment/docker-compose.production.yml down || true
     
     # Build and start services using production configuration
-    docker-compose -f docker-compose.prod.yml up -d --build
+    docker-compose -f deployment/docker-compose.production.yml up -d --build
     
     # Wait for services to be ready
     echo 'Waiting for services to start...'
     sleep 30
     
     # Check service status
-    docker-compose -f docker-compose.prod.yml ps
+    docker-compose -f deployment/docker-compose.production.yml ps
     
     # Show logs
     echo 'Service logs:'
-    docker-compose -f docker-compose.prod.yml logs --tail=20
+    docker-compose -f deployment/docker-compose.production.yml logs --tail=20
 "
 
 echo "✅ Deployment completed!"
-echo "🌐 Your application should be available at: http://$VM_IP:3000"
+echo "🌐 Your application should be available at: http://$VM_IP (via nginx)"
 echo "📊 OpenSearch should be available at: http://$VM_IP:9200"
 echo "🔴 Redis should be available at: $VM_IP:6379"
 echo ""
 echo "📋 To check status:"
-echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f docker-compose.prod.yml ps'"
+echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f deployment/docker-compose.production.yml ps'"
 echo ""
 echo "📋 To view logs:"
-echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f docker-compose.prod.yml logs -f'"
+echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f deployment/docker-compose.production.yml logs -f'"
 echo ""
 echo "📋 To stop services:"
-echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f docker-compose.prod.yml down'"
+echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f deployment/docker-compose.production.yml down'"
 echo ""
 echo "📋 To restart services:"
-echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f docker-compose.prod.yml up -d'"
+echo "gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command='cd hailmary && docker-compose -f deployment/docker-compose.production.yml up -d'"
 
 # Clean up local files (no longer needed)
 echo "✅ Deployment files prepared"
