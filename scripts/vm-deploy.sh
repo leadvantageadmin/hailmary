@@ -73,7 +73,7 @@ gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command="
     fi
     
     # Create environment file
-    cp deployment/env.production.example .env
+    cp deployment/env.production .env
     
     # Create data directory
     mkdir -p data

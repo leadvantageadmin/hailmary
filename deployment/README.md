@@ -5,7 +5,7 @@ This directory contains essential deployment files for the HailMary Customer Sea
 ## Files Overview
 
 - **`docker-compose.production.yml`** - Production Docker Compose configuration
-- **`env.production.example`** - Environment variables template for production
+- **`env.production`** - Environment variables template for production
 - **`nginx.conf`** - Nginx configuration for reverse proxy
 
 ## Quick Start
@@ -23,7 +23,7 @@ This directory contains essential deployment files for the HailMary Customer Sea
 ```
 
 ### Environment Setup
-1. Copy `env.production.example` to `.env` in the project root
+1. Copy `env.production` to `.env` in the project root
 2. Update environment variables as needed
 3. Run deployment using the unified script
 

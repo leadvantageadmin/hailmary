@@ -24,7 +24,7 @@ This document explains the organization of Docker Compose files in the HailMary 
 - **`apps/ingestor/.env.local`** - Ingestor service environment (created from `env.local.example`)
 
 ### Production
-- **`deployment/.env`** - Production environment (created from `env.production.example`)
+- **`deployment/.env`** - Production environment (created from `env.production`)
 
 ## Usage
 
