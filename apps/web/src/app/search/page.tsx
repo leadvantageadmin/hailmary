@@ -134,32 +134,50 @@ export default function SearchPage() {
   };
 
   if (!user) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return (
+      <div className="page-container flex items-center justify-center">
+        <div className="text-center animate-fade-in">
+          <div className="spinner h-12 w-12 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading user information...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-container">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="page-header">
+        <div className="container">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">HailMary Customer Search</h1>
-              <p className="text-gray-600">Welcome, {user.firstName} {user.lastName}</p>
-            </div>
             <div className="flex items-center space-x-4">
+              <div className="h-12 w-12 bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-xl flex items-center justify-center shadow-lg">
+                <i className="fas fa-search text-xl text-white"></i>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
+                  HailMary Customer Search
+                </h1>
+                <p className="text-sm text-white text-opacity-80">
+                  Welcome back, {user.firstName} {user.lastName}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
               {user.role === 'ADMIN' && (
                 <button
                   onClick={() => router.push('/admin')}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="btn btn-secondary"
                 >
+                  <i className="fas fa-cog mr-2"></i>
                   Admin Panel
                 </button>
               )}
               <button
                 onClick={handleLogout}
-                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                className="btn btn-secondary"
               >
+                <i className="fas fa-sign-out-alt mr-2"></i>
                 Logout
               </button>
             </div>
@@ -167,154 +185,254 @@ export default function SearchPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-content">
         {/* Search Form */}
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Search Filters</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.company}
-                onChange={(e) => setFilters({...filters, company: e.target.value})}
-                placeholder="e.g., Microsoft, Google"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.country}
-                onChange={(e) => setFilters({...filters, country: e.target.value})}
-                placeholder="e.g., United States, India"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.city}
-                onChange={(e) => setFilters({...filters, city: e.target.value})}
-                placeholder="e.g., New York, Mumbai"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.state}
-                onChange={(e) => setFilters({...filters, state: e.target.value})}
-                placeholder="e.g., California, Maharashtra"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.jobTitle}
-                onChange={(e) => setFilters({...filters, jobTitle: e.target.value})}
-                placeholder="e.g., Director, Manager"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.department}
-                onChange={(e) => setFilters({...filters, department: e.target.value})}
-                placeholder="e.g., Engineering, Sales"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Employee Size (Minimum)</label>
-              <input
-                type="number"
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.employeeSize || ''}
-                onChange={(e) => setFilters({...filters, employeeSize: parseInt(e.target.value) || 0})}
-                placeholder="e.g., 50, 1000, 10000"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filters.industry}
-                onChange={(e) => setFilters({...filters, industry: e.target.value})}
-                placeholder="e.g., Technology, Healthcare"
-              />
+        <div className="card mb-8 animate-fade-in">
+          <div className="card-header">
+            <div className="flex items-center">
+              <i className="fas fa-filter text-blue-600 mr-2"></i>
+              <h2 className="text-xl font-semibold text-gray-900" style={{ fontFamily: 'var(--font-primary)' }}>
+                Search Filters
+              </h2>
             </div>
           </div>
-          
-          <div className="flex space-x-4">
-            <button
-              onClick={onSearch}
-              disabled={loading}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Searching...' : 'Search'}
-            </button>
-            <button
-              onClick={clearFilters}
-              className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700"
-            >
-              Clear Filters
-            </button>
-          </div>
-          
-          <div className="mt-4 p-4 bg-blue-50 rounded-md">
-            <p className="text-sm text-blue-800">
-              <strong>Search Tips:</strong> All text fields support partial matching. 
-              For Employee Size, enter the minimum number of employees (e.g., entering 10 will show companies with 10+ employees).
-            </p>
+          <div className="card-body">
+            <div className="grid-responsive mb-6">
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-building mr-2 text-gray-500"></i>
+                  Company
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={filters.company}
+                  onChange={(e) => setFilters({...filters, company: e.target.value})}
+                  placeholder="e.g., Microsoft, Google"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-globe mr-2 text-gray-500"></i>
+                  Country
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={filters.country}
+                  onChange={(e) => setFilters({...filters, country: e.target.value})}
+                  placeholder="e.g., United States, India"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+                  City
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={filters.city}
+                  onChange={(e) => setFilters({...filters, city: e.target.value})}
+                  placeholder="e.g., New York, Mumbai"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-map mr-2 text-gray-500"></i>
+                  State
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={filters.state}
+                  onChange={(e) => setFilters({...filters, state: e.target.value})}
+                  placeholder="e.g., California, Maharashtra"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-briefcase mr-2 text-gray-500"></i>
+                  Job Title
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={filters.jobTitle}
+                  onChange={(e) => setFilters({...filters, jobTitle: e.target.value})}
+                  placeholder="e.g., Director, Manager"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-sitemap mr-2 text-gray-500"></i>
+                  Department
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={filters.department}
+                  onChange={(e) => setFilters({...filters, department: e.target.value})}
+                  placeholder="e.g., Engineering, Sales"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-users mr-2 text-gray-500"></i>
+                  Employee Size (Minimum)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="input"
+                  value={filters.employeeSize || ''}
+                  onChange={(e) => setFilters({...filters, employeeSize: parseInt(e.target.value) || 0})}
+                  placeholder="e.g., 50, 1000, 10000"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">
+                  <i className="fas fa-industry mr-2 text-gray-500"></i>
+                  Industry
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={filters.industry}
+                  onChange={(e) => setFilters({...filters, industry: e.target.value})}
+                  placeholder="e.g., Technology, Healthcare"
+                />
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={onSearch}
+                disabled={loading}
+                className="btn btn-primary flex-1 sm:flex-none"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="spinner h-4 w-4 mr-2"></div>
+                    Searching...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <i className="fas fa-search mr-2"></i>
+                    Search
+                  </div>
+                )}
+              </button>
+              <button
+                onClick={clearFilters}
+                className="btn btn-secondary flex-1 sm:flex-none"
+              >
+                <i className="fas fa-times mr-2"></i>
+                Clear Filters
+              </button>
+            </div>
+            
+            <div className="alert alert-info mt-6">
+              <div className="flex items-start">
+                <i className="fas fa-info-circle text-blue-400 mr-3 mt-0.5 flex-shrink-0"></i>
+                <div>
+                  <p className="font-medium text-blue-900">Search Tips</p>
+                  <p className="text-sm text-blue-800 mt-1">
+                    All text fields support partial matching. For Employee Size, enter the minimum number of employees 
+                    (e.g., entering 10 will show companies with 10+ employees).
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Results */}
         {results.length > 0 && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium">Search Results ({results.length} found)</h3>
+          <div className="card animate-slide-in-up">
+            <div className="card-header">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <i className="fas fa-check-circle text-green-600 mr-2"></i>
+                  <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'var(--font-primary)' }}>
+                    Search Results
+                  </h3>
+                </div>
+                <span className="badge badge-primary">
+                  {results.length} {results.length === 1 ? 'result' : 'results'} found
+                </span>
+              </div>
             </div>
             <div className="divide-y divide-gray-200">
-              {results.map((customer) => (
-                <div key={customer.id} className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                      <h4 className="font-semibold text-gray-900">
-                        {customer.salutation} {customer.firstName} {customer.lastName}
-                      </h4>
-                      <p className="text-gray-600">{customer.email}</p>
-                      <p className="text-gray-600">{customer.phone}</p>
+              {results.map((customer, index) => (
+                <div key={customer.id} className="p-6 hover:bg-gray-50 transition-colors duration-150" style={{ animationDelay: `${index * 50}ms` }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-lg">
+                          {customer.firstName?.[0]}{customer.lastName?.[0]}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'var(--font-primary)' }}>
+                            {customer.salutation} {customer.firstName} {customer.lastName}
+                          </h4>
+                          <p className="text-sm text-gray-500">{customer.jobTitle}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        {customer.email && (
+                          <div className="flex items-center text-sm text-gray-600">
+                            <i className="fas fa-envelope mr-2 text-gray-400"></i>
+                            {customer.email}
+                          </div>
+                        )}
+                        {customer.phone && (
+                          <div className="flex items-center text-sm text-gray-600">
+                            <i className="fas fa-phone mr-2 text-gray-400"></i>
+                            {customer.phone}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h5 className="font-medium text-gray-900">{customer.company}</h5>
-                      <p className="text-gray-600">{customer.jobTitle}</p>
-                      <p className="text-gray-600">{customer.department}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">{customer.address}</p>
-                      <p className="text-gray-600">{customer.city}, {customer.state} {customer.zipCode}</p>
-                      <p className="text-gray-600">{customer.country}</p>
+                    
+                    <div className="space-y-2">
+                      <div>
+                        <h5 className="font-medium text-gray-900 flex items-center">
+                          <i className="fas fa-building mr-2 text-gray-400"></i>
+                          {customer.company}
+                        </h5>
+                        {customer.department && (
+                          <p className="text-sm text-gray-600 ml-6">{customer.department}</p>
+                        )}
+                      </div>
                       {customer.employeeSize && (
-                        <p className="text-gray-600">Company Size: {customer.employeeSize}+ employees</p>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <i className="fas fa-users mr-2 text-gray-400"></i>
+                          {customer.employeeSize}+ employees
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-start text-sm text-gray-600">
+                        <i className="fas fa-map-marker-alt mr-2 text-gray-400 mt-0.5 flex-shrink-0"></i>
+                        <div>
+                          {customer.address && <p>{customer.address}</p>}
+                          <p>{customer.city}, {customer.state} {customer.zipCode}</p>
+                          <p>{customer.country}</p>
+                        </div>
+                      </div>
+                      {customer.industry && (
+                        <div className="flex items-center text-sm">
+                          <span className="badge badge-gray">{customer.industry}</span>
+                        </div>
                       )}
                     </div>
                   </div>

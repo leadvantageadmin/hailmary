@@ -144,30 +144,48 @@ export default function AdminPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return (
+      <div className="page-container flex items-center justify-center">
+        <div className="text-center animate-fade-in">
+          <div className="spinner h-12 w-12 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading admin panel...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-container">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="page-header">
+        <div className="container">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-gray-600">Welcome, {currentUser?.firstName} {currentUser?.lastName}</p>
-            </div>
             <div className="flex items-center space-x-4">
+              <div className="h-12 w-12 bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-xl flex items-center justify-center shadow-lg">
+                <i className="fas fa-cog text-xl text-white"></i>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
+                  Admin Panel
+                </h1>
+                <p className="text-sm text-white text-opacity-80">
+                  Welcome back, {currentUser?.firstName} {currentUser?.lastName}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => router.push('/search')}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="btn btn-secondary"
               >
+                <i className="fas fa-search mr-2"></i>
                 Search Portal
               </button>
               <button
                 onClick={handleLogout}
-                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                className="btn btn-secondary"
               >
+                <i className="fas fa-sign-out-alt mr-2"></i>
                 Logout
               </button>
             </div>
@@ -175,148 +193,194 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-content">
         {/* User Management */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-xl font-semibold">User Management</h2>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-            >
-              Create User
-            </button>
+        <div className="card animate-fade-in">
+          <div className="card-header">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <i className="fas fa-users text-red-600 mr-2"></i>
+                <h2 className="text-xl font-semibold text-gray-900" style={{ fontFamily: 'var(--font-primary)' }}>
+                  User Management
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="btn btn-success"
+              >
+                <i className="fas fa-plus mr-2"></i>
+                Create User
+              </button>
+            </div>
           </div>
 
           {/* Create/Edit Form */}
           {(showCreateForm || editingUser) && (
-            <div className="p-6 border-b border-gray-200 bg-gray-50">
-              <h3 className="text-lg font-medium mb-4">
-                {editingUser ? 'Edit User' : 'Create New User'}
-              </h3>
-              <form onSubmit={editingUser ? handleUpdateUser : handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={newUser.email}
-                    onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                  />
+            <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
+              <div className="card-body">
+                <div className="flex items-center mb-6">
+                  <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-3">
+                    <i className="fas fa-edit text-white"></i>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'var(--font-primary)' }}>
+                    {editingUser ? 'Edit User' : 'Create New User'}
+                  </h3>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password {editingUser && '(leave blank to keep current)'}
-                  </label>
-                  <input
-                    type="password"
-                    required={!editingUser}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={newUser.password}
-                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={newUser.firstName}
-                    onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={newUser.lastName}
-                    onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                  <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={newUser.role}
-                    onChange={(e) => setNewUser({...newUser, role: e.target.value})}
-                  >
-                    <option value="USER">User</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </div>
-                <div className="flex items-end space-x-2">
-                  <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                  >
-                    {editingUser ? 'Update' : 'Create'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      setEditingUser(null);
-                      setNewUser({ email: '', password: '', firstName: '', lastName: '', role: 'USER' });
-                    }}
-                    className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                <form onSubmit={editingUser ? handleUpdateUser : handleCreateUser} className="grid-form">
+                  <div className="form-group">
+                    <label className="form-label">
+                      <i className="fas fa-envelope mr-2 text-gray-500"></i>
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      className="input"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <i className="fas fa-lock mr-2 text-gray-500"></i>
+                      Password {editingUser && <span className="text-gray-500">(leave blank to keep current)</span>}
+                    </label>
+                    <input
+                      type="password"
+                      required={!editingUser}
+                      className="input"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      placeholder="Enter password"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <i className="fas fa-user mr-2 text-gray-500"></i>
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="input"
+                      value={newUser.firstName}
+                      onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                      placeholder="John"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <i className="fas fa-user mr-2 text-gray-500"></i>
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="input"
+                      value={newUser.lastName}
+                      onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                      placeholder="Doe"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <i className="fas fa-shield-alt mr-2 text-gray-500"></i>
+                      Role
+                    </label>
+                    <select
+                      className="input"
+                      value={newUser.role}
+                      onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                    >
+                      <option value="USER">User</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                  </div>
+                  <div className="form-group flex items-end space-x-3">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                    >
+                      <i className="fas fa-check mr-2"></i>
+                      {editingUser ? 'Update User' : 'Create User'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreateForm(false);
+                        setEditingUser(null);
+                        setNewUser({ email: '', password: '', firstName: '', lastName: '', role: 'USER' });
+                      }}
+                      className="btn btn-secondary"
+                    >
+                      <i className="fas fa-times mr-2"></i>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
 
           {/* Users List */}
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="table">
+              <thead className="table-header">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="table-header-cell">User</th>
+                  <th className="table-header-cell">Email</th>
+                  <th className="table-header-cell">Role</th>
+                  <th className="table-header-cell">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {user.firstName} {user.lastName}
+              <tbody className="table-body">
+                {users.map((user, index) => (
+                  <tr key={user.id} className="table-row" style={{ animationDelay: `${index * 50}ms` }}>
+                    <td className="table-cell">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3 shadow-lg">
+                          {user.firstName[0]}{user.lastName[0]}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900" style={{ fontFamily: 'var(--font-primary)' }}>
+                            {user.firstName} {user.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {user.id === currentUser?.id && 'Current User'}
+                          </div>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="table-cell">
                       <div className="text-sm text-gray-900">{user.email}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    <td className="table-cell">
+                      <span className={`badge ${
                         user.role === 'ADMIN' 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-green-100 text-green-800'
+                          ? 'badge-danger' 
+                          : 'badge-success'
                       }`}>
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => startEdit(user)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                      {user.id !== currentUser?.id && (
+                    <td className="table-cell">
+                      <div className="flex items-center space-x-3">
                         <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-900"
+                          onClick={() => startEdit(user)}
+                          className="btn btn-ghost text-blue-600 hover:text-blue-900 p-1"
                         >
-                          Delete
+                          <i className="fas fa-edit"></i>
                         </button>
-                      )}
+                        {user.id !== currentUser?.id && (
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="btn btn-ghost text-red-600 hover:text-red-900 p-1"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
