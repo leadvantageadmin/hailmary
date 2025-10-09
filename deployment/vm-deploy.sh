@@ -34,11 +34,6 @@ fi
 
 echo "📍 VM IP: $VM_IP"
 
-# Copy only essential files to VM
-echo "📤 Copying essential files to VM..."
-gcloud compute scp docker-compose.yml $SSH_USER@$VM_NAME:/home/$SSH_USER/ --zone=$ZONE
-gcloud compute scp env.vm.example $SSH_USER@$VM_NAME:/home/$SSH_USER/ --zone=$ZONE
-
 # Execute deployment on VM
 echo "🔧 Executing deployment on VM..."
 gcloud compute ssh $SSH_USER@$VM_NAME --zone=$ZONE --command="
