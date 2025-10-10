@@ -104,11 +104,7 @@ verify_environment_vm() {
         # Check Prisma binary targets
         echo '3. Prisma Binary Targets:'
         echo 'Checking if Prisma client can be loaded...'
-        if docker run --rm hailmary-web-test sh -c 'cd /app/apps/web && node -e \"
-            const { PrismaClient } = require(\\\"@prisma/client\\\");
-            console.log(\\\"✅ Prisma client loaded successfully\\\");
-            console.log(\\\"Binary targets:\\\", process.env.PRISMA_QUERY_ENGINE_BINARY || \\\"Using default\\\");
-        \"" 2>/dev/null; then
+        if docker run --rm hailmary-web-test sh -c 'cd /app/apps/web && node -e \"const { PrismaClient } = require(\\\"@prisma/client\\\"); console.log(\\\"✅ Prisma client loaded successfully\\\"); console.log(\\\"Binary targets:\\\", process.env.PRISMA_QUERY_ENGINE_BINARY || \\\"Using default\\\");\"' 2>/dev/null; then
             echo '✅ Prisma client loading successful'
         else
             echo '❌ Prisma client loading failed'

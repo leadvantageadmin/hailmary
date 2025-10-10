@@ -21,12 +21,36 @@ Local-first, open-source stack for read-heavy customer search. Develop on Docker
 ```
 
 ### VM Deployment
-```bash
-# Deploy to VM
-./scripts/hailmary.sh vm
 
-# Or use individual scripts
-./scripts/vm-deploy.sh
+#### Prerequisites
+- GCP VM instance with at least 2GB RAM and 20GB disk space
+- VM should have `http-server` and `https-server` network tags
+- Firewall rules allowing HTTP (port 80) and HTTPS (port 443) traffic
+- SSH access configured with your GCP credentials
+
+#### Quick Setup (New VM)
+```bash
+# Complete VM setup (handles all requirements automatically)
+./scripts/setup-vm.sh
+```
+
+#### Standard Deployment
+```bash
+# Deploy to existing VM
+./scripts/hailmary.sh vm deploy
+
+# Or use the deploy script directly
+./scripts/deploy.sh vm
+```
+
+#### Post-Deployment
+```bash
+# Upload and ingest data
+./scripts/hailmary.sh vm upload-csv data/your-file.csv
+./scripts/hailmary.sh vm ingest
+
+# Check status
+./scripts/hailmary.sh vm status
 ```
 
 ### Manual Setup (Alternative)

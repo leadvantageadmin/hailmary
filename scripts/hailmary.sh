@@ -38,6 +38,7 @@ show_help() {
     echo "  init-admin - Initialize admin user"
     echo "  migrate  - Run database migrations"
     echo "  upload-csv - Upload CSV file"
+    echo "  rebuild-schema - Rebuild database schema and re-ingest data"
     echo ""
     echo -e "${YELLOW}Examples:${NC}"
     echo "  $0 local deploy     # Start local development environment"
@@ -105,9 +106,13 @@ execute_local() {
             echo -e "${PURPLE}📤 Uploading CSV locally...${NC}"
             "$script_dir/upload-csv.sh" local "${@:2}"
             ;;
+        "rebuild-schema")
+            echo -e "${RED}🗑️ Rebuilding database schema locally...${NC}"
+            "$script_dir/rebuild-schema.sh" local
+            ;;
         *)
             echo -e "${RED}❌ Unknown local command: $command${NC}"
-            echo "Available local commands: deploy, stop, restart, status, logs, ingest, cleanup, verify, setup-auth, init-admin, migrate, upload-csv"
+            echo "Available local commands: deploy, stop, restart, status, logs, ingest, cleanup, verify, setup-auth, init-admin, migrate, upload-csv, rebuild-schema"
             exit 1
             ;;
     esac
@@ -178,9 +183,13 @@ execute_vm() {
             echo -e "${PURPLE}📤 Uploading CSV to VM...${NC}"
             "$script_dir/upload-csv.sh" vm "${@:2}"
             ;;
+        "rebuild-schema")
+            echo -e "${RED}🗑️ Rebuilding database schema on VM...${NC}"
+            "$script_dir/rebuild-schema.sh" vm
+            ;;
         *)
             echo -e "${RED}❌ Unknown VM command: $command${NC}"
-            echo "Available VM commands: deploy, status, logs, ingest, update, manage, verify, setup-auth, init-admin, migrate, upload-csv"
+            echo "Available VM commands: deploy, status, logs, ingest, update, manage, verify, setup-auth, init-admin, migrate, upload-csv, rebuild-schema"
             exit 1
             ;;
     esac

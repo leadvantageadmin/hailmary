@@ -11,15 +11,35 @@ This directory contains essential deployment files for the HailMary Customer Sea
 ## Quick Start
 
 ### VM Deployment
+
+#### Complete Setup (New VM)
+```bash
+# Complete VM setup (handles all requirements automatically)
+./scripts/setup-vm.sh
+```
+
+#### Standard Deployment
 ```bash
 # Deploy to VM using unified script
 ./scripts/hailmary.sh vm deploy
+
+# Or use deploy script directly
+./scripts/deploy.sh vm
 
 # Check status
 ./scripts/hailmary.sh vm status
 
 # View logs
 ./scripts/hailmary.sh vm logs
+```
+
+#### Data Ingestion
+```bash
+# Upload CSV files
+./scripts/hailmary.sh vm upload-csv data/your-file.csv
+
+# Ingest data
+./scripts/hailmary.sh vm ingest
 ```
 
 ### Environment Setup

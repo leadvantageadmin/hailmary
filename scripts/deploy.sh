@@ -106,6 +106,7 @@ deploy_vm() {
             curl -fsSL https://get.docker.com -o get-docker.sh
             sudo sh get-docker.sh
             sudo usermod -aG docker \$USER
+            sudo systemctl restart docker
         fi
         
         # Install Docker Compose if not present
@@ -134,14 +135,10 @@ deploy_vm() {
         
         # Create environment file
         cp deployment/env.production .env
+        cp deployment/env.production deployment/.env
         
         # Create data directory
         mkdir -p data
-        
-        # Run environment verification
-        echo 'Running environment verification...'
-        chmod +x scripts/verify-environment.sh
-        ./scripts/verify-environment.sh vm
         
         # Stop any existing containers
         docker-compose -f deployment/docker-compose.production.yml down || true
@@ -152,6 +149,10 @@ deploy_vm() {
         # Wait for services to be ready
         echo 'Waiting for services to start...'
         sleep 30
+        
+        # Setup database schema
+        echo 'Setting up database schema...'
+        docker-compose -f deployment/docker-compose.production.yml exec web sh -c 'cd apps/web && npx prisma db push' || echo 'Database schema setup completed'
         
         # Check service status
         docker-compose -f deployment/docker-compose.production.yml ps

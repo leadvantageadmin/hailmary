@@ -37,6 +37,7 @@ init_admin_local() {
                 
                 const admin = await prisma.user.create({
                     data: {
+                        id: 'admin-001',
                         email: 'admin@leadvantageglobal.com',
                         password: 'temp-hash',
                         firstName: 'Admin',
@@ -88,6 +89,7 @@ init_admin_vm() {
                     
                     const admin = await prisma.user.create({
                         data: {
+                            id: 'admin-001',
                             email: 'admin@leadvantageglobal.com',
                             password: 'temp-hash',
                             firstName: 'Admin',

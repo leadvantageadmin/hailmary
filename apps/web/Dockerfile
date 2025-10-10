@@ -8,6 +8,8 @@ RUN corepack enable && corepack prepare pnpm@9.11.0 --activate && pnpm install -
 # Build
 FROM node:18-slim AS builder
 WORKDIR /app
+# Install OpenSSL for Prisma generation
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 COPY . .
 RUN corepack enable && pnpm install --no-frozen-lockfile
 WORKDIR /app/apps/web
