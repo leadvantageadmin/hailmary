@@ -28,5 +28,7 @@ COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
 RUN mkdir -p ./apps/web/public
 COPY --from=builder /app/apps/web/public ./apps/web/public
+# Copy Prisma schema to the runner stage
+COPY --from=builder /app/apps/web/prisma ./apps/web/prisma
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]
