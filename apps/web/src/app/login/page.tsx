@@ -53,42 +53,47 @@ export default function LoginPage() {
         <div className="absolute bottom-40 right-10 w-12 h-12 bg-white opacity-10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 animate-fade-in">
-          {/* Logo and Header */}
-          <div className="text-center">
-            <div className="mx-auto h-20 w-20 bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-2xl flex items-center justify-center shadow-2xl mb-6">
-              <i className="fas fa-search text-3xl text-white"></i>
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-primary)' }}>
-              HailMary
+      <div className="flex" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="w-40 mx-auto space-y-8 animate-fade-in">
+          {/* Header */}
+          <div className="w-full flex items-center justify-center animate-fade-in" style={{ height: '50px' }}>
+            <h1 className="text-2xl font-bold text-center" style={{ 
+              fontFamily: 'var(--font-primary)',
+              textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              width: '100%',
+              textAlign: 'center',
+              lineHeight: '1',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%'
+            }}>
+              Project Hail Mary
             </h1>
-            <p className="text-xl text-white text-opacity-90 mb-2">
-              Customer Search Platform
-            </p>
-            <p className="text-sm text-white text-opacity-70">
-              Powered by LeadAdvantage Global
-            </p>
           </div>
 
           {/* Login Form */}
-          <div className="card animate-slide-in-up">
-            <div className="card-header">
+          <div className="card animate-slide-in-up" style={{ width: '100%', maxWidth: '500px' }}>
+            <div className="card-header" style={{ padding: '20px 20px 15px' }}>
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'var(--font-primary)' }}>
+                <h2 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-primary)' }}>
                   Welcome Back
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   Sign in to access your customer search portal
                 </p>
               </div>
             </div>
-            <div className="card-body">
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <div className="form-group">
-                    <label htmlFor="email" className="form-label">
-                      <i className="fas fa-envelope mr-2 text-gray-500"></i>
+            <div className="card-body" style={{ padding: '20px' }}>
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="space-y-3">
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label htmlFor="email" className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                      <i className="fas fa-envelope text-gray-500" style={{ fontSize: '14px', marginRight: '12px' }}></i>
                       Email Address
                     </label>
                     <div className="input-wrapper">
@@ -102,13 +107,14 @@ export default function LoginPage() {
                         placeholder="Enter your email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        style={{ padding: '8px 12px', fontSize: '12px', height: '32px' }}
                       />
                     </div>
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="password" className="form-label">
-                      <i className="fas fa-lock mr-2 text-gray-500"></i>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label htmlFor="password" className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                      <i className="fas fa-lock text-gray-500" style={{ fontSize: '14px', marginRight: '12px' }}></i>
                       Password
                     </label>
                     <div className="input-wrapper">
@@ -122,16 +128,17 @@ export default function LoginPage() {
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        style={{ padding: '8px 12px', fontSize: '12px', height: '32px' }}
                       />
                     </div>
                   </div>
                 </div>
 
                 {error && (
-                  <div className="alert alert-error animate-fade-in">
+                  <div className="alert alert-error animate-fade-in" style={{ padding: '8px 12px', marginBottom: '12px' }}>
                     <div className="flex items-center">
-                      <i className="fas fa-exclamation-triangle mr-3"></i>
-                      <span>{error}</span>
+                      <i className="fas fa-exclamation-triangle mr-2" style={{ fontSize: '12px' }}></i>
+                      <span style={{ fontSize: '11px' }}>{error}</span>
                     </div>
                   </div>
                 )}
@@ -139,16 +146,17 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn btn-primary w-full btn-large"
+                  className="btn btn-primary w-full"
+                  style={{ padding: '8px 12px', fontSize: '12px', height: '32px' }}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      <div className="spinner h-5 w-5 mr-2"></div>
+                      <div className="spinner h-3 w-3" style={{ marginRight: '8px' }}></div>
                       Signing in...
                     </div>
                   ) : (
                     <div className="flex items-center justify-center">
-                      <i className="fas fa-sign-in-alt mr-2"></i>
+                      <i className="fas fa-sign-in-alt" style={{ fontSize: '10px', marginRight: '8px' }}></i>
                       Sign In
                     </div>
                   )}
@@ -158,25 +166,23 @@ export default function LoginPage() {
           </div>
 
           {/* Demo Credentials */}
-          <div className="card animate-scale-in" style={{ background: 'rgba(255, 255, 255, 0.95)', border: '2px solid rgba(30, 144, 255, 0.2)' }}>
-            <div className="card-body">
+          <div className="card animate-scale-in" style={{ background: 'rgba(255, 255, 255, 0.95)', border: '2px solid rgba(30, 144, 255, 0.2)', width: '100%', maxWidth: '500px', marginTop: '32px' }}>
+            <div className="card-body" style={{ padding: '16px' }}>
               <div className="text-center">
-                <div className="flex items-center justify-center mb-4">
-                  <i className="fas fa-info-circle text-blue-600 mr-2"></i>
-                  <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'var(--font-primary)' }}>
+                <div className="flex items-center justify-center mb-3">
+                  <i className="fas fa-info-circle text-blue-600 mr-2" style={{ fontSize: '14px', marginRight: '8px' }}></i>
                     Demo Credentials
-                  </h3>
                 </div>
-                <div className="space-y-3">
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Admin Account:</p>
+                <div className="space-y-2">
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <p className="text-xs font-medium text-gray-700 mb-1">Admin Account:</p>
                     <div className="space-y-1">
-                      <p className="font-mono text-sm text-gray-800">
-                        <i className="fas fa-envelope mr-2 text-gray-500"></i>
+                      <p className="font-mono text-xs text-gray-800">
+                        <i className="fas fa-envelope text-gray-500" style={{ fontSize: '10px', marginRight: '8px' }}></i>
                         admin@leadvantageglobal.com
                       </p>
-                      <p className="font-mono text-sm text-gray-600">
-                        <i className="fas fa-key mr-2 text-gray-500"></i>
+                      <p className="font-mono text-xs text-gray-600">
+                        <i className="fas fa-key text-gray-500" style={{ fontSize: '10px', marginRight: '8px' }}></i>
                         Password: admin123
                       </p>
                     </div>
@@ -191,7 +197,7 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="text-center animate-fade-in">
-            <div className="flex items-center justify-center space-x-4 text-white text-opacity-70 text-sm">
+            <div className="flex items-center justify-center space-x-4 text-white text-opacity-70 text-sm" style={{ marginTop: '32px' }}>
               <span>© 2024 LeadAdvantage Global</span>
               <span>•</span>
               <span>Premium B2B Lead Generation</span>
