@@ -19,20 +19,34 @@ ingest_local() {
         exit 1
     fi
 
-    # Check if data file exists
-    if [ ! -f "data/customers.csv" ]; then
-        echo "❌ No data file found at data/customers.csv"
-        echo "💡 Please upload a CSV file first with: ./scripts/hailmary.sh local upload-csv <file>"
+    # Check if data folder exists and has CSV files
+    if [ ! -d "data" ]; then
+        echo "❌ No data folder found"
         exit 1
     fi
+    
+    # Find all CSV files in data folder
+    CSV_FILES=$(find data -name "*.csv" -type f)
+    if [ -z "$CSV_FILES" ]; then
+        echo "❌ No CSV files found in data folder"
+        echo "💡 Please add CSV files to the data folder"
+        exit 1
+    fi
+    
+    echo "📁 Found CSV files:"
+    echo "$CSV_FILES" | sed 's/^/  - /'
 
     # Clear Redis cache
     echo "🧹 Clearing Redis cache..."
     docker-compose exec redis redis-cli FLUSHALL
 
-    # Run ingestor service
-    echo "🔄 Running data ingestion..."
-    docker-compose run --rm ingestor
+    # Process each CSV file
+    echo "$CSV_FILES" > /tmp/csv_files.txt
+    while IFS= read -r csv_file; do
+        echo "🔄 Processing: $csv_file"
+        docker-compose run --rm ingestor python app.py "/data/$(basename "$csv_file")"
+    done < /tmp/csv_files.txt
+    rm -f /tmp/csv_files.txt
 
     echo "✅ Local data ingestion complete."
 }
@@ -50,20 +64,34 @@ ingest_vm() {
             exit 1
         fi
         
-        # Check if data file exists
-        if [ ! -f 'data/customers.csv' ]; then
-            echo '❌ No data file found at data/customers.csv'
-            echo '💡 Please upload a CSV file first with: ./scripts/hailmary.sh vm upload-csv <file>'
+        # Check if data folder exists and has CSV files
+        if [ ! -d 'data' ]; then
+            echo '❌ No data folder found'
             exit 1
         fi
+        
+        # Find all CSV files in data folder
+        CSV_FILES=\$(find data -name '*.csv' -type f)
+        if [ -z \"\$CSV_FILES\" ]; then
+            echo '❌ No CSV files found in data folder'
+            echo '💡 Please add CSV files to the data folder'
+            exit 1
+        fi
+        
+        echo '📁 Found CSV files:'
+        echo \"\$CSV_FILES\" | sed 's/^/  - /'
         
         # Clear Redis cache
         echo '🧹 Clearing Redis cache...'
         docker-compose -f deployment/docker-compose.production.yml exec redis redis-cli FLUSHALL
         
-        # Run ingestor service
-        echo '🔄 Running data ingestion...'
-        docker-compose -f deployment/docker-compose.production.yml run --rm ingestor
+        # Process each CSV file
+        echo \"\$CSV_FILES\" > /tmp/csv_files.txt
+        while IFS= read -r csv_file; do
+            echo \"🔄 Processing: \$csv_file\"
+            docker-compose -f deployment/docker-compose.production.yml run --rm ingestor python app.py \"/data/\$(basename \"\$csv_file\")\"
+        done < /tmp/csv_files.txt
+        rm -f /tmp/csv_files.txt
     "
 
     echo "✅ VM data ingestion complete."

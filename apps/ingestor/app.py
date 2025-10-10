@@ -146,9 +146,9 @@ def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_exi
                     INSERT INTO "Customer" (
                         id, salutation, "firstName", "lastName", email, company, address, city, state, country, 
                         "zipCode", phone, "mobilePhone", industry, "jobTitleLevel", "jobTitle", department, 
-                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId"
+                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId", "updatedAt"
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                     ON CONFLICT ("externalSource", "externalId") DO UPDATE SET
                         salutation = EXCLUDED.salutation,
                         "firstName" = EXCLUDED."firstName",
