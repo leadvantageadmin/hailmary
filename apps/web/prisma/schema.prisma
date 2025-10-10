@@ -28,15 +28,10 @@ model Customer {
   jobTitleLevel   String?
   jobTitle        String?
   department      String?
-      employeeSize    Int?
+  minEmployeeSize Int?
+  maxEmployeeSize Int?
   jobTitleLink    String?
   employeeSizeLink String?
-  // Legacy fields for backward compatibility
-  name            String?
-  sector          String?
-  size            Int?
-  latitude        Float?
-  longitude       Float?
   externalSource  String
   externalId      String
   createdAt       DateTime @default(now())
@@ -46,7 +41,8 @@ model Customer {
   @@index([industry])
   @@index([company])
   @@index([country])
-  @@index([employeeSize])
+  @@index([minEmployeeSize])
+  @@index([maxEmployeeSize])
   @@index([jobTitle])
   @@index([department])
 }

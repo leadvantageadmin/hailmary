@@ -17,7 +17,10 @@ const FilterSchema = z.object({
 
 const BodySchema = z.object({
   filters: FilterSchema.default({}),
-  page: z.object({ size: z.number().min(1).max(100).default(20), cursor: z.string().optional() }).default({ size: 20 }),
+  page: z.object({ 
+    size: z.number().min(1).max(100).default(25), 
+    number: z.number().min(1).default(1) 
+  }).default({ size: 25, number: 1 }),
 });
 
 function stableStringify(value: unknown): string {
@@ -49,7 +52,8 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   }
 
   const { filters, page } = parsed.data;
-  const cacheKey = `search:${stableStringify({ filters, pageSize: page.size, cursor: page.cursor ?? null })}`;
+  console.log('Received search filters:', filters);
+  const cacheKey = `search:${stableStringify({ filters, pageSize: page.size, pageNumber: page.number })}`;
 
   const redis = getRedis();
   const cached = await redis.get(cacheKey);
@@ -65,18 +69,37 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   // Helper function to create partial match queries
   const createPartialMatchQuery = (field: string, values: string[]) => {
     if (values.length === 1) {
-      // Single value - use wildcard for partial match
-      return { wildcard: { [field]: { value: `*${values[0].toLowerCase()}*`, case_insensitive: true } } };
+      // Single value - use match query for better partial matching
+      const searchValue = values[0];
+      const query = { 
+        match: { 
+          [field]: {
+            query: searchValue,
+            operator: "and",
+            fuzziness: "AUTO"
+          }
+        } 
+      };
+      console.log(`Creating partial match query for ${field}:`, query);
+      return query;
     } else {
       // Multiple values - use bool query with should clauses
-      return {
+      const query = {
         bool: {
           should: values.map(value => ({
-            wildcard: { [field]: { value: `*${value.toLowerCase()}*`, case_insensitive: true } }
+            match: { 
+              [field]: {
+                query: value,
+                operator: "and",
+                fuzziness: "AUTO"
+              }
+            }
           })),
           minimum_should_match: 1
         }
       };
+      console.log(`Creating partial match query for ${field} (multiple values):`, query);
+      return query;
     }
   };
 
@@ -87,16 +110,16 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   if (filters.jobTitle?.length) mustFilters.push(createPartialMatchQuery('jobTitle', filters.jobTitle));
   if (filters.department?.length) mustFilters.push(createPartialMatchQuery('department', filters.department));
   if (filters.employeeSize?.length) {
-    // For numeric employee size, use range queries
+    // For numeric employee size, use range queries on minEmployeeSize
     if (filters.employeeSize.length === 1) {
-      // Single value - find companies with employee size >= this value
-      mustFilters.push({ range: { employeeSize: { gte: filters.employeeSize[0] } } });
+      // Single value - find companies with min employee size >= this value
+      mustFilters.push({ range: { minEmployeeSize: { gte: filters.employeeSize[0] } } });
     } else {
-      // Multiple values - find companies with employee size >= any of these values
+      // Multiple values - find companies with min employee size >= any of these values
       mustFilters.push({
         bool: {
           should: filters.employeeSize.map(value => ({
-            range: { employeeSize: { gte: value } }
+            range: { minEmployeeSize: { gte: value } }
           })),
           minimum_should_match: 1
         }
@@ -106,22 +129,48 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   if (filters.industry?.length) mustFilters.push(createPartialMatchQuery('industry', filters.industry));
 
   const sort = [{ id: 'asc' }];
+  const from = (page.number - 1) * page.size;
+  
+  // If no filters, use match_all query, otherwise use filtered query
+  let query;
+  if (mustFilters.length === 0) {
+    query = { match_all: {} };
+  } else {
+    query = { bool: { filter: mustFilters } };
+  }
+  
   const searchParams: any = {
     index: process.env.OPENSEARCH_INDEX || 'customers',
     body: {
       track_scores: false,
+      from,
       size: page.size,
       sort,
-      query: { bool: { filter: mustFilters } },
+      query,
     },
   };
-  if (page.cursor) searchParams.body.search_after = [page.cursor];
+  
+  console.log('Final search query:', JSON.stringify(searchParams.body, null, 2));
 
   try {
     const result = await client.search(searchParams as any);
     const items = (result.body.hits.hits || []).map((h: any) => ({ id: h.sort?.[0] ?? h._id, ...h._source }));
-    const nextCursor = items.length === page.size ? items[items.length - 1]?.id : undefined;
-    const response = { items, nextCursor };
+    const totalHits = result.body.hits.total?.value || result.body.hits.total || 0;
+    const totalPages = Math.ceil(totalHits / page.size);
+    const hasNextPage = page.number < totalPages;
+    const hasPrevPage = page.number > 1;
+    
+    const response = { 
+      items, 
+      pagination: {
+        currentPage: page.number,
+        pageSize: page.size,
+        totalItems: totalHits,
+        totalPages,
+        hasNextPage,
+        hasPrevPage
+      }
+    };
     await redis.set(cacheKey, JSON.stringify(response), 'EX', 60);
     return NextResponse.json(response);
   } catch (e: any) {
@@ -151,6 +200,6 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
   if (employeeSize.length) filters.employeeSize = employeeSize;
   if (industry.length) filters.industry = industry;
   
-  const body = { filters, page: { size: 10 } };
+  const body = { filters, page: { size: 25, number: 1 } };
   return POST(new NextRequest(req.url, { method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }));
 });

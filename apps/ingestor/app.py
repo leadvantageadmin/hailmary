@@ -1,79 +1,72 @@
 import os
 import json
+import requests
 from typing import List, Dict, Any
 import pandas as pd
-from pydantic import BaseModel, Field
-from psycopg import connect
 from opensearchpy import OpenSearch, helpers
 import redis
+import psycopg
+from psycopg import sql
 
+# Environment variables
+WEB_API_URL = os.getenv("WEB_API_URL", "http://web:3000")
 POSTGRES_DSN = os.getenv("DATABASE_URL", "postgresql://app:app@postgres:5432/app")
 OS_URL = os.getenv("OPENSEARCH_URL", "http://opensearch:9200")
 OS_INDEX = os.getenv("OPENSEARCH_INDEX", "customers")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 
-class Customer(BaseModel):
-    id: str
-    salutation: str | None = None
-    firstName: str | None = None
-    lastName: str | None = None
-    email: str | None = None
-    company: str | None = None
-    address: str | None = None
-    city: str | None = None
-    state: str | None = None
-    country: str | None = None
-    zipCode: str | None = None
-    phone: str | None = None
-    mobilePhone: str | None = None
-    industry: str | None = None
-    jobTitleLevel: str | None = None
-    jobTitle: str | None = None
-    department: str | None = None
-    employeeSize: int | None = None
-    jobTitleLink: str | None = None
-    employeeSizeLink: str | None = None
-    # Legacy fields for backward compatibility
-    name: str | None = None
-    sector: str | None = None
-    size: int | None = None
-    latitude: float | None = None
-    longitude: float | None = None
-    externalSource: str
-    externalId: str
-
-
-def parse_employee_size(employee_size_str: str) -> int | None:
+def parse_employee_size(employee_size_str: str) -> tuple[int | None, int | None]:
     """
-    Parse employee size string and convert to numeric value.
-    Examples: "50+" -> 50, "1000+" -> 1000, "100-500" -> 100, "10001+" -> 10001
+    Parse employee size string and convert to min/max numeric values.
+    Examples: 
+    - "50+" -> (50, None)
+    - "1000+" -> (1000, None) 
+    - "100-500" -> (100, 500)
+    - "100 - 500" -> (100, 500)
+    - "1000 to 5000" -> (1000, 5000)
+    - "10001+" -> (10001, None)
+    - "1000" -> (1000, None)
     """
     if not employee_size_str or pd.isna(employee_size_str):
-        return None
+        return None, None
     
     # Convert to string and strip whitespace
     size_str = str(employee_size_str).strip()
     
-    # Handle ranges like "100-500" - take the lower bound
+    # Handle ranges with "to" keyword like "1000 to 5000"
+    if ' to ' in size_str.lower():
+        try:
+            parts = size_str.lower().split(' to ')
+            min_size = int(parts[0].strip())
+            max_size = int(parts[1].strip())
+            return min_size, max_size
+        except (ValueError, IndexError):
+            return None, None
+    
+    # Handle ranges with dash like "100-500" or "100 - 500"
     if '-' in size_str:
         try:
-            lower_bound = int(size_str.split('-')[0].strip())
-            return lower_bound
+            parts = size_str.split('-')
+            min_size = int(parts[0].strip())
+            max_size = int(parts[1].strip())
+            return min_size, max_size
         except (ValueError, IndexError):
-            return None
+            return None, None
     
     # Handle values with + like "50+", "1000+"
     if '+' in size_str:
         try:
-            return int(size_str.replace('+', '').strip())
+            min_size = int(size_str.replace('+', '').strip())
+            return min_size, None  # No upper bound for "+" values
         except ValueError:
-            return None
+            return None, None
     
-    # Handle plain numbers
+    # Handle plain numbers - treat as minimum value (no upper bound)
     try:
-        return int(size_str)
+        min_size = int(size_str)
+        return min_size, None
     except ValueError:
-        return None
+        return None, None
 
 
 def ensure_index(client: OpenSearch):
@@ -82,307 +75,383 @@ def ensure_index(client: OpenSearch):
             "mappings": {
                 "properties": {
                     "id": {"type": "keyword"},
-                    "salutation": {"type": "keyword"},
-                    "firstName": {"type": "keyword"},
-                    "lastName": {"type": "keyword"},
+                    "salutation": {"type": "text", "analyzer": "standard"},
+                    "firstName": {"type": "text", "analyzer": "standard"},
+                    "lastName": {"type": "text", "analyzer": "standard"},
                     "email": {"type": "keyword"},
-                    "company": {
-                        "type": "text",
-                        "fields": {
-                            "keyword": {"type": "keyword"},
-                            "suggest": {"type": "completion"}
-                        }
-                    },
-                    "address": {"type": "text"},
-                    "city": {
-                        "type": "text",
-                        "fields": {
-                            "keyword": {"type": "keyword"}
-                        }
-                    },
-                    "state": {
-                        "type": "text",
-                        "fields": {
-                            "keyword": {"type": "keyword"}
-                        }
-                    },
-                    "country": {
-                        "type": "text",
-                        "fields": {
-                            "keyword": {"type": "keyword"}
-                        }
-                    },
+                    "company": {"type": "text", "analyzer": "standard"},
+                    "address": {"type": "text", "analyzer": "standard"},
+                    "city": {"type": "text", "analyzer": "standard"},
+                    "state": {"type": "text", "analyzer": "standard"},
+                    "country": {"type": "text", "analyzer": "standard"},
                     "zipCode": {"type": "keyword"},
                     "phone": {"type": "keyword"},
                     "mobilePhone": {"type": "keyword"},
-                    "industry": {
-                        "type": "text",
-                        "fields": {
-                            "keyword": {"type": "keyword"}
-                        }
-                    },
-                    "jobTitleLevel": {"type": "keyword"},
-                    "jobTitle": {
-                        "type": "text",
-                        "fields": {
-                            "keyword": {"type": "keyword"}
-                        }
-                    },
-                    "department": {
-                        "type": "text",
-                        "fields": {
-                            "keyword": {"type": "keyword"}
-                        }
-                    },
-                    "employeeSize": {"type": "integer"},
+                    "industry": {"type": "text", "analyzer": "standard"},
+                    "jobTitleLevel": {"type": "text", "analyzer": "standard"},
+                    "jobTitle": {"type": "text", "analyzer": "standard"},
+                    "department": {"type": "text", "analyzer": "standard"},
+                    "minEmployeeSize": {"type": "integer"},
+                    "maxEmployeeSize": {"type": "integer"},
                     "jobTitleLink": {"type": "keyword"},
                     "employeeSizeLink": {"type": "keyword"},
-                    # Legacy fields
-                    "name": {"type": "keyword"},
-                    "sector": {"type": "keyword"},
-                    "size": {"type": "integer"},
-                    "location": {"type": "geo_point"}
+                    "externalSource": {"type": "keyword"},
+                    "externalId": {"type": "keyword"}
                 }
             }
         })
 
 
-def upsert_postgres(rows: List[Customer]):
-    with connect(POSTGRES_DSN) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                create table if not exists "Customer" (
-                  id text primary key,
-                  salutation text,
-                  "firstName" text,
-                  "lastName" text,
-                  email text,
-                  company text,
-                  address text,
-                  city text,
-                  state text,
-                  country text,
-                  "zipCode" text,
-                  phone text,
-                  "mobilePhone" text,
-                  industry text,
-                  "jobTitleLevel" text,
-                  "jobTitle" text,
-                  department text,
-                  "employeeSize" text,
-                  "jobTitleLink" text,
-                  "employeeSizeLink" text,
-                  -- Legacy fields
-                  name text,
-                  sector text,
-                  size int,
-                  latitude double precision,
-                  longitude double precision,
-                  "externalSource" text not null,
-                  "externalId" text not null,
-                  "createdAt" timestamptz not null default now(),
-                  "updatedAt" timestamptz not null default now(),
-                  unique ("externalSource", "externalId")
-                );
-                """
-            )
-            for r in rows:
-                cur.execute(
-                    """
-                    insert into "Customer" (
-                      id, salutation, "firstName", "lastName", email, company, address, city, state, country, 
-                      "zipCode", phone, "mobilePhone", industry, "jobTitleLevel", "jobTitle", department, 
-                      "employeeSize", "jobTitleLink", "employeeSizeLink", name, sector, size, latitude, longitude, 
-                      "externalSource", "externalId"
+def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_existing: bool = False):
+    """Fast bulk import using raw SQL - optimized for large datasets"""
+    try:
+        with psycopg.connect(POSTGRES_DSN) as conn:
+            with conn.cursor() as cur:
+                # Clear existing data if requested
+                if clear_existing:
+                    cur.execute('DELETE FROM "Customer"')
+                    print("✅ Cleared existing PostgreSQL data")
+                
+                # Prepare data for bulk insert
+                insert_data = []
+                for customer in customers_data:
+                    insert_data.append((
+                        customer["id"],
+                        customer.get("salutation"),
+                        customer.get("firstName"),
+                        customer.get("lastName"),
+                        customer.get("email"),
+                        customer.get("company"),
+                        customer.get("address"),
+                        customer.get("city"),
+                        customer.get("state"),
+                        customer.get("country"),
+                        customer.get("zipCode"),
+                        customer.get("phone"),
+                        customer.get("mobilePhone"),
+                        customer.get("industry"),
+                        customer.get("jobTitleLevel"),
+                        customer.get("jobTitle"),
+                        customer.get("department"),
+                        customer.get("minEmployeeSize"),
+                        customer.get("maxEmployeeSize"),
+                        customer.get("jobTitleLink"),
+                        customer.get("employeeSizeLink"),
+                        customer["externalSource"],
+                        customer["externalId"]
+                    ))
+                
+                # Bulk insert with conflict resolution
+                cur.executemany("""
+                    INSERT INTO "Customer" (
+                        id, salutation, "firstName", "lastName", email, company, address, city, state, country, 
+                        "zipCode", phone, "mobilePhone", industry, "jobTitleLevel", "jobTitle", department, 
+                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId"
                     )
-                    values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    on conflict (id) do update set
-                      salutation=excluded.salutation,
-                      "firstName"=excluded."firstName",
-                      "lastName"=excluded."lastName",
-                      email=excluded.email,
-                      company=excluded.company,
-                      address=excluded.address,
-                      city=excluded.city,
-                      state=excluded.state,
-                      country=excluded.country,
-                      "zipCode"=excluded."zipCode",
-                      phone=excluded.phone,
-                      "mobilePhone"=excluded."mobilePhone",
-                      industry=excluded.industry,
-                      "jobTitleLevel"=excluded."jobTitleLevel",
-                      "jobTitle"=excluded."jobTitle",
-                      department=excluded.department,
-                      "employeeSize"=excluded."employeeSize",
-                      "jobTitleLink"=excluded."jobTitleLink",
-                      "employeeSizeLink"=excluded."employeeSizeLink",
-                      name=excluded.name,
-                      sector=excluded.sector,
-                      size=excluded.size,
-                      latitude=excluded.latitude,
-                      longitude=excluded.longitude,
-                      "updatedAt"=now();
-                    """,
-                    (r.id, r.salutation, r.firstName, r.lastName, r.email, r.company, r.address, r.city, r.state, r.country,
-                     r.zipCode, r.phone, r.mobilePhone, r.industry, r.jobTitleLevel, r.jobTitle, r.department,
-                     r.employeeSize, r.jobTitleLink, r.employeeSizeLink, r.name, r.sector, r.size, r.latitude, r.longitude,
-                     r.externalSource, r.externalId)
-                )
-        conn.commit()
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT ("externalSource", "externalId") DO UPDATE SET
+                        salutation = EXCLUDED.salutation,
+                        "firstName" = EXCLUDED."firstName",
+                        "lastName" = EXCLUDED."lastName",
+                        email = EXCLUDED.email,
+                        company = EXCLUDED.company,
+                        address = EXCLUDED.address,
+                        city = EXCLUDED.city,
+                        state = EXCLUDED.state,
+                        country = EXCLUDED.country,
+                        "zipCode" = EXCLUDED."zipCode",
+                        phone = EXCLUDED.phone,
+                        "mobilePhone" = EXCLUDED."mobilePhone",
+                        industry = EXCLUDED.industry,
+                        "jobTitleLevel" = EXCLUDED."jobTitleLevel",
+                        "jobTitle" = EXCLUDED."jobTitle",
+                        department = EXCLUDED.department,
+                        "minEmployeeSize" = EXCLUDED."minEmployeeSize",
+                        "maxEmployeeSize" = EXCLUDED."maxEmployeeSize",
+                        "jobTitleLink" = EXCLUDED."jobTitleLink",
+                        "employeeSizeLink" = EXCLUDED."employeeSizeLink",
+                        "updatedAt" = NOW()
+                """, insert_data)
+                
+                conn.commit()
+                print(f"✅ Successfully imported {len(customers_data)} customers to PostgreSQL")
+                return True
+                
+    except Exception as e:
+        print(f"❌ Error importing to PostgreSQL: {e}")
+        return False
 
 
-def bulk_index_os(client: OpenSearch, rows: List[Customer]):
-    actions = []
-    for r in rows:
-        source_data = {
-            "id": r.id,
-            "salutation": r.salutation,
-            "firstName": r.firstName,
-            "lastName": r.lastName,
-            "email": r.email,
-            "company": r.company,
-            "address": r.address,
-            "city": r.city,
-            "state": r.state,
-            "country": r.country,
-            "zipCode": r.zipCode,
-            "phone": r.phone,
-            "mobilePhone": r.mobilePhone,
-            "industry": r.industry,
-            "jobTitleLevel": r.jobTitleLevel,
-            "jobTitle": r.jobTitle,
-            "department": r.department,
-            "employeeSize": r.employeeSize,
-            "jobTitleLink": r.jobTitleLink,
-            "employeeSizeLink": r.employeeSizeLink,
-            # Legacy fields
-            "name": r.name,
-            "sector": r.sector,
-            "size": r.size,
-        }
+def bulk_import_to_postgres_api(customers_data: List[Dict[str, Any]], clear_existing: bool = False):
+    """Import via web API - slower but uses Prisma (for small datasets)"""
+    try:
+        response = requests.post(
+            f"{WEB_API_URL}/api/bulk-import",
+            json={
+                "customers": customers_data,
+                "clearExisting": clear_existing
+            },
+            headers={"Content-Type": "application/json"},
+            timeout=300
+        )
         
-        # Only add location if coordinates are available
-        if r.latitude is not None and r.longitude is not None:
-            source_data["location"] = {"lat": r.latitude, "lon": r.longitude}
+        if response.status_code == 200:
+            result = response.json()
+            print(f"✅ PostgreSQL import: {result['message']}")
+            return True
+        else:
+            print(f"❌ PostgreSQL import failed: {response.status_code} - {response.text}")
+            return False
             
+    except Exception as e:
+        print(f"❌ Error importing to PostgreSQL: {e}")
+        return False
+
+
+def bulk_copy_postgres(customers_data: List[Dict[str, Any]], clear_existing: bool = False):
+    """Ultra-fast import using PostgreSQL COPY - for million+ records"""
+    try:
+        with psycopg.connect(POSTGRES_DSN) as conn:
+            with conn.cursor() as cur:
+                # Clear existing data if requested
+                if clear_existing:
+                    cur.execute('DELETE FROM "Customer"')
+                    print("✅ Cleared existing PostgreSQL data")
+                
+                # Create temporary table with same structure
+                cur.execute("""
+                    CREATE TEMP TABLE temp_customers (
+                        id text,
+                        salutation text,
+                        "firstName" text,
+                        "lastName" text,
+                        email text,
+                        company text,
+                        address text,
+                        city text,
+                        state text,
+                        country text,
+                        "zipCode" text,
+                        phone text,
+                        "mobilePhone" text,
+                        industry text,
+                        "jobTitleLevel" text,
+                        "jobTitle" text,
+                        department text,
+                        "minEmployeeSize" integer,
+                        "maxEmployeeSize" integer,
+                        "jobTitleLink" text,
+                        "employeeSizeLink" text,
+                        "externalSource" text,
+                        "externalId" text
+                    )
+                """)
+                
+                # Prepare data for COPY
+                copy_data = []
+                for customer in customers_data:
+                    copy_data.append((
+                        customer["id"],
+                        customer.get("salutation"),
+                        customer.get("firstName"),
+                        customer.get("lastName"),
+                        customer.get("email"),
+                        customer.get("company"),
+                        customer.get("address"),
+                        customer.get("city"),
+                        customer.get("state"),
+                        customer.get("country"),
+                        customer.get("zipCode"),
+                        customer.get("phone"),
+                        customer.get("mobilePhone"),
+                        customer.get("industry"),
+                        customer.get("jobTitleLevel"),
+                        customer.get("jobTitle"),
+                        customer.get("department"),
+                        customer.get("minEmployeeSize"),
+                        customer.get("maxEmployeeSize"),
+                        customer.get("jobTitleLink"),
+                        customer.get("employeeSizeLink"),
+                        customer["externalSource"],
+                        customer["externalId"]
+                    ))
+                
+                # Use COPY for ultra-fast bulk insert
+                cur.copy_records_to_table('temp_customers', copy_data)
+                print(f"✅ Copied {len(customers_data)} records to temporary table")
+                
+                # Merge with main table using UPSERT
+                cur.execute("""
+                    INSERT INTO "Customer" (
+                        id, salutation, "firstName", "lastName", email, company, address, city, state, country, 
+                        "zipCode", phone, "mobilePhone", industry, "jobTitleLevel", "jobTitle", department, 
+                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId"
+                    )
+                    SELECT * FROM temp_customers
+                    ON CONFLICT ("externalSource", "externalId") DO UPDATE SET
+                        salutation = EXCLUDED.salutation,
+                        "firstName" = EXCLUDED."firstName",
+                        "lastName" = EXCLUDED."lastName",
+                        email = EXCLUDED.email,
+                        company = EXCLUDED.company,
+                        address = EXCLUDED.address,
+                        city = EXCLUDED.city,
+                        state = EXCLUDED.state,
+                        country = EXCLUDED.country,
+                        "zipCode" = EXCLUDED."zipCode",
+                        phone = EXCLUDED.phone,
+                        "mobilePhone" = EXCLUDED."mobilePhone",
+                        industry = EXCLUDED.industry,
+                        "jobTitleLevel" = EXCLUDED."jobTitleLevel",
+                        "jobTitle" = EXCLUDED."jobTitle",
+                        department = EXCLUDED.department,
+                        "minEmployeeSize" = EXCLUDED."minEmployeeSize",
+                        "maxEmployeeSize" = EXCLUDED."maxEmployeeSize",
+                        "jobTitleLink" = EXCLUDED."jobTitleLink",
+                        "employeeSizeLink" = EXCLUDED."employeeSizeLink",
+                        "updatedAt" = NOW()
+                """)
+                
+                conn.commit()
+                print(f"✅ Successfully imported {len(customers_data)} customers to PostgreSQL using COPY")
+                return True
+                
+    except Exception as e:
+        print(f"❌ Error importing to PostgreSQL with COPY: {e}")
+        return False
+
+
+def bulk_index_os(client: OpenSearch, customers_data: List[Dict[str, Any]]):
+    """Bulk index customers to OpenSearch"""
+    actions = []
+    for customer in customers_data:
         actions.append({
-            "_op_type": "index",
             "_index": OS_INDEX,
-            "_id": r.id,
-            "_source": source_data
+            "_id": customer["id"],
+            "_source": customer
         })
-    helpers.bulk(client, actions, chunk_size=1000)
+    
+    if actions:
+        helpers.bulk(client, actions)
 
 
 def clear_redis_cache():
-    """Clear Redis cache to ensure fresh data"""
+    """Clear Redis cache"""
     try:
-        redis_client = redis.from_url(REDIS_URL)
-        redis_client.flushall()
-        print("✓ Cleared Redis cache")
+        r = redis.from_url(REDIS_URL)
+        r.flushall()
+        print("✅ Redis cache cleared")
     except Exception as e:
         print(f"⚠️  Warning: Could not clear Redis cache: {e}")
 
 
-def clear_all_data():
-    """Clear all data from PostgreSQL, OpenSearch, and Redis"""
-    print("Clearing all existing data...")
+def run_from_csv(csv_path: str, clear_existing: bool = False):
+    """Main function to process CSV and ingest data"""
+    print(f"📊 Processing CSV file: {csv_path}")
     
-    # Clear PostgreSQL
-    with connect(POSTGRES_DSN) as conn:
-        with conn.cursor() as cur:
-            cur.execute('DELETE FROM "Customer"')
-        conn.commit()
-    print("✓ Cleared PostgreSQL data")
+    # Read CSV
+    df = pd.read_csv(csv_path)
+    print(f"📋 Found {len(df)} rows in CSV")
     
-    # Clear OpenSearch
-    os_client = OpenSearch(OS_URL)
-    if os_client.indices.exists(index=OS_INDEX):
-        os_client.delete_by_query(
-            index=OS_INDEX,
-            body={"query": {"match_all": {}}}
-        )
-    print("✓ Cleared OpenSearch data")
-    
-    # Clear Redis cache
-    clear_redis_cache()
-
-
-def run_from_csv(path: str, clear_existing: bool = False):
-    """
-    Ingest data from CSV file
-    
-    Args:
-        path: Path to CSV file
-        clear_existing: If True, clear all existing data before ingestion
-    """
+    # Clear existing data if requested
     if clear_existing:
-        clear_all_data()
-    
-    df = pd.read_csv(path)
-    rows: List[Customer] = []
-    for idx, row in df.iterrows():
-        # Skip empty rows
-        if pd.isna(row.get("First Name")) and pd.isna(row.get("Last Name")):
-            continue
-            
-        # Generate ID from email or use index
-        customer_id = str(row.get("Email address", f"customer_{idx}"))
+        print("🗑️  Clearing existing data...")
         
-        # Build full name from first and last name
-        first_name = str(row.get("First Name", "")).strip() if not pd.isna(row.get("First Name")) else ""
-        last_name = str(row.get("Last Name", "")).strip() if not pd.isna(row.get("Last Name")) else ""
-        full_name = f"{first_name} {last_name}".strip()
+        # Clear OpenSearch
+        client = OpenSearch(OS_URL)
+        if client.indices.exists(index=OS_INDEX):
+            client.indices.delete(index=OS_INDEX)
+            print("✅ OpenSearch index cleared")
         
-        rows.append(Customer(
-            id=customer_id,
-            salutation=str(row.get("Salutation", "")).strip() if not pd.isna(row.get("Salutation")) else None,
-            firstName=first_name if first_name else None,
-            lastName=last_name if last_name else None,
-            email=str(row.get("Email address", "")).strip() if not pd.isna(row.get("Email address")) else None,
-            company=str(row.get("Company", "")).strip() if not pd.isna(row.get("Company")) else None,
-            address=str(row.get("Address", "")).strip() if not pd.isna(row.get("Address")) else None,
-            city=str(row.get("City", "")).strip() if not pd.isna(row.get("City")) else None,
-            state=str(row.get("State", "")).strip() if not pd.isna(row.get("State")) else None,
-            country=str(row.get("Country", "")).strip() if not pd.isna(row.get("Country")) else None,
-            zipCode=str(row.get("Zip Code", "")).strip() if not pd.isna(row.get("Zip Code")) else None,
-            phone=str(row.get("Phone", "")).strip() if not pd.isna(row.get("Phone")) else None,
-            mobilePhone=str(row.get("Mobile Phone", "")).strip() if not pd.isna(row.get("Mobile Phone")) else None,
-            industry=str(row.get("Industry", "")).strip() if not pd.isna(row.get("Industry")) else None,
-            jobTitleLevel=str(row.get("Job Title Level", "")).strip() if not pd.isna(row.get("Job Title Level")) else None,
-            jobTitle=str(row.get("Job Title", "")).strip() if not pd.isna(row.get("Job Title")) else None,
-            department=str(row.get("Department", "")).strip() if not pd.isna(row.get("Department")) else None,
-                employeeSize=parse_employee_size(row.get("Employee Size")),
-            jobTitleLink=str(row.get("Job Title Link", "")).strip() if not pd.isna(row.get("Job Title Link")) else None,
-            employeeSizeLink=str(row.get("Employee Size Link", "")).strip() if not pd.isna(row.get("Employee Size Link")) else None,
-            # Legacy fields - derive from new data
-            name=full_name if full_name else None,
-            sector=None,  # Could be derived from industry if needed
-            size=None,  # Could parse employee size if needed
-            latitude=None,  # Would need geocoding service
-            longitude=None,  # Would need geocoding service
-            externalSource="csv",
-            externalId=customer_id
-        ))
+        # Clear Redis
+        clear_redis_cache()
     
-    upsert_postgres(rows)
-    os_client = OpenSearch(OS_URL)
-    ensure_index(os_client)
-    bulk_index_os(os_client, rows)
-    print(f"Ingested {len(rows)} rows from {path}")
+    # Process CSV data
+    customers_data = []
+    for index, row in df.iterrows():
+        # Generate unique ID
+        customer_id = str(row.get("Email address", f"customer_{index}")).strip()
+        if not customer_id or customer_id == "nan":
+            customer_id = f"customer_{index}"
+        
+        # Parse employee size
+        min_size, max_size = parse_employee_size(row.get("Employee Size"))
+        
+        # Build customer data - convert empty strings to None for proper null handling
+        def clean_value(value):
+            if pd.isna(value) or value == "" or str(value).strip() == "":
+                return None
+            return str(value).strip()
+        
+        customer_data = {
+            "id": customer_id,
+            "salutation": clean_value(row.get("Salutation")),
+            "firstName": clean_value(row.get("First Name")),
+            "lastName": clean_value(row.get("Last Name")),
+            "email": clean_value(row.get("Email address")),
+            "company": clean_value(row.get("Company")),
+            "address": clean_value(row.get("Address")),
+            "city": clean_value(row.get("City")),
+            "state": clean_value(row.get("State")),
+            "country": clean_value(row.get("Country")),
+            "zipCode": clean_value(row.get("Zip Code")),
+            "phone": clean_value(row.get("Phone")),
+            "mobilePhone": clean_value(row.get("Mobile Phone")),
+            "industry": clean_value(row.get("Industry")),
+            "jobTitleLevel": clean_value(row.get("Job Title Level")),
+            "jobTitle": clean_value(row.get("Job Title")),
+            "department": clean_value(row.get("Department")),
+            "minEmployeeSize": min_size,
+            "maxEmployeeSize": max_size,
+            "jobTitleLink": clean_value(row.get("Job Title Link")),
+            "employeeSizeLink": clean_value(row.get("Employee Size Link")),
+            "externalSource": "csv",
+            "externalId": customer_id
+        }
+        
+        customers_data.append(customer_data)
     
-    # Clear Redis cache to ensure fresh data is served
-    clear_redis_cache()
+    print(f"🔄 Processing {len(customers_data)} customers...")
+    
+    # Choose import method based on dataset size
+    # Future: For 1M+ records, use bulk_copy_postgres() for ultra-fast COPY operations
+    if len(customers_data) > 1000:
+        print("🚀 Using fast bulk import (raw SQL) for large dataset...")
+        postgres_success = bulk_import_to_postgres_fast(customers_data, clear_existing)
+    else:
+        print("🌐 Using API import (Prisma) for small dataset...")
+        postgres_success = bulk_import_to_postgres_api(customers_data, clear_existing)
+    
+    if not postgres_success:
+        print("❌ PostgreSQL import failed, aborting...")
+        return False
+    
+    # Index to OpenSearch
+    print("🔍 Indexing to OpenSearch...")
+    client = OpenSearch(OS_URL)
+    ensure_index(client)
+    bulk_index_os(client, customers_data)
+    print(f"✅ Successfully indexed {len(customers_data)} customers to OpenSearch")
+    
+    print("🎉 Data ingestion completed successfully!")
+    return True
 
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) < 2:
-        print("Usage: python app.py /data/customers.csv [--clear]")
-        print("  --clear: Clear all existing data before ingestion")
-        raise SystemExit(2)
     
+    csv_path = sys.argv[1] if len(sys.argv) > 1 else "/data/customers.csv"
     clear_existing = "--clear" in sys.argv
-    csv_path = sys.argv[1]
-    run_from_csv(csv_path, clear_existing=clear_existing)
+    
+    print("🚀 Starting HailMary Data Ingestion...")
+    print(f"📁 CSV Path: {csv_path}")
+    print(f"🗑️  Clear Existing: {clear_existing}")
+    print("-" * 50)
+    
+    try:
+        success = run_from_csv(csv_path, clear_existing)
+        if not success:
+            sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error during ingestion: {e}")
+        sys.exit(1)

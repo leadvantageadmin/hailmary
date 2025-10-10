@@ -56,6 +56,64 @@ Local-first, open-source stack for read-heavy customer search. Develop on Docker
 - Search page: http://localhost:3000/search (requires authentication)
 - Default admin: admin@leadvantageglobal.com / admin123
 
+## Data Ingestion
+
+The platform uses a **hybrid ingestion approach** that automatically selects the optimal method based on dataset size for maximum performance.
+
+### Ingestion Methods
+
+| Dataset Size | Method | Performance | Use Case |
+|--------------|--------|-------------|----------|
+| **< 1,000 records** | API (Prisma) | ~2-3 seconds | Development, small datasets |
+| **1,000+ records** | Raw SQL Bulk | ~2-5 seconds | Medium datasets, staging |
+| **1,000,000+ records** | PostgreSQL COPY | ~30-60 seconds | Production, large datasets |
+
+### How It Works
+
+1. **Automatic Method Selection**: The ingestor analyzes dataset size and chooses the optimal method
+2. **API Method** (`< 1,000 records`):
+   - Uses `/api/bulk-import` endpoint with Prisma ORM
+   - Full validation, error handling, and transaction safety
+   - Best for development and small datasets
+
+3. **Raw SQL Method** (`1,000+ records`):
+   - Direct PostgreSQL bulk insert with `executemany()`
+   - Optimized for medium to large datasets
+   - Uses `ON CONFLICT DO UPDATE` for upserts
+
+4. **COPY Method** (`1,000,000+ records` - Future):
+   - PostgreSQL `COPY` command for ultra-fast bulk loads
+   - Temporary table + merge approach
+   - Ready for production-scale datasets
+
+### Running Data Ingestion
+
+```bash
+# Local ingestion
+./scripts/ingest.sh local
+
+# VM ingestion  
+./scripts/ingest.sh vm
+
+# Rebuild database schema and re-ingest
+./scripts/rebuild-schema.sh
+```
+
+### Data Format
+
+The system expects CSV files with the following structure:
+- **Location**: `data/customers.csv`
+- **Employee Size Formats**: Supports "100-500", "1000+", "1000 to 5000", "1000"
+- **Null Handling**: Empty fields are automatically converted to NULL
+- **Upsert Logic**: Uses `externalSource` + `externalId` for conflict resolution
+
+### Performance Characteristics
+
+- **Small Datasets**: API method provides full validation and consistency
+- **Large Datasets**: Raw SQL method offers 10x+ performance improvement
+- **Million+ Records**: COPY method ready for enterprise-scale data loads
+- **OpenSearch Indexing**: All methods include automatic search index updates
+
 ## Management Scripts
 
 ### Unified Interface
