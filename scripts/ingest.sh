@@ -44,7 +44,12 @@ ingest_local() {
     echo "$CSV_FILES" > /tmp/csv_files.txt
     while IFS= read -r csv_file; do
         echo "🔄 Processing: $csv_file"
-        docker-compose run --rm ingestor python app.py "/data/$(basename "$csv_file")"
+        # Check if separator parameter is provided
+        if [ "$1" = "--separator" ] && [ -n "$2" ]; then
+            docker-compose run --rm ingestor python app.py "/data/$(basename "$csv_file")" --separator "$2"
+        else
+            docker-compose run --rm ingestor python app.py "/data/$(basename "$csv_file")"
+        fi
     done < /tmp/csv_files.txt
     rm -f /tmp/csv_files.txt
 
@@ -89,7 +94,12 @@ ingest_vm() {
         echo \"\$CSV_FILES\" > /tmp/csv_files.txt
         while IFS= read -r csv_file; do
             echo \"🔄 Processing: \$csv_file\"
-            docker-compose -f deployment/docker-compose.production.yml run --rm ingestor python app.py \"/data/\$(basename \"\$csv_file\")\"
+            # Check if separator parameter is provided
+            if [ \"$1\" = \"--separator\" ] && [ -n \"$2\" ]; then
+                docker-compose -f deployment/docker-compose.production.yml run --rm ingestor python app.py \"/data/\$(basename \"\$csv_file\")\" --separator \"$2\"
+            else
+                docker-compose -f deployment/docker-compose.production.yml run --rm ingestor python app.py \"/data/\$(basename \"\$csv_file\")\"
+            fi
         done < /tmp/csv_files.txt
         rm -f /tmp/csv_files.txt
     "
@@ -108,9 +118,16 @@ case $ENVIRONMENT in
         ingest_vm
         ;;
     *)
-        echo "Usage: $0 [local|vm]"
+        echo "Usage: $0 [local|vm] [--separator SEPARATOR]"
         echo "  local - Run data ingestion locally"
         echo "  vm    - Run data ingestion on VM"
+        echo "  --separator SEPARATOR - Specify CSV separator (e.g., ';' for semicolon)"
+        echo ""
+        echo "Examples:"
+        echo "  $0 local                    # Run locally with auto-detection"
+        echo "  $0 vm                       # Run on VM with auto-detection"
+        echo "  $0 local --separator ';'    # Run locally with semicolon separator"
+        echo "  $0 vm --separator ';'       # Run on VM with semicolon separator"
         exit 1
         ;;
 esac

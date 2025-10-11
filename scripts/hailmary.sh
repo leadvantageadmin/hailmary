@@ -46,6 +46,7 @@ show_help() {
     echo "  $0 vm deploy        # Deploy to VM"
     echo "  $0 vm logs web      # Show web service logs on VM"
     echo "  $0 local ingest     # Run data ingestion locally"
+    echo "  $0 local ingest --separator ';'  # Run data ingestion with semicolon separator"
     echo ""
     echo -e "${YELLOW}Quick Commands:${NC}"
     echo "  $0 local            # Start local development (same as 'local deploy')"
@@ -80,7 +81,7 @@ execute_local() {
             ;;
         "ingest")
             echo -e "${GREEN}📊 Running local data ingestion...${NC}"
-            "$script_dir/ingest.sh" local
+            "$script_dir/ingest.sh" local "${@:2}"
             ;;
         "cleanup")
             echo -e "${RED}🧹 Cleaning up local environment...${NC}"
@@ -146,7 +147,7 @@ execute_vm() {
             ;;
         "ingest")
             echo -e "${GREEN}📊 Running VM data ingestion...${NC}"
-            "$script_dir/ingest.sh" vm
+            "$script_dir/ingest.sh" vm "${@:2}"
             ;;
         "update")
             echo -e "${BLUE}🔄 Updating VM deployment...${NC}"

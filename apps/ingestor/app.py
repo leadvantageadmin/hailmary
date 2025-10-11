@@ -345,12 +345,26 @@ def clear_redis_cache():
         print(f"⚠️  Warning: Could not clear Redis cache: {e}")
 
 
-def run_from_csv(csv_path: str, clear_existing: bool = False):
+def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = None):
     """Main function to process CSV and ingest data"""
     print(f"📊 Processing CSV file: {csv_path}")
     
-    # Read CSV
-    df = pd.read_csv(csv_path)
+    # Auto-detect separator if not provided
+    if separator is None:
+        # Read first few lines to detect separator
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            first_line = f.readline().strip()
+            semicolon_count = first_line.count(';')
+            comma_count = first_line.count(',')
+            if ';' in first_line and semicolon_count > comma_count:
+                separator = ';'
+                print("🔍 Auto-detected semicolon (;) as separator")
+            else:
+                separator = ','
+                print("🔍 Auto-detected comma (,) as separator")
+    
+    # Read CSV with detected or specified separator
+    df = pd.read_csv(csv_path, sep=separator)
     print(f"📋 Found {len(df)} rows in CSV")
     
     # Clear existing data if requested
@@ -443,13 +457,25 @@ if __name__ == "__main__":
     csv_path = sys.argv[1] if len(sys.argv) > 1 else "/data/customers.csv"
     clear_existing = "--clear" in sys.argv
     
+    # Check for separator argument
+    separator = None
+    if "--separator" in sys.argv:
+        try:
+            sep_index = sys.argv.index("--separator")
+            if sep_index + 1 < len(sys.argv):
+                separator = sys.argv[sep_index + 1]
+        except (ValueError, IndexError):
+            pass
+    
     print("🚀 Starting HailMary Data Ingestion...")
     print(f"📁 CSV Path: {csv_path}")
     print(f"🗑️  Clear Existing: {clear_existing}")
+    if separator:
+        print(f"🔧 Separator: {separator}")
     print("-" * 50)
     
     try:
-        success = run_from_csv(csv_path, clear_existing)
+        success = run_from_csv(csv_path, clear_existing, separator)
         if not success:
             sys.exit(1)
     except Exception as e:
