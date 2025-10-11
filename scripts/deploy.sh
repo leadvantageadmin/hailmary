@@ -163,8 +163,8 @@ deploy_vm() {
     "
 
     echo "✅ Deployment completed!"
-    echo "🌐 Your application should be available at: http://portal.leadvantageglobal.com"
-    echo "🔐 Login page: http://portal.leadvantageglobal.com/login"
+    echo "🌐 Your application should be available at: http://hailmary.leadvantageglobal.com"
+    echo "🔐 Login page: http://hailmary.leadvantageglobal.com/login"
     echo "📝 Note: OpenSearch and Redis are only accessible within the VM (ports blocked in GCP)"
     echo ""
     echo "📋 To manage the VM, use: ./scripts/hailmary.sh vm manage"

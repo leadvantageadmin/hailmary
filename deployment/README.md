@@ -68,6 +68,6 @@ See `DOCKER-COMPOSE.md` in the root directory for detailed information about the
 
 ## Access Points
 
-- **Application**: http://portal.leadvantageglobal.com
-- **Login**: http://portal.leadvantageglobal.com/login
+- **Application**: http://hailmary.leadvantageglobal.com
+- **Login**: http://hailmary.leadvantageglobal.com/login
 - **Note**: OpenSearch and Redis are only accessible within the VM (ports blocked in GCP)
