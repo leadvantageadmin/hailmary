@@ -36,25 +36,16 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   await ensureIndex(process.env.OPENSEARCH_INDEX || 'customers');
 
   try {
-    // Use aggregation to get unique values for the field
+    // Use search to get matching documents and extract unique values
     const searchParams = {
       index: process.env.OPENSEARCH_INDEX || 'customers',
       body: {
-        size: 0,
+        size: 100, // Get more results to find unique values
         query: {
-          wildcard: {
+          match: {
             [field]: {
-              value: `*${query.toLowerCase()}*`,
-              case_insensitive: true
-            }
-          }
-        },
-        aggs: {
-          unique_values: {
-            terms: {
-              field: `${field}.keyword`,
-              size: limit,
-              order: { _key: 'asc' }
+              query: query,
+              operator: "and"
             }
           }
         }
@@ -62,7 +53,16 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     };
 
     const result = await client.search(searchParams as any);
-    const suggestions = result.body.aggregations?.unique_values?.buckets?.map((bucket: any) => bucket.key) || [];
+    console.log('🔍 OpenSearch result total:', result.body.hits?.total);
+    console.log('🔍 OpenSearch result hits:', result.body.hits?.hits?.length);
+    
+    const allValues = result.body.hits?.hits?.map((hit: any) => hit._source[field]).filter((value: any) => value && value.trim() !== '') || [];
+    console.log('📋 All values found:', allValues);
+    
+    // Get unique values and sort them
+    const uniqueValues = [...new Set(allValues)].sort().slice(0, limit);
+    const suggestions = uniqueValues;
+    console.log('✅ Final suggestions:', suggestions);
     
     const response = { suggestions };
     await redis.set(cacheKey, JSON.stringify(response), 'EX', 300); // Cache for 5 minutes

@@ -11,7 +11,8 @@ const FilterSchema = z.object({
   state: z.array(z.string()).optional(),
   jobTitle: z.array(z.string()).optional(),
   department: z.array(z.string()).optional(),
-      employeeSize: z.array(z.number()).optional(),
+  minEmployeeSize: z.array(z.number()).optional(),
+  maxEmployeeSize: z.array(z.number()).optional(),
   industry: z.array(z.string()).optional(),
 });
 
@@ -52,7 +53,6 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   }
 
   const { filters, page } = parsed.data;
-  console.log('Received search filters:', filters);
   const cacheKey = `search:${stableStringify({ filters, pageSize: page.size, pageNumber: page.number })}`;
 
   const redis = getRedis();
@@ -80,7 +80,6 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
           }
         } 
       };
-      console.log(`Creating partial match query for ${field}:`, query);
       return query;
     } else {
       // Multiple values - use bool query with should clauses
@@ -98,7 +97,6 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
           minimum_should_match: 1
         }
       };
-      console.log(`Creating partial match query for ${field} (multiple values):`, query);
       return query;
     }
   };
@@ -109,17 +107,35 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   if (filters.state?.length) mustFilters.push(createPartialMatchQuery('state', filters.state));
   if (filters.jobTitle?.length) mustFilters.push(createPartialMatchQuery('jobTitle', filters.jobTitle));
   if (filters.department?.length) mustFilters.push(createPartialMatchQuery('department', filters.department));
-  if (filters.employeeSize?.length) {
+  if (filters.minEmployeeSize?.length) {
     // For numeric employee size, use range queries on minEmployeeSize
-    if (filters.employeeSize.length === 1) {
+    if (filters.minEmployeeSize.length === 1) {
       // Single value - find companies with min employee size >= this value
-      mustFilters.push({ range: { minEmployeeSize: { gte: filters.employeeSize[0] } } });
+      mustFilters.push({ range: { minEmployeeSize: { gte: filters.minEmployeeSize[0] } } });
     } else {
       // Multiple values - find companies with min employee size >= any of these values
       mustFilters.push({
         bool: {
-          should: filters.employeeSize.map(value => ({
+          should: filters.minEmployeeSize.map(value => ({
             range: { minEmployeeSize: { gte: value } }
+          })),
+          minimum_should_match: 1
+        }
+      });
+    }
+  }
+  
+  if (filters.maxEmployeeSize?.length) {
+    // For max employee size, use range queries on maxEmployeeSize
+    if (filters.maxEmployeeSize.length === 1) {
+      // Single value - find companies with max employee size <= this value
+      mustFilters.push({ range: { maxEmployeeSize: { lte: filters.maxEmployeeSize[0] } } });
+    } else {
+      // Multiple values - find companies with max employee size <= any of these values
+      mustFilters.push({
+        bool: {
+          should: filters.maxEmployeeSize.map(value => ({
+            range: { maxEmployeeSize: { lte: value } }
           })),
           minimum_should_match: 1
         }
@@ -150,7 +166,6 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     },
   };
   
-  console.log('Final search query:', JSON.stringify(searchParams.body, null, 2));
 
   try {
     const result = await client.search(searchParams as any);
@@ -187,7 +202,8 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
   const state = url.searchParams.getAll('state');
   const jobTitle = url.searchParams.getAll('jobTitle');
   const department = url.searchParams.getAll('department');
-  const employeeSize = url.searchParams.getAll('employeeSize').map(Number).filter(n => !isNaN(n));
+  const minEmployeeSize = url.searchParams.getAll('minEmployeeSize').map(Number).filter(n => !isNaN(n));
+  const maxEmployeeSize = url.searchParams.getAll('maxEmployeeSize').map(Number).filter(n => !isNaN(n));
   const industry = url.searchParams.getAll('industry');
   
   const filters: any = {};
@@ -197,7 +213,8 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
   if (state.length) filters.state = state;
   if (jobTitle.length) filters.jobTitle = jobTitle;
   if (department.length) filters.department = department;
-  if (employeeSize.length) filters.employeeSize = employeeSize;
+  if (minEmployeeSize.length) filters.minEmployeeSize = minEmployeeSize;
+  if (maxEmployeeSize.length) filters.maxEmployeeSize = maxEmployeeSize;
   if (industry.length) filters.industry = industry;
   
   const body = { filters, page: { size: 25, number: 1 } };
