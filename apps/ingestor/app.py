@@ -397,6 +397,17 @@ def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = N
                 return None
             return str(value).strip()
         
+        # Combine Address Line 1 and Address Line 2
+        address_line1 = clean_value(row.get("Address Line 1"))
+        address_line2 = clean_value(row.get("Address Line 2"))
+        full_address = None
+        if address_line1 and address_line2:
+            full_address = f"{address_line1} {address_line2}"
+        elif address_line1:
+            full_address = address_line1
+        elif address_line2:
+            full_address = address_line2
+        
         customer_data = {
             "id": customer_id,
             "salutation": clean_value(row.get("Salutation")),
@@ -404,13 +415,13 @@ def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = N
             "lastName": clean_value(row.get("Last Name")),
             "email": clean_value(row.get("Email address")),
             "company": clean_value(row.get("Company")),
-            "address": clean_value(row.get("Address")),
+            "address": full_address,
             "city": clean_value(row.get("City")),
             "state": clean_value(row.get("State")),
             "country": clean_value(row.get("Country")),
-            "zipCode": clean_value(row.get("Zip Code")),
+            "zipCode": clean_value(row.get("Zip/Postal code")),
             "phone": clean_value(row.get("Phone")),
-            "mobilePhone": clean_value(row.get("Mobile Phone")),
+            "mobilePhone": clean_value(row.get("Mobile Phone (optional)")),
             "industry": clean_value(row.get("Industry")),
             "jobTitleLevel": clean_value(row.get("Job Title Level")),
             "jobTitle": clean_value(row.get("Job Title")),
@@ -418,7 +429,7 @@ def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = N
             "minEmployeeSize": min_size,
             "maxEmployeeSize": max_size,
             "jobTitleLink": clean_value(row.get("Job Title Link")),
-            "employeeSizeLink": clean_value(row.get("Employee Size Link")),
+            "employeeSizeLink": clean_value(row.get("Employee size link")),
             "externalSource": "csv",
             "externalId": customer_id
         }
