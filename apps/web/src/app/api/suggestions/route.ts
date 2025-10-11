@@ -5,7 +5,7 @@ import { getRedis } from '@/lib/redis';
 import { withAuth, AuthenticatedRequest } from '@/lib/middleware';
 
 const SuggestionSchema = z.object({
-  field: z.enum(['company', 'country', 'city', 'state', 'jobTitle', 'department', 'industry']),
+  field: z.enum(['company', 'country', 'city', 'state', 'jobTitle', 'jobTitleLevel', 'department', 'industry']),
   query: z.string().min(1).max(100),
   limit: z.number().min(1).max(20).default(10)
 });

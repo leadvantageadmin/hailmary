@@ -10,6 +10,7 @@ const FilterSchema = z.object({
   city: z.array(z.string()).optional(),
   state: z.array(z.string()).optional(),
   jobTitle: z.array(z.string()).optional(),
+  jobTitleLevel: z.array(z.string()).optional(),
   department: z.array(z.string()).optional(),
   minEmployeeSize: z.array(z.number()).optional(),
   maxEmployeeSize: z.array(z.number()).optional(),
@@ -106,6 +107,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   if (filters.city?.length) mustFilters.push(createPartialMatchQuery('city', filters.city));
   if (filters.state?.length) mustFilters.push(createPartialMatchQuery('state', filters.state));
   if (filters.jobTitle?.length) mustFilters.push(createPartialMatchQuery('jobTitle', filters.jobTitle));
+  if (filters.jobTitleLevel?.length) mustFilters.push(createPartialMatchQuery('jobTitleLevel', filters.jobTitleLevel));
   if (filters.department?.length) mustFilters.push(createPartialMatchQuery('department', filters.department));
   if (filters.minEmployeeSize?.length) {
     // For numeric employee size, use range queries on minEmployeeSize
@@ -201,6 +203,7 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
   const city = url.searchParams.getAll('city');
   const state = url.searchParams.getAll('state');
   const jobTitle = url.searchParams.getAll('jobTitle');
+  const jobTitleLevel = url.searchParams.getAll('jobTitleLevel');
   const department = url.searchParams.getAll('department');
   const minEmployeeSize = url.searchParams.getAll('minEmployeeSize').map(Number).filter(n => !isNaN(n));
   const maxEmployeeSize = url.searchParams.getAll('maxEmployeeSize').map(Number).filter(n => !isNaN(n));
@@ -212,6 +215,7 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
   if (city.length) filters.city = city;
   if (state.length) filters.state = state;
   if (jobTitle.length) filters.jobTitle = jobTitle;
+  if (jobTitleLevel.length) filters.jobTitleLevel = jobTitleLevel;
   if (department.length) filters.department = department;
   if (minEmployeeSize.length) filters.minEmployeeSize = minEmployeeSize;
   if (maxEmployeeSize.length) filters.maxEmployeeSize = maxEmployeeSize;

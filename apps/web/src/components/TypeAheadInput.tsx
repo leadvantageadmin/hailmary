@@ -6,7 +6,7 @@ interface TypeAheadInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  field: 'company' | 'country' | 'city' | 'state' | 'jobTitle' | 'department' | 'industry';
+  field: 'company' | 'country' | 'city' | 'state' | 'jobTitle' | 'jobTitleLevel' | 'department' | 'industry';
   className?: string;
   style?: React.CSSProperties;
 }

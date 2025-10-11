@@ -10,6 +10,7 @@ interface SearchFilters {
   city: string;
   state: string;
   jobTitle: string;
+  jobTitleLevel: string;
   department: string;
   minEmployeeSize: number;
   maxEmployeeSize: number;
@@ -64,6 +65,7 @@ export default function SearchPage() {
     city: '',
     state: '',
     jobTitle: '',
+    jobTitleLevel: '',
     department: '',
     minEmployeeSize: 0,
     maxEmployeeSize: 0,
@@ -152,6 +154,7 @@ export default function SearchPage() {
       city: '',
       state: '',
       jobTitle: '',
+      jobTitleLevel: '',
       department: '',
       minEmployeeSize: 0,
       maxEmployeeSize: 0,
@@ -205,6 +208,13 @@ export default function SearchPage() {
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              <button
+                onClick={() => router.push('/customer-search')}
+                className="btn btn-secondary"
+              >
+                <i className="fas fa-user mr-2"></i>
+                Customer Lookup
+              </button>
               {user.role === 'ADMIN' && (
                 <button
                   onClick={() => router.push('/admin')}
@@ -311,6 +321,20 @@ export default function SearchPage() {
                         onChange={(value) => setFilters({...filters, jobTitle: value})}
                         field="jobTitle"
                         placeholder="Director"
+                        style={{ padding: '6px 8px', fontSize: '12px', height: '32px' }}
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px', textTransform: 'capitalize' }}>
+                        <i className="fas fa-layer-group text-gray-500" style={{ fontSize: '10px', marginRight: '8px' }}></i>
+                        Job Title Level
+                      </label>
+                      <TypeAheadInput
+                        value={filters.jobTitleLevel}
+                        onChange={(value) => setFilters({...filters, jobTitleLevel: value})}
+                        field="jobTitleLevel"
+                        placeholder="Manager"
                         style={{ padding: '6px 8px', fontSize: '12px', height: '32px' }}
                       />
                     </div>
@@ -460,6 +484,9 @@ export default function SearchPage() {
                             Job Title
                           </th>
                           <th className="px-3 py-2 text-center font-semibold text-gray-700 uppercase tracking-wider" style={{ borderRight: '1px solid #e2e8f0', fontFamily: 'var(--font-primary)', fontSize: '13px' }}>
+                            Job Title Level
+                          </th>
+                          <th className="px-3 py-2 text-center font-semibold text-gray-700 uppercase tracking-wider" style={{ borderRight: '1px solid #e2e8f0', fontFamily: 'var(--font-primary)', fontSize: '13px' }}>
                             Company
                           </th>
                           <th className="px-3 py-2 text-center font-semibold text-gray-700 uppercase tracking-wider" style={{ borderRight: '1px solid #e2e8f0', fontFamily: 'var(--font-primary)', fontSize: '13px' }}>
@@ -497,6 +524,9 @@ export default function SearchPage() {
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-gray-900" style={{ borderRight: '1px solid #e2e8f0', verticalAlign: 'middle', fontSize: '11px', textAlign: 'center' }}>
                               {customer.jobTitle || '-'}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-gray-900" style={{ borderRight: '1px solid #e2e8f0', verticalAlign: 'middle', fontSize: '11px', textAlign: 'center' }}>
+                              {customer.jobTitleLevel || '-'}
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-gray-900" style={{ borderRight: '1px solid #e2e8f0', verticalAlign: 'middle', fontSize: '11px', textAlign: 'center' }}>
                               {customer.company || '-'}
