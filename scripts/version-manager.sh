@@ -8,7 +8,7 @@ set -e
 # Configuration
 REPO_OWNER="leadvantageadmin"
 REPO_NAME="hailmary"
-GITHUB_TOKEN=""  # Set this for GitHub API access
+GITHUB_TOKEN="${GITHUB_TOKEN:-}"  # Set this for GitHub API access
 VERSION_FILE="VERSION"
 CHANGELOG_FILE="CHANGELOG.md"
 
