@@ -12,7 +12,7 @@ PROJECT_ID="leadvantage-global"
 SSH_USER="pmomale2024"
 REPO_OWNER="leadvantageadmin"
 REPO_NAME="hailmary"
-GITHUB_TOKEN=""  # Set this if you need to access private repos
+GITHUB_TOKEN="${GITHUB_TOKEN:-}"  # Set this if you need to access private repos
 
 # Colors for output
 RED='\033[0;31m'
