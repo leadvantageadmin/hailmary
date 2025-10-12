@@ -126,7 +126,10 @@ deploy_vm() {
         if [ -d 'hailmary' ]; then
             echo 'Updating existing repository...'
             cd hailmary
-            git pull origin main
+            # Force pull to override any local changes
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd
         else
             echo 'Cloning repository from GitHub...'
             git clone https://github.com/leadvantageadmin/hailmary.git
