@@ -8,7 +8,21 @@
   "scripts": {
     "dev": "pnpm --filter @app/web dev",
     "build": "pnpm --filter @app/web build",
-    "start": "pnpm --filter @app/web start"
+    "start": "pnpm --filter @app/web start",
+    "deploy:local": "./scripts/deploy.sh local",
+    "deploy:vm": "./scripts/deploy.sh vm",
+    "deploy:executable": "./scripts/deploy.sh executable",
+    "deploy:build": "./scripts/deploy.sh build-deploy",
+    "deploy:status": "./scripts/deploy.sh status",
+    "deploy:rollback": "./scripts/deploy.sh rollback",
+    "version:current": "./scripts/version-manager.sh current",
+    "version:release": "./scripts/version-manager.sh release",
+    "version:list": "./scripts/version-manager.sh list",
+    "version:history": "./scripts/version-manager.sh history",
+    "build:package": "./scripts/build-deployment.sh build",
+    "build:list": "./scripts/build-deployment.sh list",
+    "build:clean": "./scripts/build-deployment.sh clean",
+    "demo": "./scripts/example-workflow.sh demo"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
 }

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Deploy script for both local and VM environments
+# Enhanced with executable deployment support
 
 set -e
 
@@ -173,20 +174,95 @@ deploy_vm() {
     echo "📋 To manage the VM, use: ./scripts/hailmary.sh vm manage"
 }
 
-# Main script logic
-ENVIRONMENT=${1:-"local"}
+# Function to deploy using executable package
+deploy_executable() {
+    local version=$1
+    
+    if [ -z "$version" ]; then
+        echo "❌ Version is required for executable deployment"
+        echo "Usage: $0 executable <version>"
+        echo "Example: $0 executable v1.0.0"
+        exit 1
+    fi
+    
+    echo "🚀 Starting executable deployment for version: $version"
+    
+    # Use the new deploy-to-vm script
+    ./scripts/deploy-to-vm.sh deploy "$version"
+}
 
-case $ENVIRONMENT in
+# Function to build and deploy
+build_and_deploy() {
+    local version_type=${1:-patch}
+    local description=$2
+    
+    echo "🚀 Building and deploying new version..."
+    
+    # Use version manager to create release
+    ./scripts/version-manager.sh release "$version_type" "$description"
+    
+    # Get the new version
+    local new_version=$(./scripts/version-manager.sh current)
+    
+    echo "✅ Release created: v$new_version"
+    echo "📦 Deploying to VM..."
+    
+    # Deploy to VM
+    ./scripts/deploy-to-vm.sh deploy "v$new_version"
+}
+
+# Function to show deployment options
+show_help() {
+    echo "HailMary Deployment Script"
+    echo ""
+    echo "Usage: $0 <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  local                    Deploy locally for development"
+    echo "  vm                       Deploy to VM (legacy method)"
+    echo "  executable <version>     Deploy specific version using executable package"
+    echo "  build-deploy [type] [desc] Build new version and deploy"
+    echo "  status                   Show VM status"
+    echo "  rollback <backup>        Rollback VM to previous backup"
+    echo "  help                     Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 local"
+    echo "  $0 vm"
+    echo "  $0 executable v1.0.0"
+    echo "  $0 build-deploy patch \"Bug fixes\""
+    echo "  $0 status"
+    echo "  $0 rollback backup_20241201_143022"
+    echo ""
+    echo "Version Management:"
+    echo "  Use ./scripts/version-manager.sh for version management"
+    echo "  Use ./scripts/build-deployment.sh for building packages"
+    echo "  Use ./scripts/deploy-to-vm.sh for VM deployment"
+}
+
+# Main script logic
+COMMAND=${1:-"help"}
+
+case $COMMAND in
     "local")
         deploy_local
         ;;
     "vm")
         deploy_vm
         ;;
-    *)
-        echo "Usage: $0 [local|vm]"
-        echo "  local - Deploy locally"
-        echo "  vm    - Deploy to VM"
-        exit 1
+    "executable")
+        deploy_executable "$2"
+        ;;
+    "build-deploy")
+        build_and_deploy "$2" "$3"
+        ;;
+    "status")
+        ./scripts/deploy-to-vm.sh status
+        ;;
+    "rollback")
+        ./scripts/deploy-to-vm.sh rollback "$2"
+        ;;
+    "help"|*)
+        show_help
         ;;
 esac
