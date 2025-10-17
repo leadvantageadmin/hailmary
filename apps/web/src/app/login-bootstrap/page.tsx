@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+export default function LoginBootstrapPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,9 +28,9 @@ export default function LoginPage() {
         const data = await response.json();
         // Redirect based on user role
         if (data.user.role === 'ADMIN') {
-          router.push('/admin');
+          router.push('/admin-bootstrap');
         } else {
-          router.push('/search');
+          router.push('/search-bootstrap');
         }
       } else {
         const errorData = await response.json();

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import './globals.css';
+import './bootstrap.css';
 
 export const metadata: Metadata = {
   title: 'HailMary Customer Search Platform | LeadAdvantage Global',

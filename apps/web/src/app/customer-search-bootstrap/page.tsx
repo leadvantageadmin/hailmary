@@ -39,7 +39,7 @@ interface User {
   role: string;
 }
 
-export default function CustomerSearchPage() {
+export default function CustomerSearchBootstrapPage() {
   const [email, setEmail] = useState('');
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(false);
@@ -77,10 +77,10 @@ export default function CustomerSearchPage() {
         if (data.user) {
           setUser(data.user);
         } else {
-          router.push('/login');
+          router.push('/login-bootstrap');
         }
       })
-      .catch(() => router.push('/login'));
+      .catch(() => router.push('/login-bootstrap'));
   }, [router]);
 
   const handleSearch = async () => {
@@ -121,7 +121,7 @@ export default function CustomerSearchPage() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+    router.push('/login-bootstrap');
   };
 
   if (!user) {
@@ -158,7 +158,7 @@ export default function CustomerSearchPage() {
             </div>
             <div className="d-flex gap-2">
               <button
-                onClick={() => router.push('/search')}
+                onClick={() => router.push('/search-bootstrap')}
                 className="btn btn-outline-light"
                 style={{ fontSize: '1.1em' }}
               >
@@ -167,7 +167,7 @@ export default function CustomerSearchPage() {
               </button>
               {user.role === 'ADMIN' && (
                 <button
-                  onClick={() => router.push('/admin')}
+                  onClick={() => router.push('/admin-bootstrap')}
                   className="btn btn-outline-light"
                   style={{ fontSize: '1.1em' }}
                 >

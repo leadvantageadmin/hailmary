@@ -11,7 +11,7 @@ interface User {
   role: string;
 }
 
-export default function AdminPage() {
+export default function AdminBootstrapPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,13 +37,13 @@ export default function AdminPage() {
             setCurrentUser(data.user);
             loadUsers();
           } else {
-            router.push('/search');
+            router.push('/search-bootstrap');
           }
         } else {
-          router.push('/login');
+          router.push('/login-bootstrap');
         }
       })
-      .catch(() => router.push('/login'))
+      .catch(() => router.push('/login-bootstrap'))
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -140,7 +140,7 @@ export default function AdminPage() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+    router.push('/login-bootstrap');
   };
 
   if (loading) {
@@ -177,7 +177,7 @@ export default function AdminPage() {
             </div>
             <div className="d-flex gap-2">
               <button
-                onClick={() => router.push('/search')}
+                onClick={() => router.push('/search-bootstrap')}
                 className="btn btn-outline-light"
                 style={{ fontSize: '1.1em' }}
               >
