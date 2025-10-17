@@ -31,6 +31,8 @@ services:
         hard: -1
     # ports:
       # - "9200:9200"  # Only accessible within Docker network
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
       interval: 15s
@@ -99,6 +101,7 @@ services:
 
 volumes:
   pgdata:
+  opensearch_data:
 
 networks:
   app-network:
