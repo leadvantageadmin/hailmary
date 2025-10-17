@@ -42,27 +42,64 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
       body: {
         size: 100, // Get more results to find unique values
         query: {
-          match: {
-            [field]: {
-              query: query,
-              operator: "and"
-            }
+          bool: {
+            should: [
+              // Prefix match for partial suggestions
+              {
+                prefix: {
+                  [field]: {
+                    value: query.toLowerCase()
+                  }
+                }
+              },
+              // Fuzzy match for typos and variations
+              {
+                match: {
+                  [field]: {
+                    query: query,
+                    fuzziness: "AUTO",
+                    operator: "or"
+                  }
+                }
+              },
+              // Wildcard match for partial word matching
+              {
+                wildcard: {
+                  [field]: {
+                    value: `*${query.toLowerCase()}*`
+                  }
+                }
+              }
+            ],
+            minimum_should_match: 1
           }
         }
       }
     };
 
     const result = await client.search(searchParams as any);
-    console.log('🔍 OpenSearch result total:', result.body.hits?.total);
-    console.log('🔍 OpenSearch result hits:', result.body.hits?.hits?.length);
+    const allValues = result.body.hits?.hits?.map((hit: any) => hit._source[field]).filter((value: any) => value && typeof value === 'string' && value.trim() !== '') as string[] || [];
     
-    const allValues = result.body.hits?.hits?.map((hit: any) => hit._source[field]).filter((value: any) => value && value.trim() !== '') || [];
-    console.log('📋 All values found:', allValues);
+    // Get unique values and prioritize them
+    const uniqueValues: string[] = [...new Set(allValues)];
     
-    // Get unique values and sort them
-    const uniqueValues = [...new Set(allValues)].sort().slice(0, limit);
-    const suggestions = uniqueValues;
-    console.log('✅ Final suggestions:', suggestions);
+    // Sort suggestions with priority: exact matches first, then prefix matches, then others
+    const suggestions = uniqueValues.sort((a: string, b: string) => {
+      const aLower = a.toLowerCase();
+      const bLower = b.toLowerCase();
+      const queryLower = query.toLowerCase();
+      
+      // Exact match gets highest priority
+      if (aLower === queryLower && bLower !== queryLower) return -1;
+      if (bLower === queryLower && aLower !== queryLower) return 1;
+      
+      // Prefix match gets second priority
+      if (aLower.startsWith(queryLower) && !bLower.startsWith(queryLower)) return -1;
+      if (bLower.startsWith(queryLower) && !aLower.startsWith(queryLower)) return 1;
+      
+      // Then alphabetical
+      return a.localeCompare(b);
+    }).slice(0, limit);
     
     const response = { suggestions };
     await redis.set(cacheKey, JSON.stringify(response), 'EX', 300); // Cache for 5 minutes
