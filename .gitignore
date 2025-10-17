@@ -18,3 +18,16 @@ apps/web/prisma/dev.db-journal
 # Data files
 data/
 cookies.txt
+# Data standardization files (handled in feature/data-standardization branch)
+apps/ingestor/standardization/
+apps/ingestor/fuzzy_standardizer.py
+apps/ingestor/comprehensive_standardizer.py
+apps/ingestor/standardization_loader.py
+apps/ingestor/full_cities_loader.py
+apps/ingestor/analyze_unknowns.py
+apps/ingestor/debug_riyadh.py
+apps/ingestor/test_enhanced_logic.py
+apps/ingestor/test_zipcode_data.py
+convert_standardization_files_simple.py
+scripts/test-comprehensive-standardization.py
+Data Standardization Solution.md
