@@ -18,3 +18,6 @@ apps/web/prisma/dev.db-journal
 # Data files
 data/
 cookies.txt
+# Large data files (use Git LFS or external storage)
+apps/ingestor/standardization/Zipcodes All Countries.csv
+apps/ingestor/standardization/optimized/zipcodes.bin

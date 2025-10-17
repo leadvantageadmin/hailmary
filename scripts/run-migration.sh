@@ -19,10 +19,23 @@ run_migration_local() {
         exit 1
     fi
     
-    # Run migration using docker-compose exec
-    docker-compose exec web npx prisma migrate deploy
+    echo "📊 Step 1: Pushing schema changes to database..."
+    docker-compose exec web npx prisma db push
+    
+    echo "🔄 Step 2: Regenerating Prisma client..."
+    docker-compose exec web npx prisma generate
+    
+    echo "🔄 Step 3: Rebuilding ingestor with new dependencies..."
+    docker-compose build ingestor
     
     echo "✅ Database migration completed locally!"
+    echo ""
+    echo "🎯 What was updated:"
+    echo "   • Added standardized location fields to Customer table"
+    echo "   • Regenerated Prisma client with new schema"
+    echo "   • Rebuilt ingestor with updated dependencies"
+    echo ""
+    echo "🚀 Ready for standardized data ingestion!"
 }
 
 # Function to run migration on VM
@@ -38,8 +51,23 @@ run_migration_vm() {
             exit 1
         fi
         
-        # Run migration using docker-compose exec
-        docker-compose -f deployment/docker-compose.production.yml exec web npx prisma migrate deploy
+        echo '📊 Step 1: Pushing schema changes to database...'
+        docker-compose -f deployment/docker-compose.production.yml exec web npx prisma db push --schema=./apps/web/prisma/schema.prisma
+        
+        echo '🔄 Step 2: Regenerating Prisma client...'
+        docker-compose -f deployment/docker-compose.production.yml exec web npx prisma generate --schema=./apps/web/prisma/schema.prisma
+        
+        echo '🔄 Step 3: Rebuilding ingestor with new dependencies...'
+        docker-compose -f deployment/docker-compose.production.yml build ingestor
+        
+        echo '✅ Database migration completed on VM!'
+        echo ''
+        echo '🎯 What was updated:'
+        echo '   • Added standardized location fields to Customer table'
+        echo '   • Regenerated Prisma client with new schema'
+        echo '   • Rebuilt ingestor with updated dependencies'
+        echo ''
+        echo '🚀 Ready for standardized data ingestion!'
     "
     
     echo "✅ Database migration completed on VM!"

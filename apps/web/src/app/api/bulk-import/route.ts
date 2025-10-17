@@ -16,6 +16,14 @@ const CustomerSchema = z.object({
   city: z.union([z.string(), z.null()]).optional(),
   state: z.union([z.string(), z.null()]).optional(),
   country: z.union([z.string(), z.null()]).optional(),
+  // Standardized location codes
+  countryCode: z.union([z.string(), z.null()]).optional(),
+  stateCode: z.union([z.string(), z.null()]).optional(),
+  cityCode: z.union([z.string(), z.null()]).optional(),
+  // Denormalized display names
+  countryDisplay: z.union([z.string(), z.null()]).optional(),
+  stateDisplay: z.union([z.string(), z.null()]).optional(),
+  cityDisplay: z.union([z.string(), z.null()]).optional(),
   zipCode: z.union([z.string(), z.null()]).optional(),
   phone: z.union([z.string(), z.null()]).optional(),
   mobilePhone: z.union([z.string(), z.null()]).optional(),

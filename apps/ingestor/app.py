@@ -7,6 +7,7 @@ from opensearchpy import OpenSearch, helpers
 import redis
 import psycopg
 from psycopg import sql
+from fuzzy_standardizer import standardize_customer_data_fuzzy
 
 # Environment variables
 WEB_API_URL = os.getenv("WEB_API_URL", "http://web:3000")
@@ -138,7 +139,14 @@ def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_exi
                         customer.get("jobTitleLink"),
                         customer.get("employeeSizeLink"),
                         customer["externalSource"],
-                        customer["externalId"]
+                        customer["externalId"],
+                        # New standardized fields
+                        customer.get("countryCode"),
+                        customer.get("stateCode"),
+                        customer.get("cityCode"),
+                        customer.get("countryDisplay"),
+                        customer.get("stateDisplay"),
+                        customer.get("cityDisplay")
                     ))
                 
                 # Bulk insert with conflict resolution
@@ -146,9 +154,10 @@ def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_exi
                     INSERT INTO "Customer" (
                         id, salutation, "firstName", "lastName", email, company, address, city, state, country, 
                         "zipCode", phone, "mobilePhone", industry, "jobTitleLevel", "jobTitle", department, 
-                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId", "updatedAt"
+                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId", 
+                        country_code, state_code, city_code, country_display, state_display, city_display, "updatedAt"
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                     ON CONFLICT ("externalSource", "externalId") DO UPDATE SET
                         salutation = EXCLUDED.salutation,
                         "firstName" = EXCLUDED."firstName",
@@ -170,6 +179,12 @@ def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_exi
                         "maxEmployeeSize" = EXCLUDED."maxEmployeeSize",
                         "jobTitleLink" = EXCLUDED."jobTitleLink",
                         "employeeSizeLink" = EXCLUDED."employeeSizeLink",
+                        country_code = EXCLUDED.country_code,
+                        state_code = EXCLUDED.state_code,
+                        city_code = EXCLUDED.city_code,
+                        country_display = EXCLUDED.country_display,
+                        state_display = EXCLUDED.state_display,
+                        city_display = EXCLUDED.city_display,
                         "updatedAt" = NOW()
                 """, insert_data)
                 
@@ -434,6 +449,9 @@ def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = N
             "externalId": customer_id
         }
         
+        # Apply fuzzy location standardization
+        customer_data = standardize_customer_data_fuzzy(customer_data)
+        
         customers_data.append(customer_data)
     
     print(f"🔄 Processing {len(customers_data)} customers...")
@@ -457,6 +475,10 @@ def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = N
     ensure_index(client)
     bulk_index_os(client, customers_data)
     print(f"✅ Successfully indexed {len(customers_data)} customers to OpenSearch")
+    
+    # Print standardization performance report
+    from fuzzy_standardizer import fuzzy_standardizer
+    fuzzy_standardizer.print_performance_report()
     
     print("🎉 Data ingestion completed successfully!")
     return True
