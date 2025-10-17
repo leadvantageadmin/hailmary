@@ -583,38 +583,39 @@ export default function SearchPage() {
                   )}
                 </div>
               </div>
-              <div className="card-body p-0">
+              <div className="card-body p-4">
                 {results.length > 0 ? (
                   <>
-                    <div className="table-responsive">
-                      <table className="table table-hover table-striped" style={{ minWidth: '1200px' }}>
-                        <thead className="table-dark">
+                    <div className="card border-0 shadow-sm" style={{ borderRadius: '16px' }}>
+                      <div className="table-responsive" style={{ borderRadius: '16px 16px 0 0', overflowX: 'auto', overflowY: 'hidden' }}>
+                        <table className="table table-black table-hover table-striped mb-0" style={{ minWidth: '1200px', marginBottom: '0', marginTop: '0' }}>
+                        <thead style={{ marginTop: '0' }}>
                           <tr>
-                            <th className="fw-bold text-center" style={{ width: '60px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '60px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-hashtag me-2"></i>
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-user me-2"></i>Name
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-building me-2"></i>Company
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '160px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '160px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-briefcase me-2"></i>Job Title
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-layer-group me-2"></i>Job Level
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '140px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '140px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-sitemap me-2"></i>Department
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-map-marker-alt me-2"></i>Location
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '200px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '200px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-envelope me-2"></i>Email
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', padding: '12px 16px' }}>
+                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap' }}>
                               <i className="fas fa-phone me-2"></i>Phone
                             </th>
                           </tr>
@@ -624,28 +625,28 @@ export default function SearchPage() {
                             const rowNumber = (pagination.currentPage - 1) * 25 + index + 1;
                             return (
                               <tr key={customer.id} className="align-middle">
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <span className="text-muted fw-medium">{rowNumber}</span>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <div className="fw-semibold text-dark">
                                     {customer.salutation && `${customer.salutation} `}
                                     {customer.firstName} {customer.lastName}
                                   </div>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <span className="text-dark">{customer.company}</span>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <span className="text-dark">{customer.jobTitle}</span>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <span className="text-dark">{customer.jobTitleLevel}</span>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <span className="text-dark">{customer.department}</span>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-map-marker-alt text-muted me-2"></i>
                                     <span className="text-dark">
@@ -653,7 +654,7 @@ export default function SearchPage() {
                                     </span>
                                   </div>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-envelope text-muted me-2"></i>
                                     <a href={`mailto:${customer.email}`} className="text-primary text-decoration-none">
@@ -661,7 +662,7 @@ export default function SearchPage() {
                                     </a>
                                   </div>
                                 </td>
-                                <td className="text-center" style={{ padding: '12px 16px' }}>
+                                <td className="text-center" >
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-phone text-muted me-2"></i>
                                     <a href={`tel:${customer.phone || customer.mobilePhone}`} className="text-primary text-decoration-none">
@@ -673,12 +674,16 @@ export default function SearchPage() {
                             );
                           })}
                         </tbody>
-                      </table>
+                        </table>
+                      </div>
+                      <div style={{ borderRadius: '0 0 16px 16px', overflow: 'hidden' }}>
+                        <div style={{ height: '1px', backgroundColor: '#dee2e6' }}></div>
+                      </div>
                     </div>
 
                     {/* Pagination */}
                     {pagination.totalPages > 1 && (
-                      <nav className="mt-4 p-4">
+                      <nav className="mt-4">
                         <ul className="pagination justify-content-center pagination-lg">
                           {/* First Page Button */}
                           {pagination.currentPage > 3 && (
@@ -789,16 +794,18 @@ export default function SearchPage() {
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-5">
-                    <div className="mb-4">
-                      <i className="fas fa-search text-muted" style={{ fontSize: '3rem' }}></i>
+                  <div className="card border-0 shadow-sm" style={{ borderRadius: '16px' }}>
+                    <div className="card-body text-center py-5">
+                      <div className="mb-4">
+                        <i className="fas fa-search text-muted" style={{ fontSize: '3rem' }}></i>
+                      </div>
+                      <h5 className="fw-semibold text-dark mb-2">
+                        No Results Found
+                      </h5>
+                      <p className="text-muted mb-0">
+                        Try adjusting your search filters to find more results
+                      </p>
                     </div>
-                    <h5 className="fw-semibold text-dark mb-2">
-                      No Results Found
-                    </h5>
-                    <p className="text-muted mb-0">
-                      Try adjusting your search filters to find more results
-                    </p>
                   </div>
                 )}
               </div>

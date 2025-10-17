@@ -181,7 +181,7 @@ export default function TypeAheadInputBootstrapMultiSelect({
     <div className="position-relative w-100">
       {/* Multi-select container */}
       <div 
-        className={`${className} d-flex flex-wrap align-items-center`}
+        className={`${className} d-flex flex-wrap align-items-center form-control`}
         style={{ 
           ...style, 
           minHeight: '48px',
@@ -192,9 +192,26 @@ export default function TypeAheadInputBootstrapMultiSelect({
           backgroundColor: '#ffffff',
           cursor: 'text',
           overflowY: 'auto',
-          overflowX: 'hidden'
+          overflowX: 'hidden',
+          transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out'
         }}
         onClick={() => inputRef.current?.focus()}
+        onFocus={() => {
+          // Add focus styling
+          const container = document.querySelector(`.${className}`) as HTMLElement;
+          if (container) {
+            container.style.borderColor = '#0d6efd';
+            container.style.boxShadow = '0 0 0 0.2rem rgba(13, 110, 253, 0.25)';
+          }
+        }}
+        onBlur={() => {
+          // Remove focus styling
+          const container = document.querySelector(`.${className}`) as HTMLElement;
+          if (container) {
+            container.style.borderColor = '#dee2e6';
+            container.style.boxShadow = 'none';
+          }
+        }}
       >
         {/* Selected tags */}
         {value.map((tag, index) => (
@@ -263,14 +280,15 @@ export default function TypeAheadInputBootstrapMultiSelect({
           onKeyDown={handleKeyDown}
           placeholder={value.length === 0 ? placeholder : ''}
           autoComplete="off"
+          className="border-0 bg-transparent flex-grow-1"
           style={{
-            border: 'none',
             outline: 'none',
-            background: 'transparent',
-            flex: 1,
             minWidth: '120px',
             fontSize: '14px',
-            maxWidth: '100%'
+            maxWidth: '100%',
+            color: '#495057',
+            paddingLeft: '0',
+            paddingRight: '0'
           }}
         />
         
@@ -314,12 +332,22 @@ export default function TypeAheadInputBootstrapMultiSelect({
                 index === selectedIndex ? 'active' : ''
               }`}
               onClick={() => handleSuggestionClick(suggestion)}
-              onMouseEnter={() => setSelectedIndex(index)}
+              onMouseEnter={(e) => {
+                setSelectedIndex(index);
+                e.currentTarget.style.backgroundColor = '#0d6efd';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                if (index !== selectedIndex) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#495057';
+                }
+              }}
               style={{
                 fontSize: '14px',
                 padding: '12px 20px',
                 border: 'none',
-                background: 'transparent',
+                background: index === selectedIndex ? '#0d6efd' : 'transparent',
                 width: '100%',
                 textAlign: 'left',
                 borderRadius: '0',
@@ -330,7 +358,7 @@ export default function TypeAheadInputBootstrapMultiSelect({
             >
               <div className="d-flex align-items-center w-100">
                 <div 
-                  className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                  className="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0"
                   style={{
                     width: '32px',
                     height: '32px',
@@ -339,16 +367,19 @@ export default function TypeAheadInputBootstrapMultiSelect({
                   }}
                 >
                   <i 
-                    className={`fas fa-search ${index === selectedIndex ? 'text-white' : 'text-muted'}`} 
+                    className={`fas fa-plus ${index === selectedIndex ? 'text-white' : 'text-muted'}`} 
                     style={{ fontSize: '12px' }}
                   ></i>
                 </div>
-                <div className="flex-grow-1">
+                <div className="flex-grow-1 text-truncate">
                   <div 
                     className="fw-medium"
                     style={{ 
                       fontSize: '14px',
-                      lineHeight: '1.4'
+                      lineHeight: '1.4',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
                     }}
                   >
                     {suggestion}
