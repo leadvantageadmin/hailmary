@@ -1,10 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 // import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient({
-  log: ['error', 'warn'],
-  errorFormat: 'pretty',
-});
+const prisma = new PrismaClient();
 
 async function createInitialAdmin() {
   try {

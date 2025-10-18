@@ -2,10 +2,7 @@
 // import jwt from 'jsonwebtoken';
 import { PrismaClient, UserRole } from '@prisma/client';
 
-const prisma = new PrismaClient({
-  log: ['error', 'warn'],
-  errorFormat: 'pretty',
-});
+const prisma = new PrismaClient();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 

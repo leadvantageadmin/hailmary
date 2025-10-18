@@ -3,10 +3,7 @@ import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 // Internal API endpoint - no authentication required
 
-const prisma = new PrismaClient({
-  log: ['error', 'warn'],
-  errorFormat: 'pretty',
-});
+const prisma = new PrismaClient();
 
 const CustomerSchema = z.object({
   id: z.string(),
