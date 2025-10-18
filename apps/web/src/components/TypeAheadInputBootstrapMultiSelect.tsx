@@ -308,12 +308,12 @@ export default function TypeAheadInputBootstrapMultiSelect({
           ref={suggestionsRef}
           className="dropdown-menu show shadow-lg border-0"
           style={{
-            position: 'absolute',
+            position: 'relative',
             top: '100%',
             left: '0',
             right: '0',
             zIndex: 1050,
-            maxHeight: '320px',
+            maxHeight: '200px',
             overflowY: 'auto',
             marginTop: '6px',
             width: '100%',
@@ -399,12 +399,47 @@ export default function TypeAheadInputBootstrapMultiSelect({
             className="border-top mt-2 pt-2 px-3"
             style={{ 
               borderColor: 'rgba(0, 0, 0, 0.08) !important',
-              backgroundColor: '#f8f9fa'
+              backgroundColor: '#f8f9fa',
+              borderRadius: '0 0 12px 12px'
             }}
           >
-            <small className="text-muted d-flex align-items-center">
-              <i className="fas fa-keyboard me-2" style={{ fontSize: '10px' }}></i>
-              Use ↑↓ to navigate, Enter to select, Esc to close
+            <small 
+              className="text-muted d-flex align-items-center justify-content-center"
+              style={{
+                fontSize: '11px',
+                fontWeight: '500',
+                color: '#6c757d',
+                lineHeight: '1.4'
+              }}
+            >
+              <i className="fas fa-keyboard me-2" style={{ fontSize: '11px', color: '#adb5bd' }}></i>
+              <span style={{ letterSpacing: '0.3px' }}>
+                Use <kbd style={{ 
+                  backgroundColor: '#e9ecef', 
+                  color: '#495057', 
+                  padding: '2px 4px', 
+                  borderRadius: '3px', 
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  border: '1px solid #ced4da'
+                }}>↑↓</kbd> to navigate, <kbd style={{ 
+                  backgroundColor: '#e9ecef', 
+                  color: '#495057', 
+                  padding: '2px 4px', 
+                  borderRadius: '3px', 
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  border: '1px solid #ced4da'
+                }}>Enter</kbd> to select, <kbd style={{ 
+                  backgroundColor: '#e9ecef', 
+                  color: '#495057', 
+                  padding: '2px 4px', 
+                  borderRadius: '3px', 
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  border: '1px solid #ced4da'
+                }}>Esc</kbd> to close
+              </span>
             </small>
           </div>
         </div>
