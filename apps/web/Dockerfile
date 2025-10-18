@@ -27,12 +27,12 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/web/.next/standalone .
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+# Copy the entire node_modules structure including Prisma client
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
 RUN mkdir -p ./apps/web/public
 COPY --from=builder /app/apps/web/public ./apps/web/public
 # Copy Prisma schema to the runner stage
 COPY --from=builder /app/apps/web/prisma ./apps/web/prisma
-# Copy generated Prisma client to the runner stage
-COPY --from=builder /app/apps/web/node_modules/.prisma ./apps/web/node_modules/.prisma
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]
