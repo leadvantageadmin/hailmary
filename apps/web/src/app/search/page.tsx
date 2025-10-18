@@ -259,7 +259,7 @@ export default function SearchPage() {
                   </h5>
                 </div>
               </div>
-              <div className="card-body p-4">
+              <div className="card-body p-3">
                 <div className="accordion" id="filtersAccordion">
                   {/* Company Profile */}
                   <div className="accordion-item mb-3" style={{ border: 'none', borderRadius: '12px', overflow: 'hidden' }}>
@@ -321,7 +321,7 @@ export default function SearchPage() {
                         </div>
                         <div className="row g-2">
                           <div className="col-6">
-                            <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <label className="form-label fw-semibold" style={{ fontSize: '11px' }}>
                               <i className="fas fa-users me-2 text-muted"></i>Min Employee Size
                             </label>
                             <input
@@ -342,7 +342,7 @@ export default function SearchPage() {
                             />
                           </div>
                           <div className="col-6">
-                            <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <label className="form-label fw-semibold" style={{ fontSize: '11px' }}>
                               <i className="fas fa-users me-2 text-muted"></i>Max Employee Size
                             </label>
                             <input
