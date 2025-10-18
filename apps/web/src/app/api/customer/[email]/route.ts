@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/middleware';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['error', 'warn'],
+  errorFormat: 'pretty',
+});
 
 export const GET = async (req: NextRequest, { params }: { params: { email: string } }) => {
   // Check authentication
