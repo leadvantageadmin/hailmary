@@ -611,31 +611,31 @@ export default function SearchPage() {
                         <table className="table table-black table-hover table-striped mb-0" style={{ minWidth: '1200px', marginBottom: '0', marginTop: '0' }}>
                         <thead style={{ marginTop: '0' }}>
                           <tr>
-                            <th className="fw-bold text-center" style={{ width: '60px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '60px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-hashtag me-2"></i>
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-user me-2"></i>Name
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-building me-2"></i>Company
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '160px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '160px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-briefcase me-2"></i>Job Title
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-layer-group me-2"></i>Job Level
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '140px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '140px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-sitemap me-2"></i>Department
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-map-marker-alt me-2"></i>Location
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '200px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '200px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-envelope me-2"></i>Email
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap' }}>
+                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-phone me-2"></i>Phone
                             </th>
                           </tr>
@@ -645,28 +645,28 @@ export default function SearchPage() {
                             const rowNumber = (pagination.currentPage - 1) * 25 + index + 1;
                             return (
                               <tr key={result.id} className="align-middle">
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <span className="text-muted fw-medium">{rowNumber}</span>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <div className="fw-semibold text-dark">
                                     {result.salutation && `${result.salutation} `}
                                     {result.firstName} {result.lastName}
                                   </div>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <span className="text-dark">{result.company}</span>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <span className="text-dark">{result.jobTitle || '-'}</span>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <span className="text-dark">{result.jobTitleLevel || '-'}</span>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <span className="text-dark">{result.department || '-'}</span>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-map-marker-alt text-muted me-2"></i>
                                     <span className="text-dark">
@@ -674,7 +674,7 @@ export default function SearchPage() {
                                     </span>
                                   </div>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-envelope text-muted me-2"></i>
                                     <a href={`mailto:${result.email}`} className="text-primary text-decoration-none">
@@ -682,7 +682,7 @@ export default function SearchPage() {
                                     </a>
                                   </div>
                                 </td>
-                                <td className="text-center" >
+                                <td className="text-center" style={{ fontSize: '11px' }}>
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-phone text-muted me-2"></i>
                                     <a href={`tel:${result.phone || result.mobilePhone}`} className="text-primary text-decoration-none">
@@ -704,7 +704,7 @@ export default function SearchPage() {
                     {/* Pagination */}
                     {pagination.totalPages > 1 && (
                       <nav className="mt-4">
-                        <ul className="pagination justify-content-center pagination-lg">
+                        <ul className="pagination justify-content-center" style={{ fontSize: '13px' }}>
                           {/* First Page Button */}
                           {pagination.currentPage > 3 && (
                             <li className="page-item">
@@ -712,6 +712,7 @@ export default function SearchPage() {
                                 className="page-link"
                                 onClick={() => handlePageChange(1)}
                                 title="First page"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 &laquo;&laquo;
                               </button>
@@ -725,6 +726,7 @@ export default function SearchPage() {
                                 className="page-link"
                                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                                 title="Previous page"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 &laquo;
                               </button>
@@ -737,6 +739,7 @@ export default function SearchPage() {
                               <button
                                 className="page-link"
                                 onClick={() => handlePageChange(pagination.currentPage - 2)}
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 {pagination.currentPage - 2}
                               </button>
@@ -748,6 +751,7 @@ export default function SearchPage() {
                               <button
                                 className="page-link"
                                 onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 {pagination.currentPage - 1}
                               </button>
@@ -756,7 +760,7 @@ export default function SearchPage() {
                           
                           {/* Current Page */}
                           <li className="page-item active">
-                            <span className="page-link">
+                            <span className="page-link" style={{ padding: '6px 12px', fontSize: '12px' }}>
                               {pagination.currentPage}
                             </span>
                           </li>
@@ -767,6 +771,7 @@ export default function SearchPage() {
                               <button
                                 className="page-link"
                                 onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 {pagination.currentPage + 1}
                               </button>
@@ -778,6 +783,7 @@ export default function SearchPage() {
                               <button
                                 className="page-link"
                                 onClick={() => handlePageChange(pagination.currentPage + 2)}
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 {pagination.currentPage + 2}
                               </button>
@@ -791,6 +797,7 @@ export default function SearchPage() {
                                 className="page-link"
                                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                                 title="Next page"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 &raquo;
                               </button>
@@ -804,6 +811,7 @@ export default function SearchPage() {
                                 className="page-link"
                                 onClick={() => handlePageChange(pagination.totalPages)}
                                 title="Last page"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
                               >
                                 &raquo;&raquo;
                               </button>
