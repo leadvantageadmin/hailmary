@@ -32,5 +32,7 @@ RUN mkdir -p ./apps/web/public
 COPY --from=builder /app/apps/web/public ./apps/web/public
 # Copy Prisma schema to the runner stage
 COPY --from=builder /app/apps/web/prisma ./apps/web/prisma
+# Copy generated Prisma client to the runner stage
+COPY --from=builder /app/apps/web/node_modules/.prisma ./apps/web/node_modules/.prisma
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]

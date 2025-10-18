@@ -136,9 +136,7 @@ deploy_vm() {
             cd hailmary
         fi
         
-        # Create environment file
-        cp deployment/env.production .env
-        cp deployment/env.production deployment/.env
+        # Environment files are now committed to git and used directly
         
         # Create data directory
         mkdir -p data
@@ -152,10 +150,6 @@ deploy_vm() {
         # Wait for services to be ready
         echo 'Waiting for services to start...'
         sleep 30
-        
-        # Setup database schema
-        echo 'Setting up database schema...'
-        docker-compose -f deployment/docker-compose.production.yml exec web sh -c 'cd apps/web && npx prisma db push' || echo 'Database schema setup completed'
         
         # Check service status
         docker-compose -f deployment/docker-compose.production.yml ps

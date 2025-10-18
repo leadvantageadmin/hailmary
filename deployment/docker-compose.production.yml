@@ -57,7 +57,7 @@ services:
     build:
       context: ..
       dockerfile: apps/web/Dockerfile
-    env_file: ./.env
+    env_file: ./apps/web/.env.production
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,7 +86,7 @@ services:
 
   ingestor:
     build: ../apps/ingestor
-    env_file: ./.env
+    env_file: ./apps/ingestor/.env.production
     depends_on:
       postgres:
         condition: service_healthy
