@@ -30,7 +30,7 @@ export default function Home() {
             HailMary
           </h1>
           <p className="text-2xl text-white text-opacity-90 mb-2">
-            Customer Search Platform
+            Direct Search Platform
           </p>
           <p className="text-lg text-white text-opacity-70 mb-8">
             Advanced customer search and management platform

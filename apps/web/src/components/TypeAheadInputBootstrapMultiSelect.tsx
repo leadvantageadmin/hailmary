@@ -284,7 +284,7 @@ export default function TypeAheadInputBootstrapMultiSelect({
           style={{
             outline: 'none',
             minWidth: '120px',
-            fontSize: '14px',
+            fontSize: '11px',
             maxWidth: '100%',
             color: '#495057',
             paddingLeft: '0',
@@ -344,7 +344,7 @@ export default function TypeAheadInputBootstrapMultiSelect({
                 }
               }}
               style={{
-                fontSize: '14px',
+                fontSize: '11px',
                 padding: '12px 20px',
                 border: 'none',
                 background: index === selectedIndex ? '#0d6efd' : 'transparent',
@@ -375,7 +375,7 @@ export default function TypeAheadInputBootstrapMultiSelect({
                   <div 
                     className="fw-medium"
                     style={{ 
-                      fontSize: '14px',
+                      fontSize: '11px',
                       lineHeight: '1.4',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',

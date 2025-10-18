@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import TypeAheadInputBootstrapMultiSelect from '@/components/TypeAheadInputBootstrapMultiSelect';
 
-interface Customer {
+interface DirectSearchResult {
   id: string;
   salutation?: string;
   firstName?: string;
@@ -63,7 +63,7 @@ export default function SearchPage() {
     maxEmployeeSize: undefined
   });
   
-  const [results, setResults] = useState<Customer[]>([]);
+  const [results, setResults] = useState<DirectSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
@@ -210,7 +210,7 @@ export default function SearchPage() {
             </div>
             <div className="d-flex gap-2">
               <button
-                onClick={() => router.push('/customer-search')}
+                onClick={() => router.push('/direct-search')}
                 className="btn btn-outline-light"
                 style={{ fontSize: '1.1em' }}
               >
@@ -262,7 +262,7 @@ export default function SearchPage() {
               <div className="card-body p-4">
                 <div className="accordion" id="filtersAccordion">
                   {/* Company Profile */}
-                  <div className="accordion-item">
+                  <div className="accordion-item mb-3" style={{ border: 'none', borderRadius: '12px', overflow: 'hidden' }}>
                     <h2 className="accordion-header">
                       <button 
                         className="accordion-button" 
@@ -271,16 +271,18 @@ export default function SearchPage() {
                         data-bs-target="#companyProfile" 
                         aria-expanded="true" 
                         aria-controls="companyProfile"
-                        style={{ backgroundColor: '#6c757d', color: 'white' }}
+                        style={{ backgroundColor: '#6c757d', color: 'white', borderRadius: '12px 12px 0 0', fontSize: '16px' }}
                       >
                         <i className="fas fa-building me-2"></i>
                         Company Profile
                       </button>
                     </h2>
-                    <div id="companyProfile" className="accordion-collapse collapse show" data-bs-parent="#filtersAccordion">
+                    <div id="companyProfile" className="accordion-collapse collapse show">
                       <div className="accordion-body">
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Company</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-building me-2 text-muted"></i>Company
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.company}
                             onChange={(value) => setFilters({...filters, company: value})}
@@ -288,7 +290,7 @@ export default function SearchPage() {
                             placeholder="Microsoft, Google"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -298,7 +300,9 @@ export default function SearchPage() {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Industry</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-industry me-2 text-muted"></i>Industry
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.industry}
                             onChange={(value) => setFilters({...filters, industry: value})}
@@ -306,7 +310,7 @@ export default function SearchPage() {
                             placeholder="Technology, Healthcare"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -317,13 +321,15 @@ export default function SearchPage() {
                         </div>
                         <div className="row g-2">
                           <div className="col-6">
-                            <label className="form-label fw-semibold">Min Employee Size</label>
+                            <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                              <i className="fas fa-users me-2 text-muted"></i>Min Employee Size
+                            </label>
                             <input
                               type="number"
                               min="0"
                               className="form-control form-control-lg"
                               style={{ 
-                                fontSize: '14px',
+                                fontSize: '11px',
                                 minHeight: '48px',
                                 padding: '8px 12px',
                                 border: '1px solid #dee2e6',
@@ -336,13 +342,15 @@ export default function SearchPage() {
                             />
                           </div>
                           <div className="col-6">
-                            <label className="form-label fw-semibold">Max Employee Size</label>
+                            <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                              <i className="fas fa-users me-2 text-muted"></i>Max Employee Size
+                            </label>
                             <input
                               type="number"
                               min="0"
                               className="form-control form-control-lg"
                               style={{ 
-                                fontSize: '14px',
+                                fontSize: '11px',
                                 minHeight: '48px',
                                 padding: '8px 12px',
                                 border: '1px solid #dee2e6',
@@ -360,7 +368,7 @@ export default function SearchPage() {
                   </div>
 
                   {/* Job Profile */}
-                  <div className="accordion-item">
+                  <div className="accordion-item mb-3" style={{ border: 'none', borderRadius: '12px', overflow: 'hidden' }}>
                     <h2 className="accordion-header">
                       <button 
                         className="accordion-button collapsed" 
@@ -369,16 +377,18 @@ export default function SearchPage() {
                         data-bs-target="#jobProfile" 
                         aria-expanded="false" 
                         aria-controls="jobProfile"
-                        style={{ backgroundColor: '#6c757d', color: 'white' }}
+                        style={{ backgroundColor: '#6c757d', color: 'white', borderRadius: '12px 12px 0 0', fontSize: '16px' }}
                       >
                         <i className="fas fa-briefcase me-2"></i>
                         Job Profile
                       </button>
                     </h2>
-                    <div id="jobProfile" className="accordion-collapse collapse" data-bs-parent="#filtersAccordion">
+                    <div id="jobProfile" className="accordion-collapse collapse">
                       <div className="accordion-body">
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Job Title</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-briefcase me-2 text-muted"></i>Job Title
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.jobTitle}
                             onChange={(value) => setFilters({...filters, jobTitle: value})}
@@ -386,7 +396,7 @@ export default function SearchPage() {
                             placeholder="Software Engineer, Manager"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -396,7 +406,9 @@ export default function SearchPage() {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Job Title Level</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-layer-group me-2 text-muted"></i>Job Title Level
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.jobTitleLevel}
                             onChange={(value) => setFilters({...filters, jobTitleLevel: value})}
@@ -404,7 +416,7 @@ export default function SearchPage() {
                             placeholder="Senior, Director"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -414,7 +426,9 @@ export default function SearchPage() {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Department</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-sitemap me-2 text-muted"></i>Department
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.department}
                             onChange={(value) => setFilters({...filters, department: value})}
@@ -422,7 +436,7 @@ export default function SearchPage() {
                             placeholder="Engineering, Sales"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -436,7 +450,7 @@ export default function SearchPage() {
                   </div>
 
                   {/* Location */}
-                  <div className="accordion-item">
+                  <div className="accordion-item mb-3" style={{ border: 'none', borderRadius: '12px', overflow: 'hidden' }}>
                     <h2 className="accordion-header">
                       <button 
                         className="accordion-button collapsed" 
@@ -445,16 +459,18 @@ export default function SearchPage() {
                         data-bs-target="#location" 
                         aria-expanded="false" 
                         aria-controls="location"
-                        style={{ backgroundColor: '#6c757d', color: 'white' }}
+                        style={{ backgroundColor: '#6c757d', color: 'white', borderRadius: '12px 12px 0 0', fontSize: '16px' }}
                       >
                         <i className="fas fa-map-marker-alt me-2"></i>
                         Location
                       </button>
                     </h2>
-                    <div id="location" className="accordion-collapse collapse" data-bs-parent="#filtersAccordion">
+                    <div id="location" className="accordion-collapse collapse">
                       <div className="accordion-body">
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Country</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-globe me-2 text-muted"></i>Country
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.country}
                             onChange={(value) => setFilters({...filters, country: value})}
@@ -462,7 +478,7 @@ export default function SearchPage() {
                             placeholder="United States"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -472,7 +488,9 @@ export default function SearchPage() {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">State</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-map-marked-alt me-2 text-muted"></i>State
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.state}
                             onChange={(value) => setFilters({...filters, state: value})}
@@ -480,7 +498,7 @@ export default function SearchPage() {
                             placeholder="California, New York"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -490,7 +508,9 @@ export default function SearchPage() {
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">City</label>
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                            <i className="fas fa-map-marker-alt me-2 text-muted"></i>City
+                          </label>
                           <TypeAheadInputBootstrapMultiSelect
                             value={filters.city}
                             onChange={(value) => setFilters({...filters, city: value})}
@@ -498,7 +518,7 @@ export default function SearchPage() {
                             placeholder="San Francisco, New York"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '14px',
+                              fontSize: '11px',
                               minHeight: '48px',
                               padding: '8px 12px',
                               border: '1px solid #dee2e6',
@@ -621,52 +641,52 @@ export default function SearchPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {results.map((customer, index) => {
+                          {results.map((result, index) => {
                             const rowNumber = (pagination.currentPage - 1) * 25 + index + 1;
                             return (
-                              <tr key={customer.id} className="align-middle">
+                              <tr key={result.id} className="align-middle">
                                 <td className="text-center" >
                                   <span className="text-muted fw-medium">{rowNumber}</span>
                                 </td>
                                 <td className="text-center" >
                                   <div className="fw-semibold text-dark">
-                                    {customer.salutation && `${customer.salutation} `}
-                                    {customer.firstName} {customer.lastName}
+                                    {result.salutation && `${result.salutation} `}
+                                    {result.firstName} {result.lastName}
                                   </div>
                                 </td>
                                 <td className="text-center" >
-                                  <span className="text-dark">{customer.company}</span>
+                                  <span className="text-dark">{result.company}</span>
                                 </td>
                                 <td className="text-center" >
-                                  <span className="text-dark">{customer.jobTitle}</span>
+                                  <span className="text-dark">{result.jobTitle || '-'}</span>
                                 </td>
                                 <td className="text-center" >
-                                  <span className="text-dark">{customer.jobTitleLevel}</span>
+                                  <span className="text-dark">{result.jobTitleLevel || '-'}</span>
                                 </td>
                                 <td className="text-center" >
-                                  <span className="text-dark">{customer.department}</span>
+                                  <span className="text-dark">{result.department || '-'}</span>
                                 </td>
                                 <td className="text-center" >
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-map-marker-alt text-muted me-2"></i>
                                     <span className="text-dark">
-                                      {[customer.city, customer.state, customer.country].filter(Boolean).join(', ')}
+                                      {[result.city, result.state, result.country].filter(Boolean).join(', ')}
                                     </span>
                                   </div>
                                 </td>
                                 <td className="text-center" >
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-envelope text-muted me-2"></i>
-                                    <a href={`mailto:${customer.email}`} className="text-primary text-decoration-none">
-                                      {customer.email}
+                                    <a href={`mailto:${result.email}`} className="text-primary text-decoration-none">
+                                      {result.email}
                                     </a>
                                   </div>
                                 </td>
                                 <td className="text-center" >
                                   <div className="d-flex align-items-center justify-content-center">
                                     <i className="fas fa-phone text-muted me-2"></i>
-                                    <a href={`tel:${customer.phone || customer.mobilePhone}`} className="text-primary text-decoration-none">
-                                      {customer.phone || customer.mobilePhone}
+                                    <a href={`tel:${result.phone || result.mobilePhone}`} className="text-primary text-decoration-none">
+                                      {result.phone || result.mobilePhone}
                                     </a>
                                   </div>
                                 </td>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface Customer {
+interface DirectSearchResult {
   id: string;
   salutation?: string;
   firstName?: string;
@@ -39,9 +39,9 @@ interface User {
   role: string;
 }
 
-export default function CustomerSearchPage() {
+export default function DirectSearchPage() {
   const [email, setEmail] = useState('');
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [result, setResult] = useState<DirectSearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -91,14 +91,14 @@ export default function CustomerSearchPage() {
 
     setLoading(true);
     setError('');
-    setCustomer(null);
+    setResult(null);
 
     try {
       const response = await fetch(`/api/customer/${encodeURIComponent(email.trim())}`);
       
       if (response.ok) {
         const data = await response.json();
-        setCustomer(data.customer);
+        setResult(data.customer);
       } else if (response.status === 404) {
         setError('Customer not found');
       } else {
@@ -115,7 +115,7 @@ export default function CustomerSearchPage() {
 
   const handleClear = () => {
     setEmail('');
-    setCustomer(null);
+    setResult(null);
     setError('');
   };
 
@@ -203,7 +203,7 @@ export default function CustomerSearchPage() {
                 <div className="d-flex align-items-center">
                   <i className="fas fa-user text-white me-3" style={{ fontSize: '18px' }}></i>
                   <h5 className="mb-0 fw-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
-                    Customer Lookup
+                    Direct Lookup
                   </h5>
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function CustomerSearchPage() {
 
           {/* Right Column - Customer Details (70%) */}
           <div className="col-lg-9">
-            {customer ? (
+                    {result ? (
               <div className="card shadow-sm">
                 <div 
                   className="card-header border-0 p-4"
@@ -302,11 +302,11 @@ export default function CustomerSearchPage() {
                 >
                   <div className="text-center">
                     <h5 className="mb-0 fw-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
-                      Customer Profile
+                      Direct Search Profile
                     </h5>
                     <div className="mt-2">
                       <span className="badge bg-white text-primary fs-6">
-                        {customer.salutation} {customer.firstName} {customer.lastName}
+                        {result.salutation} {result.firstName} {result.lastName}
                       </span>
                     </div>
                   </div>
@@ -327,20 +327,20 @@ export default function CustomerSearchPage() {
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Full Name</label>
                               <p className="fw-semibold text-dark mb-0">
-                                {customer.salutation} {customer.firstName} {customer.lastName}
+                                {result.salutation} {result.firstName} {result.lastName}
                               </p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Email Address</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.email || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.email || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Phone</label>
-                              <p className="fw-semibold text-dark mb-0">{formatPhoneNumber(customer.phone)}</p>
+                              <p className="fw-semibold text-dark mb-0">{formatPhoneNumber(result.phone)}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Mobile Phone</label>
-                              <p className="fw-semibold text-dark mb-0">{formatPhoneNumber(customer.mobilePhone)}</p>
+                              <p className="fw-semibold text-dark mb-0">{formatPhoneNumber(result.mobilePhone)}</p>
                             </div>
                           </div>
                         </div>
@@ -360,30 +360,30 @@ export default function CustomerSearchPage() {
                           <div className="row g-3">
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Company</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.company || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.company || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Job Title</label>
                               <span className="badge bg-light text-dark border">
-                                {customer.jobTitle || '-'}
+                                {result.jobTitle || '-'}
                               </span>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Job Title Level</label>
                               <span className="badge bg-light text-dark border">
-                                {customer.jobTitleLevel || '-'}
+                                {result.jobTitleLevel || '-'}
                               </span>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Department</label>
                               <span className="badge bg-light text-dark border">
-                                {customer.department || '-'}
+                                {result.department || '-'}
                               </span>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Industry</label>
                               <span className="badge bg-light text-dark border">
-                                {customer.industry || '-'}
+                                {result.industry || '-'}
                               </span>
                             </div>
                           </div>
@@ -404,30 +404,30 @@ export default function CustomerSearchPage() {
                           <div className="row g-3">
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Address</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.address || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.address || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">City</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.city || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.city || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">State</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.state || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.state || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Country</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.country || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.country || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">ZIP Code</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.zipCode || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.zipCode || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Employee Size</label>
                               <p className="fw-semibold text-dark mb-0">
                                 {(() => {
-                                  const minSize = customer.minEmployeeSize;
-                                  const maxSize = customer.maxEmployeeSize;
+                                  const minSize = result.minEmployeeSize;
+                                  const maxSize = result.maxEmployeeSize;
                                   
                                   if (!minSize && !maxSize) return '-';
                                   if (minSize && maxSize) return `${minSize}-${maxSize}`;
@@ -454,17 +454,17 @@ export default function CustomerSearchPage() {
                           <div className="row g-3">
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">External Source</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.externalSource || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.externalSource || '-'}</p>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">External ID</label>
-                              <p className="fw-semibold text-dark mb-0">{customer.externalId || '-'}</p>
+                              <p className="fw-semibold text-dark mb-0">{result.externalId || '-'}</p>
                             </div>
-                            {customer.jobTitleLink && (
+                            {result.jobTitleLink && (
                               <div className="col-12">
                                 <label className="form-label small fw-semibold text-muted">Job Title Link</label>
                                 <a 
-                                  href={customer.jobTitleLink} 
+                                  href={result.jobTitleLink} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
                                   className="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
@@ -474,11 +474,11 @@ export default function CustomerSearchPage() {
                                 </a>
                               </div>
                             )}
-                            {customer.employeeSizeLink && (
+                            {result.employeeSizeLink && (
                               <div className="col-12">
                                 <label className="form-label small fw-semibold text-muted">Employee Size Link</label>
                                 <a 
-                                  href={customer.employeeSizeLink} 
+                                  href={result.employeeSizeLink} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
                                   className="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
@@ -502,7 +502,7 @@ export default function CustomerSearchPage() {
                     <i className="fas fa-search text-muted" style={{ fontSize: '3rem' }}></i>
                   </div>
                   <h5 className="fw-semibold text-dark mb-2">
-                    No Customer Selected
+                    No Result Selected
                   </h5>
                   <p className="text-muted mb-0">
                     Enter a customer email address in the search form to view their details

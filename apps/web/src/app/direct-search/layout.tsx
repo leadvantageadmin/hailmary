@@ -1,7 +1,7 @@
 import '../bootstrap.css';
 import Script from 'next/script';
 
-export default function CustomerSearchBootstrapLayout({
+export default function DirectSearchLayout({
   children,
 }: {
   children: React.ReactNode;

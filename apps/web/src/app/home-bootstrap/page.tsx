@@ -30,7 +30,7 @@ export default function HomeBootstrap() {
             HailMary
           </h1>
           <p className="h4 text-white text-opacity-90 mb-2">
-            Customer Search Platform
+            Direct Search Platform
           </p>
           <p className="h5 text-white text-opacity-70 mb-4">
             Advanced customer search and management platform
