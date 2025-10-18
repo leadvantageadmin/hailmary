@@ -242,23 +242,11 @@ export default function TypeAheadInputBootstrapMultiSelect({
             </span>
             <button
               type="button"
-              className="flex-shrink-0"
+              className="btn-close btn-close-white flex-shrink-0"
               style={{
                 width: '16px',
                 height: '16px',
-                padding: '0',
-                margin: '0',
-                border: 'none',
-                background: '#ffffff',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                flexShrink: '0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                color: '#000000',
-                fontWeight: 'bold'
+                fontSize: '10px'
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -266,7 +254,6 @@ export default function TypeAheadInputBootstrapMultiSelect({
               }}
               aria-label={`Remove ${tag}`}
             >
-              ×
             </button>
           </div>
         ))}
