@@ -3,4 +3,5 @@ WORKDIR /app
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py /app/app.py
+COPY lib/ /app/lib/
 CMD ["python", "app.py", "/data/customers.csv"]
