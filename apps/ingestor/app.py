@@ -15,6 +15,55 @@ OS_URL = os.getenv("OPENSEARCH_URL", "http://opensearch:9200")
 OS_INDEX = os.getenv("OPENSEARCH_INDEX", "customers")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 
+def parse_revenue(revenue_str: str) -> int | None:
+    """
+    Parse revenue string and convert to whole dollars (BigInt storage).
+    Examples:
+    - "100K" -> 100000 (100,000 dollars)
+    - "1M" -> 1000000 (1,000,000 dollars)
+    - "10M" -> 10000000 (10,000,000 dollars)
+    - "500" -> 500 (500 dollars)
+    - "1.5M" -> 1500000 (1,500,000 dollars)
+    """
+    if not revenue_str or pd.isna(revenue_str):
+        return None
+    
+    # Convert to string and strip whitespace
+    revenue_str = str(revenue_str).strip().upper()
+    
+    # Remove common prefixes/suffixes
+    revenue_str = revenue_str.replace('USD', '').replace('$', '').replace(',', '').strip()
+    
+    try:
+        # Handle K suffix (thousands)
+        if revenue_str.endswith('K'):
+            value = float(revenue_str[:-1])
+            return int(value * 1000)  # Convert to whole dollars
+        
+        # Handle M suffix (millions)
+        elif revenue_str.endswith('M'):
+            value = float(revenue_str[:-1])
+            return int(value * 1000000)  # Convert to whole dollars
+        
+        # Handle B suffix (billions)
+        elif revenue_str.endswith('B'):
+            value = float(revenue_str[:-1])
+            return int(value * 1000000000)  # Convert to whole dollars
+        
+        # Handle plain numbers (assume thousands if > 1000, otherwise assume dollars)
+        else:
+            value = float(revenue_str)
+            if value >= 1000:
+                # Assume it's already in thousands
+                return int(value * 1000)
+            else:
+                # Assume it's in dollars
+                return int(value)
+                
+    except (ValueError, TypeError):
+        return None
+
+
 def parse_employee_size(employee_size_str: str) -> tuple[int | None, int | None]:
     """
     Parse employee size string and convert to min/max numeric values.
@@ -95,6 +144,7 @@ def ensure_index(client: OpenSearch):
                     "maxEmployeeSize": {"type": "integer"},
                     "jobTitleLink": {"type": "keyword"},
                     "employeeSizeLink": {"type": "keyword"},
+                    "revenue": {"type": "long"},
                     "externalSource": {"type": "keyword"},
                     "externalId": {"type": "keyword"}
                 }
@@ -137,6 +187,7 @@ def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_exi
                         customer.get("maxEmployeeSize"),
                         customer.get("jobTitleLink"),
                         customer.get("employeeSizeLink"),
+                        customer.get("revenue"),
                         customer["externalSource"],
                         customer["externalId"]
                     ))
@@ -146,9 +197,9 @@ def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_exi
                     INSERT INTO "Customer" (
                         id, salutation, "firstName", "lastName", email, company, address, city, state, country, 
                         "zipCode", phone, "mobilePhone", industry, "jobTitleLevel", "jobTitle", department, 
-                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId", "updatedAt"
+                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", revenue, "externalSource", "externalId", "updatedAt"
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                     ON CONFLICT ("externalSource", "externalId") DO UPDATE SET
                         salutation = EXCLUDED.salutation,
                         "firstName" = EXCLUDED."firstName",
@@ -170,6 +221,7 @@ def bulk_import_to_postgres_fast(customers_data: List[Dict[str, Any]], clear_exi
                         "maxEmployeeSize" = EXCLUDED."maxEmployeeSize",
                         "jobTitleLink" = EXCLUDED."jobTitleLink",
                         "employeeSizeLink" = EXCLUDED."employeeSizeLink",
+                        revenue = EXCLUDED.revenue,
                         "updatedAt" = NOW()
                 """, insert_data)
                 
@@ -242,6 +294,7 @@ def bulk_copy_postgres(customers_data: List[Dict[str, Any]], clear_existing: boo
                         "maxEmployeeSize" integer,
                         "jobTitleLink" text,
                         "employeeSizeLink" text,
+                        revenue bigint,
                         "externalSource" text,
                         "externalId" text
                     )
@@ -272,6 +325,7 @@ def bulk_copy_postgres(customers_data: List[Dict[str, Any]], clear_existing: boo
                         customer.get("maxEmployeeSize"),
                         customer.get("jobTitleLink"),
                         customer.get("employeeSizeLink"),
+                        customer.get("revenue"),
                         customer["externalSource"],
                         customer["externalId"]
                     ))
@@ -285,7 +339,7 @@ def bulk_copy_postgres(customers_data: List[Dict[str, Any]], clear_existing: boo
                     INSERT INTO "Customer" (
                         id, salutation, "firstName", "lastName", email, company, address, city, state, country, 
                         "zipCode", phone, "mobilePhone", industry, "jobTitleLevel", "jobTitle", department, 
-                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", "externalSource", "externalId"
+                        "minEmployeeSize", "maxEmployeeSize", "jobTitleLink", "employeeSizeLink", revenue, "externalSource", "externalId"
                     )
                     SELECT * FROM temp_customers
                     ON CONFLICT ("externalSource", "externalId") DO UPDATE SET
@@ -309,6 +363,7 @@ def bulk_copy_postgres(customers_data: List[Dict[str, Any]], clear_existing: boo
                         "maxEmployeeSize" = EXCLUDED."maxEmployeeSize",
                         "jobTitleLink" = EXCLUDED."jobTitleLink",
                         "employeeSizeLink" = EXCLUDED."employeeSizeLink",
+                        revenue = EXCLUDED.revenue,
                         "updatedAt" = NOW()
                 """)
                 
@@ -391,6 +446,9 @@ def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = N
         # Parse employee size
         min_size, max_size = parse_employee_size(row.get("Employee Size"))
         
+        # Parse revenue (if present in CSV)
+        revenue = parse_revenue(row.get("Revenue"))
+        
         # Build customer data - convert empty strings to None for proper null handling
         def clean_value(value):
             if pd.isna(value) or value == "" or str(value).strip() == "":
@@ -430,6 +488,7 @@ def run_from_csv(csv_path: str, clear_existing: bool = False, separator: str = N
             "maxEmployeeSize": max_size,
             "jobTitleLink": clean_value(row.get("Job Title Link")),
             "employeeSizeLink": clean_value(row.get("Employee size link")),
+            "revenue": revenue,
             "externalSource": "csv",
             "externalId": customer_id
         }

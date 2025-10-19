@@ -4,9 +4,10 @@ node_modules
 .turbo
 .env
 .env.*
+!.env.local
 !apps/web/.env.production
 !apps/ingestor/.env.production
-apps/web/.env.local
+!apps/web/.env.local
 apps/ingestor/.env.local
 __pycache__
 .venv

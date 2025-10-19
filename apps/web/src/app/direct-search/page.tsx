@@ -3,6 +3,30 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Utility function to format revenue from whole dollars to display format
+function formatRevenue(revenue: number | null | undefined): string {
+  if (!revenue || revenue === 0) {
+    return 'NA';
+  }
+  
+  if (revenue >= 1000000000) {
+    // Billions
+    const billions = revenue / 1000000000;
+    return `${billions % 1 === 0 ? billions.toFixed(0) : billions.toFixed(1)}B`;
+  } else if (revenue >= 1000000) {
+    // Millions
+    const millions = revenue / 1000000;
+    return `${millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1)}M`;
+  } else if (revenue >= 1000) {
+    // Thousands
+    const thousands = revenue / 1000;
+    return `${thousands % 1 === 0 ? thousands.toFixed(0) : thousands.toFixed(1)}K`;
+  } else {
+    // Less than 1000
+    return `$${revenue.toFixed(0)}`;
+  }
+}
+
 interface DirectSearchResult {
   id: string;
   salutation?: string;
@@ -25,6 +49,7 @@ interface DirectSearchResult {
   maxEmployeeSize?: number;
   jobTitleLink?: string;
   employeeSizeLink?: string;
+  revenue?: number;
   externalSource?: string;
   externalId?: string;
   createdAt?: string;
@@ -434,6 +459,13 @@ export default function DirectSearchPage() {
                                   if (minSize && !maxSize) return `${minSize}+`;
                                   return '-';
                                 })()}
+                              </p>
+                            </div>
+                            <div className="col-12">
+                              <label className="form-label small fw-semibold text-muted">Revenue</label>
+                              <p className="fw-semibold text-dark mb-0">
+                                <i className="fas fa-dollar-sign text-muted me-2"></i>
+                                {formatRevenue(result.revenue)}
                               </p>
                             </div>
                           </div>

@@ -27,6 +27,7 @@ const CustomerSchema = z.object({
   maxEmployeeSize: z.union([z.number(), z.null()]).optional(),
   jobTitleLink: z.union([z.string(), z.null()]).optional(),
   employeeSizeLink: z.union([z.string(), z.null()]).optional(),
+  revenue: z.union([z.bigint(), z.number(), z.null()]).optional(),
   externalSource: z.string(),
   externalId: z.string(),
 });

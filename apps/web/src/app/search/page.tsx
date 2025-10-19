@@ -4,6 +4,30 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import TypeAheadInputBootstrapMultiSelect from '@/components/TypeAheadInputBootstrapMultiSelect';
 
+// Utility function to format revenue from whole dollars to display format
+function formatRevenue(revenue: number | null | undefined): string {
+  if (!revenue || revenue === 0) {
+    return 'NA';
+  }
+  
+  if (revenue >= 1000000000) {
+    // Billions
+    const billions = revenue / 1000000000;
+    return `${billions % 1 === 0 ? billions.toFixed(0) : billions.toFixed(1)}B`;
+  } else if (revenue >= 1000000) {
+    // Millions
+    const millions = revenue / 1000000;
+    return `${millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1)}M`;
+  } else if (revenue >= 1000) {
+    // Thousands
+    const thousands = revenue / 1000;
+    return `${thousands % 1 === 0 ? thousands.toFixed(0) : thousands.toFixed(1)}K`;
+  } else {
+    // Less than 1000
+    return `$${revenue.toFixed(0)}`;
+  }
+}
+
 interface DirectSearchResult {
   id: string;
   salutation?: string;
@@ -20,6 +44,7 @@ interface DirectSearchResult {
   jobTitleLevel?: string;
   department?: string;
   industry?: string;
+  revenue?: number;
 }
 
 interface User {
@@ -638,6 +663,9 @@ export default function SearchPage() {
                             <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-phone me-2"></i>Phone
                             </th>
+                            <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                              <i className="fas fa-dollar-sign me-2"></i>Revenue
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -688,6 +716,14 @@ export default function SearchPage() {
                                     <a href={`tel:${result.phone || result.mobilePhone}`} className="text-primary text-decoration-none">
                                       {result.phone || result.mobilePhone}
                                     </a>
+                                  </div>
+                                </td>
+                                <td className="text-center" style={{ fontSize: '11px' }}>
+                                  <div className="d-flex align-items-center justify-content-center">
+                                    <i className="fas fa-dollar-sign text-muted me-2"></i>
+                                    <span className="text-dark fw-medium">
+                                      {formatRevenue(result.revenue)}
+                                    </span>
                                   </div>
                                 </td>
                               </tr>

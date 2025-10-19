@@ -32,6 +32,7 @@ model Customer {
   maxEmployeeSize Int?
   jobTitleLink    String?
   employeeSizeLink String?
+  revenue         BigInt?
   externalSource  String
   externalId      String
   createdAt       DateTime @default(now())
@@ -45,6 +46,7 @@ model Customer {
   @@index([maxEmployeeSize])
   @@index([jobTitle])
   @@index([department])
+  @@index([revenue])
 }
 
 enum UserRole {
