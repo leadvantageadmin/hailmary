@@ -2,6 +2,9 @@
 
 # Ingestor Service Logs Script
 # View and manage Ingestor service logs
+# Usage: ./logs.sh [local|vm] [OPTIONS]
+#   local: Local development deployment (default)
+#   vm: VM/production deployment
 
 set -e
 
@@ -11,6 +14,20 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# Get deployment mode from first argument
+DEPLOYMENT_MODE=${1:-local}
+
+# Check if first argument is a deployment mode
+if [[ "$DEPLOYMENT_MODE" == "local" || "$DEPLOYMENT_MODE" == "vm" ]]; then
+    # Valid deployment mode, shift it out of arguments
+    shift
+else
+    # Not a deployment mode, treat as local and don't shift
+    DEPLOYMENT_MODE="local"
+fi
+
+echo -e "${BLUE}📋 HailMary Ingestor Service Logs ($DEPLOYMENT_MODE mode)${NC}"
 
 # Load environment variables
 if [ -f .env ]; then
@@ -25,7 +42,11 @@ fi
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 [OPTIONS]"
+    echo "Usage: $0 [local|vm] [OPTIONS]"
+    echo ""
+    echo "Deployment Modes:"
+    echo "  local    Local development deployment (default)"
+    echo "  vm       VM/production deployment"
     echo ""
     echo "Options:"
     echo "  -f, --follow     Follow log output in real-time"

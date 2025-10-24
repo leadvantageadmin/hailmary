@@ -2,6 +2,9 @@
 
 # Ingestor Service Health Check Script
 # Comprehensive health check for the Ingestor service
+# Usage: ./health-check.sh [local|vm]
+#   local: Local development deployment (default)
+#   vm: VM/production deployment
 
 set -e
 
@@ -11,6 +14,18 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# Get deployment mode from first argument
+DEPLOYMENT_MODE=${1:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo -e "${RED}❌ Invalid deployment mode. Use 'local' or 'vm'${NC}"
+    echo "   Usage: ./health-check.sh [local|vm]"
+    exit 1
+fi
+
+echo -e "${BLUE}🔍 HailMary Ingestor Service Health Check ($DEPLOYMENT_MODE mode)${NC}"
 
 # Load environment variables
 if [ -f .env ]; then
