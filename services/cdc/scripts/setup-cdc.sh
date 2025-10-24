@@ -12,6 +12,34 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Function to show usage
+show_usage() {
+    echo -e "${BLUE}CDC Service Setup Script${NC}"
+    echo "=========================="
+    echo ""
+    echo "Usage: $0 [local|vm]"
+    echo ""
+    echo "Modes:"
+    echo "  local  - Local development mode (default)"
+    echo "  vm     - VM/production mode"
+    echo ""
+    echo "Examples:"
+    echo "  $0        # Setup CDC in local mode"
+    echo "  $0 local  # Setup CDC in local mode"
+    echo "  $0 vm     # Setup CDC in VM mode"
+    echo ""
+}
+
+# Parse command line arguments
+DEPLOYMENT_MODE=${1:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo -e "${RED}❌ Invalid deployment mode: $DEPLOYMENT_MODE${NC}"
+    show_usage
+    exit 1
+fi
+
 # Load environment variables
 if [ -f .env ]; then
     echo -e "${BLUE}📋 Loading environment variables from .env file...${NC}"
@@ -22,18 +50,26 @@ else
     echo -e "${YELLOW}⚠️ .env file not found, using defaults${NC}"
 fi
 
-# Configuration
-POSTGRES_HOST=${POSTGRES_HOST:-localhost}
-POSTGRES_PORT=${POSTGRES_PORT:-5433}
+# Configuration based on deployment mode
+if [[ "$DEPLOYMENT_MODE" == "local" ]]; then
+    POSTGRES_HOST=${POSTGRES_HOST:-localhost}
+    POSTGRES_PORT=${POSTGRES_PORT:-5433}
+    OPENSEARCH_HOST=${OPENSEARCH_HOST:-localhost}
+    OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
+    REDIS_HOST=${REDIS_HOST:-localhost}
+    REDIS_PORT=${REDIS_PORT:-6379}
+else
+    POSTGRES_HOST=${POSTGRES_HOST:-hailmary-postgres}
+    POSTGRES_PORT=${POSTGRES_PORT:-5432}
+    OPENSEARCH_HOST=${OPENSEARCH_HOST:-localhost}
+    OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
+    REDIS_HOST=${REDIS_HOST:-localhost}
+    REDIS_PORT=${REDIS_PORT:-6379}
+fi
+
 POSTGRES_DB=${POSTGRES_DB:-app}
 POSTGRES_USER=${POSTGRES_USER:-app}
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app}
-
-OPENSEARCH_HOST=${OPENSEARCH_HOST:-localhost}
-OPENSEARCH_PORT=${OPENSEARCH_PORT:-9201}
-
-REDIS_HOST=${REDIS_HOST:-localhost}
-REDIS_PORT=${REDIS_PORT:-6379}
 
 # Function to wait for service
 wait_for_service() {
@@ -138,8 +174,8 @@ test_cdc_setup() {
 
 # Main execution
 main() {
-    echo -e "${BLUE}🚀 CDC Service Setup${NC}"
-    echo "====================="
+    echo -e "${BLUE}🚀 CDC Service Setup ($DEPLOYMENT_MODE mode)${NC}"
+    echo "=========================================="
     
     # Wait for dependencies
     wait_for_service "PostgreSQL" "$POSTGRES_HOST" "$POSTGRES_PORT" || exit 1

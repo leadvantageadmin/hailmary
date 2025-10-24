@@ -848,7 +848,9 @@ cd services/schema && ./scripts/logs.sh
 | Redis | 6379 | Cache |
 | Web | 3000 | Web Application |
 | Ingestor | 8080 | Data Processing |
-| CDC/OpenSearch | 9201 | Search Engine |
+| CDC - Elasticsearch | 9200 | Search Engine HTTP API |
+| CDC - Elasticsearch Transport | 9300 | Search Engine Internal Communication |
+| CDC - Redis | 6379 | Cache and Checkpointing |
 | Schema API | 3001 | Schema Management |
 | pgAdmin | 8080 | Database Admin (optional) |
 
@@ -866,6 +868,269 @@ cd services/schema && ./scripts/logs.sh
 2. **Web Service**: Use load balancer for multiple instances
 3. **Redis**: Configure clustering for high availability
 4. **Monitoring**: Implement proper monitoring and alerting
+
+## CDC Service
+
+**Purpose**: Real-time Change Data Capture (CDC) from PostgreSQL to Elasticsearch using PGSync
+
+### Local Development Setup
+
+```bash
+# Navigate to CDC service directory
+cd services/cdc
+
+# Create environment file from template
+cp .env.example .env
+
+# Start CDC service in local mode
+./scripts/start.sh local
+
+# Check service health
+./scripts/health-check.sh local
+
+# View service logs
+./scripts/manage-cdc.sh logs local
+```
+
+### VM/Production Setup
+
+```bash
+# Navigate to CDC service directory
+cd /opt/hailmary/services/cdc
+
+# Create environment file from template
+cp .env.example .env
+
+# Update deployment mode to VM
+sed -i 's/DEPLOYMENT_MODE=local/DEPLOYMENT_MODE=vm/' .env
+
+# Start CDC service in VM mode
+./scripts/start.sh vm
+
+# Check service health
+./scripts/health-check.sh vm
+```
+
+### Configuration
+
+#### Local Development
+- **PostgreSQL Host**: `host.docker.internal:5433`
+- **Elasticsearch**: `localhost:9200`
+- **Redis**: `localhost:6379`
+- **PGSync**: Connects to PostgreSQL via Docker network
+
+#### VM/Production
+- **PostgreSQL Host**: `hailmary-postgres:5432`
+- **Elasticsearch**: `localhost:9200`
+- **Redis**: `localhost:6379`
+- **PGSync**: Connects to PostgreSQL via hailmary-network
+
+### Connection Strings
+
+```bash
+# Elasticsearch
+http://localhost:9200
+
+# Redis
+localhost:6379
+
+# PostgreSQL (via PGSync)
+hailmary-postgres:5432 (VM) / host.docker.internal:5433 (local)
+```
+
+### Environment Variables
+
+```bash
+# PostgreSQL Configuration (for PGSync)
+PG_HOST=hailmary-postgres          # VM: hailmary-postgres, Local: host.docker.internal
+PG_PORT=5432                       # VM: 5432, Local: 5433
+PG_DATABASE=app
+PG_USER=app
+PG_PASSWORD=app
+
+# Elasticsearch Configuration
+ELASTICSEARCH_PORT=9200
+ELASTICSEARCH_TRANSPORT_PORT=9300
+
+# Redis Configuration
+REDIS_PORT=6379
+
+# PGSync Configuration
+PGSYNC_LOG_LEVEL=INFO
+PGSYNC_BATCH_SIZE=1000
+PGSYNC_FLUSH_INTERVAL=1
+
+# Data Paths
+ELASTICSEARCH_DATA_PATH=./data/elasticsearch
+ELASTICSEARCH_LOGS_PATH=./logs/elasticsearch
+REDIS_DATA_PATH=./data/redis
+PGSYNC_LOGS_PATH=./logs/pgsync
+
+# Deployment Mode
+DEPLOYMENT_MODE=vm                 # vm or local
+```
+
+### Daily Operations
+
+#### Service Management
+```bash
+# Start CDC service
+./scripts/start.sh [local|vm]
+
+# Stop CDC service
+./scripts/manage-cdc.sh stop [local|vm]
+
+# Restart CDC service
+./scripts/manage-cdc.sh restart [local|vm]
+
+# Check service status
+./scripts/manage-cdc.sh status [local|vm]
+
+# View service health
+./scripts/health-check.sh [local|vm]
+```
+
+#### CDC Operations
+```bash
+# View PGSync logs
+./scripts/manage-cdc.sh logs [local|vm]
+
+# List Elasticsearch indices
+./scripts/manage-cdc.sh indices [local|vm]
+
+# Check sync status
+./scripts/manage-cdc.sh health [local|vm]
+
+# Trigger manual sync (restart PGSync)
+./scripts/manage-cdc.sh restart [local|vm]
+```
+
+#### Direct Service Access
+```bash
+# Check Elasticsearch cluster health
+curl http://localhost:9200/_cluster/health
+
+# List all indices
+curl http://localhost:9200/_cat/indices?v
+
+# Check Redis status
+docker-compose exec redis redis-cli ping
+
+# View PGSync container logs
+docker-compose logs -f pgsync
+```
+
+### Health Checks
+
+#### Quick Health Check
+```bash
+./scripts/health-check.sh [local|vm]
+```
+
+#### Comprehensive Health Check
+```bash
+# Check all services
+docker-compose ps
+
+# Check Elasticsearch
+curl -s http://localhost:9200/_cluster/health | jq '.'
+
+# Check Redis
+docker-compose exec redis redis-cli info memory
+
+# Check PGSync process
+docker-compose exec pgsync pgrep -f python3.11
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+**PGSync shows as unhealthy**
+```bash
+# Check if PGSync process is running
+docker-compose exec pgsync pgrep -f python3.11
+
+# Check PGSync logs
+docker-compose logs pgsync
+
+# Restart PGSync container
+docker-compose restart pgsync
+```
+
+**Elasticsearch connection issues**
+```bash
+# Check Elasticsearch health
+curl http://localhost:9200/_cluster/health
+
+# Check Elasticsearch logs
+docker-compose logs elasticsearch
+
+# Restart Elasticsearch
+docker-compose restart elasticsearch
+```
+
+**Redis connection issues**
+```bash
+# Check Redis status
+docker-compose exec redis redis-cli ping
+
+# Check Redis logs
+docker-compose logs redis
+
+# Restart Redis
+docker-compose restart redis
+```
+
+**No data syncing**
+```bash
+# Check PostgreSQL connection from PGSync
+docker-compose exec pgsync sh -c "nc -z hailmary-postgres 5432"
+
+# Check schema.json configuration
+cat config/schema.json
+
+# Verify PostgreSQL logical replication
+docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
+```
+
+#### Solutions
+
+**Reset CDC service completely**
+```bash
+# Stop all services
+docker-compose down
+
+# Remove volumes (WARNING: This will delete all data)
+docker-compose down -v
+
+# Recreate and start
+./scripts/start.sh [local|vm]
+```
+
+**Check sync progress**
+```bash
+# View recent sync activity
+docker-compose logs pgsync --tail=50 | grep "Sync"
+
+# Check Elasticsearch document counts
+curl -s http://localhost:9200/_cat/indices?v
+```
+
+### Dependencies
+
+- **PostgreSQL**: Must be running with logical replication enabled
+- **Elasticsearch**: For search indexing
+- **Redis**: For PGSync checkpointing
+- **Docker Network**: `hailmary-network` for service communication
+
+### Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Elasticsearch | 9200 | HTTP API |
+| Elasticsearch Transport | 9300 | Internal communication |
+| Redis | 6379 | Cache and checkpointing |
 
 ---
 

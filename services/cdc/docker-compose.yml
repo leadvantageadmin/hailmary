@@ -157,7 +157,7 @@ services:
       - hailmary-network
     
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -v grep | grep pgsync || exit 1"]
+      test: ["CMD-SHELL", "pgrep -f python3.11 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

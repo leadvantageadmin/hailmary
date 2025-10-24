@@ -21,7 +21,7 @@ show_usage() {
     echo -e "${BLUE}CDC Management Script${NC}"
     echo "====================="
     echo ""
-    echo "Usage: $0 [command]"
+    echo "Usage: $0 [command] [local|vm]"
     echo ""
     echo "Commands:"
     echo "  build       - Build CDC (pull schema + generate config)"
@@ -34,6 +34,15 @@ show_usage() {
     echo "  indices     - List OpenSearch indices"
     echo "  logs        - Show CDC service logs"
     echo "  setup       - Setup CDC (run once)"
+    echo ""
+    echo "Deployment Modes:"
+    echo "  local       - Local development mode (default)"
+    echo "  vm          - VM/production mode"
+    echo ""
+    echo "Examples:"
+    echo "  $0 start local    # Start CDC in local mode"
+    echo "  $0 health vm      # Check health in VM mode"
+    echo "  $0 status         # Check status in local mode (default)"
     echo ""
 }
 
@@ -153,36 +162,56 @@ setup_cdc() {
     fi
 }
 
+# Parse command line arguments
+COMMAND=${1:-}
+DEPLOYMENT_MODE=${2:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo -e "${RED}❌ Invalid deployment mode: $DEPLOYMENT_MODE${NC}"
+    show_usage
+    exit 1
+fi
+
 # Main execution
-case "${1:-}" in
+case "$COMMAND" in
     build)
         build_cdc
         ;;
     start)
+        echo -e "${BLUE}🚀 Starting CDC service in $DEPLOYMENT_MODE mode...${NC}"
         start_cdc
         ;;
     stop)
+        echo -e "${BLUE}🛑 Stopping CDC service in $DEPLOYMENT_MODE mode...${NC}"
         stop_cdc
         ;;
     restart)
+        echo -e "${BLUE}🔄 Restarting CDC service in $DEPLOYMENT_MODE mode...${NC}"
         restart_cdc
         ;;
     status)
+        echo -e "${BLUE}📊 Checking CDC service status in $DEPLOYMENT_MODE mode...${NC}"
         check_status
         ;;
     health)
+        echo -e "${BLUE}🏥 Checking CDC service health in $DEPLOYMENT_MODE mode...${NC}"
         check_health
         ;;
     sync)
+        echo -e "${BLUE}🔄 Triggering manual sync in $DEPLOYMENT_MODE mode...${NC}"
         trigger_sync
         ;;
     indices)
+        echo -e "${BLUE}📋 Listing OpenSearch indices in $DEPLOYMENT_MODE mode...${NC}"
         list_indices
         ;;
     logs)
+        echo -e "${BLUE}📝 Showing CDC service logs in $DEPLOYMENT_MODE mode...${NC}"
         show_logs
         ;;
     setup)
+        echo -e "${BLUE}🔧 Setting up CDC service in $DEPLOYMENT_MODE mode...${NC}"
         setup_cdc
         ;;
     *)

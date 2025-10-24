@@ -17,8 +17,36 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CDC_DIR="$(dirname "$SCRIPT_DIR")"
 
-echo -e "${BLUE}🏥 CDC Service Health Check${NC}"
-echo "=================================="
+# Function to show usage
+show_usage() {
+    echo -e "${BLUE}CDC Service Health Check Script${NC}"
+    echo "====================================="
+    echo ""
+    echo "Usage: $0 [local|vm]"
+    echo ""
+    echo "Modes:"
+    echo "  local  - Local development mode (default)"
+    echo "  vm     - VM/production mode"
+    echo ""
+    echo "Examples:"
+    echo "  $0        # Check health in local mode"
+    echo "  $0 local  # Check health in local mode"
+    echo "  $0 vm     # Check health in VM mode"
+    echo ""
+}
+
+# Parse command line arguments
+DEPLOYMENT_MODE=${1:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo -e "${RED}❌ Invalid deployment mode: $DEPLOYMENT_MODE${NC}"
+    show_usage
+    exit 1
+fi
+
+echo -e "${BLUE}🏥 CDC Service Health Check ($DEPLOYMENT_MODE mode)${NC}"
+echo "=============================================="
 
 # Change to CDC directory
 cd "$CDC_DIR"

@@ -17,7 +17,68 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CDC_DIR="$(dirname "$SCRIPT_DIR")"
 
-echo -e "${BLUE}🚀 Starting CDC Service...${NC}"
+# Function to show usage
+show_usage() {
+    echo -e "${BLUE}CDC Service Startup Script${NC}"
+    echo "=============================="
+    echo ""
+    echo "Usage: $0 [local|vm]"
+    echo ""
+    echo "Modes:"
+    echo "  local  - Local development mode (default)"
+    echo "  vm     - VM/production mode"
+    echo ""
+    echo "Examples:"
+    echo "  $0        # Start in local mode"
+    echo "  $0 local  # Start in local mode"
+    echo "  $0 vm     # Start in VM mode"
+    echo ""
+}
+
+# Function to configure for local development
+configure_local() {
+    echo -e "${BLUE}🔧 Configuring for local development...${NC}"
+    
+    # Set local-specific environment variables
+    export ELASTICSEARCH_PORT=9200
+    export REDIS_PORT=6379
+    export PG_HOST=host.docker.internal
+    export PG_PORT=5433
+    
+    echo -e "${GREEN}✅ Local configuration complete${NC}"
+}
+
+# Function to configure for VM/production
+configure_vm() {
+    echo -e "${BLUE}🔧 Configuring for VM/production deployment...${NC}"
+    
+    # Set VM-specific environment variables
+    export ELASTICSEARCH_PORT=9200
+    export REDIS_PORT=6379
+    export PG_HOST=hailmary-postgres
+    export PG_PORT=5432
+    
+    echo -e "${GREEN}✅ VM configuration complete${NC}"
+}
+
+# Parse command line arguments
+DEPLOYMENT_MODE=${1:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo -e "${RED}❌ Invalid deployment mode: $DEPLOYMENT_MODE${NC}"
+    show_usage
+    exit 1
+fi
+
+echo -e "${BLUE}🚀 Starting HailMary CDC Service ($DEPLOYMENT_MODE mode)...${NC}"
+
+# Configure based on deployment mode
+if [[ "$DEPLOYMENT_MODE" == "local" ]]; then
+    configure_local
+else
+    configure_vm
+fi
 
 # Change to CDC directory
 cd "$CDC_DIR"
@@ -96,7 +157,7 @@ fi
 echo -e "${BLUE}   Waiting for PGSync...${NC}"
 timeout=60
 while [ $timeout -gt 0 ]; do
-    if docker-compose exec -T pgsync pgrep -f pgsync >/dev/null 2>&1; then
+    if docker-compose exec -T pgsync pgrep -f python3.11 >/dev/null 2>&1; then
         echo -e "${GREEN}   ✅ PGSync is running${NC}"
         break
     fi
@@ -124,8 +185,24 @@ echo -e "${BLUE}📋 Elasticsearch Indices:${NC}"
 curl -s http://localhost:9200/_cat/indices?v || echo -e "${YELLOW}   Could not retrieve indices${NC}"
 
 echo -e "${GREEN}🎉 CDC Service started successfully!${NC}"
+
+# Show service information based on deployment mode
+if [[ "$DEPLOYMENT_MODE" == "local" ]]; then
+    echo -e "${BLUE}📋 Service Information:${NC}"
+    echo -e "   • Elasticsearch: http://localhost:9200"
+    echo -e "   • Redis: localhost:6379"
+    echo -e "   • PGSync: Connected to PostgreSQL via host.docker.internal:5433"
+    echo -e "   • Deployment Mode: local"
+else
+    echo -e "${BLUE}📋 Service Information:${NC}"
+    echo -e "   • Elasticsearch: http://localhost:9200"
+    echo -e "   • Redis: localhost:6379"
+    echo -e "   • PGSync: Connected to PostgreSQL via hailmary-postgres:5432"
+    echo -e "   • Deployment Mode: vm"
+fi
+
 echo -e "${BLUE}📝 Useful commands:${NC}"
-echo -e "   View logs: ${YELLOW}docker-compose logs -f${NC}"
+echo -e "   View logs: ${YELLOW}./scripts/health-check.sh $DEPLOYMENT_MODE${NC}"
 echo -e "   Check status: ${YELLOW}docker-compose ps${NC}"
-echo -e "   Stop services: ${YELLOW}docker-compose down${NC}"
+echo -e "   Stop services: ${YELLOW}./scripts/manage-cdc.sh stop${NC}"
 echo -e "   Restart PGSync: ${YELLOW}docker-compose restart pgsync${NC}"
