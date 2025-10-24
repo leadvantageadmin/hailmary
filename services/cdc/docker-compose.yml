@@ -69,15 +69,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-    
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-          cpus: '1.0'
-        reservations:
-          memory: 1g
-          cpus: '0.5'
 
   # --------------------
   # 2. Redis (for PGSync Checkpoint)
@@ -180,15 +171,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    
-    deploy:
-      resources:
-        limits:
-          memory: 1g
-          cpus: '1.0'
-        reservations:
-          memory: 512m
-          cpus: '0.5'
 
 # =============================================================================
 # Volumes
