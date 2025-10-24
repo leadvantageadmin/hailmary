@@ -48,7 +48,16 @@ HailMary is a microservices-based application with the following services:
    cd ../web && ./scripts/start.sh local
    ```
 
-3. **Access the application**
+3. **Verify services are running**
+   ```bash
+   # Check PostgreSQL (port 5433)
+   docker ps | grep hailmary-postgres
+   
+   # Check all services
+   docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+   ```
+
+4. **Access the application**
    - Web Application: http://localhost:3000
    - Admin Panel: http://localhost:3000/admin
    - Direct Search: http://localhost:3000/direct-search
@@ -57,9 +66,15 @@ HailMary is a microservices-based application with the following services:
 
 ### 🐘 PostgreSQL Service
 
-**Purpose**: Primary database for the application
+**Purpose**: Primary database for the application with automatic materialized view refresh
 
-**Local Deployment**:
+#### **Local Development Setup**
+
+**Prerequisites**:
+- Docker and Docker Compose installed
+- Port 5433 available (local development port)
+
+**Start Service**:
 ```bash
 cd services/postgres
 ./scripts/start.sh local
@@ -67,32 +82,223 @@ cd services/postgres
 ./scripts/start.sh
 ```
 
-**VM Deployment**:
+**Configuration (Local)**:
+- Port: 5433 (mapped from container 5432)
+- Database: app
+- User: app
+- Password: app
+- Data Directory: `./data/postgres`
+- Logs Directory: `./logs/postgres`
+- Materialized View Refresh: 10-second polling interval
+
+**Connection String**: `postgresql://app:app@localhost:5433/app`
+
+#### **VM/Production Setup**
+
+**Prerequisites**:
+- VM with Docker and Docker Compose installed
+- Port 5433 available
+- Environment variables configured
+
+**Start Service**:
 ```bash
 # On VM
 cd /opt/hailmary/services/postgres
 ./scripts/start.sh vm
 ```
 
-**Configuration**:
-- Port: 5432
+**Configuration (VM)**:
+- Port: 5433 (mapped from container 5432)
 - Database: app
 - User: app
 - Password: app
 - Data Directory: `./data/postgres`
 - Logs Directory: `./logs/postgres`
+- Materialized View Refresh: 30-second polling interval
+- Deployment Mode: vm
 
-**Management Scripts**:
-- `start.sh [local|vm]` - Start the service (local is default)
-- `stop.sh [local|vm]` - Stop the service
-- `restart.sh [local|vm]` - Restart the service
-- `health-check.sh [local|vm]` - Check service health
-- `logs.sh [local|vm]` - View service logs
-- `run-migrations.sh` - Run database migrations
+**Connection String**: `postgresql://app:app@<vm-ip>:5433/app`
+
+#### **Environment Variables**
+
+**Required in `.env` file**:
+```bash
+# PostgreSQL Configuration
+POSTGRES_USER=app
+POSTGRES_PASSWORD=app
+POSTGRES_DB=app
+POSTGRES_PORT=5433
+
+# Deployment Mode (for VM)
+DEPLOYMENT_MODE=vm
+
+# Data Paths
+POSTGRES_DATA_PATH=./data/postgres
+POSTGRES_LOGS_PATH=./logs/postgres
+SCHEMA_DATA_PATH=./data/schema
+
+# Optional: pgAdmin Configuration
+PGADMIN_EMAIL=admin@hailmary.local
+PGADMIN_PASSWORD=admin
+PGADMIN_PORT=8080
+```
+
+#### **Daily Operations**
+
+**Service Management**:
+```bash
+# Start service
+./scripts/start.sh [local|vm]
+
+# Stop service
+./scripts/stop.sh [local|vm]
+
+# Restart service
+./scripts/restart.sh [local|vm]
+
+# Check service health
+./scripts/health-check.sh [local|vm]
+
+# View service logs
+./scripts/logs.sh [local|vm]
+
+# View specific log types
+./scripts/logs.sh [local|vm] -f          # Follow logs
+./scripts/logs.sh [local|vm] --postgres  # PostgreSQL logs only
+./scripts/logs.sh [local|vm] --refresh   # Materialized view refresh logs only
+```
+
+**Database Operations**:
+```bash
+# Run database migrations
+./scripts/run-migrations.sh [local|vm]
+
+# Validate schema
+./scripts/validate-schema.sh [local|vm]
+
+# Pull latest schema from schema service
+./scripts/pull-schema.sh [local|vm]
+
+# Clean up old data (use with caution)
+./scripts/cleanup-data.sh [local|vm]
+```
+
+**Materialized View Management**:
+```bash
+# Start materialized view refresh service
+./scripts/materialized-view-refresh-service.sh [local|vm] start
+
+# Stop materialized view refresh service
+./scripts/materialized-view-refresh-service.sh [local|vm] stop
+
+# Check materialized view refresh status
+./scripts/materialized-view-refresh-service.sh [local|vm] status
+
+# View materialized view refresh logs
+docker compose logs materialized-view-refresh
+```
+
+**Direct Database Access**:
+```bash
+# Connect to database
+docker compose exec postgres psql -U app -d app
+
+# Run SQL commands
+docker compose exec postgres psql -U app -d app -c "SELECT * FROM \"User\" LIMIT 5;"
+
+# Backup database
+docker compose exec postgres pg_dump -U app app > backup.sql
+
+# Restore database
+docker compose exec -T postgres psql -U app -d app < backup.sql
+```
+
+#### **Services Included**
+
+The PostgreSQL service includes two containers:
+
+1. **PostgreSQL Database** (`hailmary-postgres`)
+   - Main database container
+   - Port: 5433 (external) → 5432 (internal)
+   - Health check: `docker exec hailmary-postgres pg_isready -U app -d app`
+
+2. **Materialized View Refresh** (`hailmary-materialized-view-refresh`)
+   - Automatic materialized view refresh service
+   - Polling interval: 10s (local) / 30s (VM)
+   - Monitors for data changes and refreshes views automatically
+
+#### **Health Checks**
+
+**Quick Health Check**:
+```bash
+# Check if containers are running
+docker ps | grep hailmary-postgres
+docker ps | grep hailmary-materialized-view-refresh
+
+# Test database connection
+docker compose exec postgres pg_isready -U app -d app
+
+# Check materialized view refresh logs
+docker compose logs materialized-view-refresh --tail 10
+```
+
+**Comprehensive Health Check**:
+```bash
+./scripts/health-check.sh [local|vm]
+```
+
+#### **Troubleshooting**
+
+**Common Issues**:
+
+1. **Service won't start**:
+   ```bash
+   # Check Docker is running
+   docker info
+   
+   # Check port conflicts
+   netstat -tulpn | grep :5433
+   
+   # Check logs
+   ./scripts/logs.sh [local|vm]
+   ```
+
+2. **Database connection issues**:
+   ```bash
+   # Verify PostgreSQL is running
+   docker ps | grep postgres
+   
+   # Test connection
+   docker compose exec postgres pg_isready -U app -d app
+   
+   # Check database logs
+   docker compose logs postgres
+   ```
+
+3. **Materialized view refresh not working**:
+   ```bash
+   # Check if service is running
+   docker ps | grep materialized-view-refresh
+   
+   # Check logs
+   docker compose logs materialized-view-refresh
+   
+   # Restart materialized view refresh
+   ./scripts/materialized-view-refresh-service.sh [local|vm] restart
+   ```
+
+4. **Permission issues (VM)**:
+   ```bash
+   # Fix data directory permissions
+   sudo chown -R $(whoami):$(whoami) ./data
+   
+   # Fix log directory permissions
+   sudo chown -R $(whoami):$(whoami) ./logs
+   ```
 
 **Dependencies**: None (base service)
 
-**Health Check**: `docker exec hailmary-postgres pg_isready -U app -d app`
+**Ports**: 5433 (external), 5432 (internal container)
 
 ---
 
@@ -439,7 +645,7 @@ cd services/schema && ./scripts/logs.sh
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| PostgreSQL | 5432 | Database |
+| PostgreSQL | 5433 | Database (external) |
 | Redis | 6379 | Cache |
 | Web | 3000 | Web Application |
 | Ingestor | 8000 | Data Processing |
