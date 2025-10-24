@@ -47,8 +47,8 @@ configure_vm() {
     echo -e "${BLUE}🔧 Configuring for VM/production deployment...${NC}"
     
     # VM-specific configurations
-    export POSTGRES_HOST="${POSTGRES_HOST:-postgres}"
-    export POSTGRES_PORT="${POSTGRES_PORT:-5433}"
+    export POSTGRES_HOST="${POSTGRES_HOST:-hailmary-postgres}"
+    export POSTGRES_PORT="${POSTGRES_PORT:-5432}"
     export POSTGRES_DB="${POSTGRES_DB:-app}"
     export POSTGRES_USER="${POSTGRES_USER:-app}"
     export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-app}"
