@@ -87,6 +87,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     openssl \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set production environment
