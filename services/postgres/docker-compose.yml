@@ -95,7 +95,7 @@ services:
         echo '🚀 Starting materialized view refresh service...' &&
         cp /usr/local/bin/simple-polling-refresh.sh /tmp/simple-polling-refresh.sh &&
         chmod +x /tmp/simple-polling-refresh.sh &&
-        /tmp/simple-polling-refresh.sh \$${DEPLOYMENT_MODE:-local}
+        /tmp/simple-polling-refresh.sh $${DEPLOYMENT_MODE:-local}
       "
       
     depends_on:
