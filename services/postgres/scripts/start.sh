@@ -133,6 +133,22 @@ start_postgres() {
         docker compose logs postgres
         exit 1
     fi
+
+    # Start materialized view refresh service
+    echo "🔄 Starting materialized view refresh service..."
+    docker compose up -d materialized-view-refresh
+    
+    # Wait a moment for the service to start
+    sleep 3
+    
+    # Check if materialized view refresh service is running
+    if docker compose ps materialized-view-refresh | grep -q "Up"; then
+        echo "✅ Materialized view refresh service started successfully!"
+    else
+        echo "⚠️  Materialized view refresh service may not be running properly"
+        echo "📋 Checking materialized view refresh logs..."
+        docker compose logs materialized-view-refresh
+    fi
 }
 
 # Configure based on deployment mode
@@ -171,6 +187,11 @@ display_local_info() {
     echo "   • Stop service: ./scripts/stop.sh $DEPLOYMENT_MODE"
     echo "   • Restart service: ./scripts/restart.sh $DEPLOYMENT_MODE"
     echo ""
+    echo "🔄 Materialized View Refresh:"
+    echo "   • Service: Running automatically"
+    echo "   • Polling Interval: 10 seconds (local mode)"
+    echo "   • Logs: docker compose logs materialized-view-refresh"
+    echo ""
     echo "🌐 Optional Services:"
     echo "   • Start with pgAdmin: docker compose --profile admin up -d"
     echo "   • pgAdmin URL: http://localhost:8080"
@@ -198,6 +219,11 @@ display_vm_info() {
     echo "   • Health check: ./scripts/health-check.sh $DEPLOYMENT_MODE"
     echo "   • Stop service: ./scripts/stop.sh $DEPLOYMENT_MODE"
     echo "   • Restart service: ./scripts/restart.sh $DEPLOYMENT_MODE"
+    echo ""
+    echo "🔄 Materialized View Refresh:"
+    echo "   • Service: Running automatically"
+    echo "   • Polling Interval: 30 seconds (VM mode)"
+    echo "   • Logs: docker compose logs materialized-view-refresh"
     echo ""
     echo "🌐 VM Access:"
     echo "   • External Access: postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$(hostname -I | awk '{print $1}'):$POSTGRES_PORT/$POSTGRES_DB"
