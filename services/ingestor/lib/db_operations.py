@@ -324,6 +324,44 @@ class DatabaseOperations:
             logger.error(f"Failed to get company ID by domain {domain}: {e}")
             return None
     
+    async def get_company_prospect_view_count(self) -> int:
+        """Get the current count of records in company_prospect_view"""
+        try:
+            async with self.connection_pool.acquire() as conn:
+                result = await conn.fetchval(
+                    'SELECT COUNT(*) FROM company_prospect_view'
+                )
+                return result or 0
+        except Exception as e:
+            logger.error(f"Failed to get company_prospect_view count: {e}")
+            return 0
+    
+    async def get_database_counts(self) -> Dict[str, int]:
+        """Get current counts for all main tables and views"""
+        try:
+            async with self.connection_pool.acquire() as conn:
+                # Get Company count
+                company_count = await conn.fetchval('SELECT COUNT(*) FROM "Company"')
+                
+                # Get Prospect count
+                prospect_count = await conn.fetchval('SELECT COUNT(*) FROM "Prospect"')
+                
+                # Get Company Prospect View count
+                view_count = await conn.fetchval('SELECT COUNT(*) FROM company_prospect_view')
+                
+                return {
+                    "companies": company_count or 0,
+                    "prospects": prospect_count or 0,
+                    "company_prospect_view": view_count or 0
+                }
+        except Exception as e:
+            logger.error(f"Failed to get database counts: {e}")
+            return {
+                "companies": 0,
+                "prospects": 0,
+                "company_prospect_view": 0
+            }
+    
     async def cleanup(self):
         """Cleanup database connections"""
         try:
