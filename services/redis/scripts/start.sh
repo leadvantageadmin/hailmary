@@ -95,7 +95,7 @@ max_retries=30
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
-    if docker-compose exec redis redis-cli ping >/dev/null 2>&1; then
+    if docker-compose exec redis redis-cli -p 6389 ping >/dev/null 2>&1; then
         echo "✅ Redis is healthy and ready"
         break
     fi
