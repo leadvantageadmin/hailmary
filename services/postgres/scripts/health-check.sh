@@ -3,8 +3,21 @@ set -e
 
 # PostgreSQL Service Health Check Script
 # Comprehensive health check for PostgreSQL service
+# Usage: ./health-check.sh [local|vm]
+#   local: Local development deployment (default)
+#   vm: VM/production deployment
 
-echo "🔍 HailMary PostgreSQL Service Health Check"
+# Get deployment mode from argument
+DEPLOYMENT_MODE=${1:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo "❌ Invalid deployment mode. Use 'local' or 'vm'"
+    echo "   Usage: ./health-check.sh [local|vm]"
+    exit 1
+fi
+
+echo "🔍 HailMary PostgreSQL Service Health Check ($DEPLOYMENT_MODE mode)"
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,16 +26,45 @@ SERVICE_DIR="$(dirname "$SCRIPT_DIR")"
 # Change to service directory
 cd "$SERVICE_DIR"
 
+# Function to configure local development environment
+configure_local() {
+    echo "🔧 Configuring for local development..."
+    
+    # Local development configurations
+    export POSTGRES_USER=${POSTGRES_USER:-app}
+    export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app}
+    export POSTGRES_DB=${POSTGRES_DB:-app}
+    export POSTGRES_PORT=${POSTGRES_PORT:-5432}
+    export POSTGRES_DATA_PATH=${POSTGRES_DATA_PATH:-"./data/postgres"}
+    
+    echo "✅ Local configuration complete"
+}
+
+# Function to configure VM/production environment
+configure_vm() {
+    echo "🔧 Configuring for VM/production deployment..."
+    
+    # VM-specific configurations
+    export POSTGRES_USER=${POSTGRES_USER:-app}
+    export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app}
+    export POSTGRES_DB=${POSTGRES_DB:-app}
+    export POSTGRES_PORT=${POSTGRES_PORT:-5433}
+    export POSTGRES_DATA_PATH=${POSTGRES_DATA_PATH:-"/opt/hailmary/services/postgres/data/postgres"}
+    
+    echo "✅ VM configuration complete"
+}
+
+# Configure based on deployment mode
+if [[ "$DEPLOYMENT_MODE" == "vm" ]]; then
+    configure_vm
+else
+    configure_local
+fi
+
 # Load environment variables if .env file exists
 if [ -f ".env" ]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
-
-# Set default environment variables if not set
-export POSTGRES_USER=${POSTGRES_USER:-app}
-export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app}
-export POSTGRES_DB=${POSTGRES_DB:-app}
-export POSTGRES_PORT=${POSTGRES_PORT:-5432}
 
 # Colors for output
 RED='\033[0;31m'
@@ -125,10 +167,10 @@ check_migrations() {
 check_disk_space() {
     echo -e "${BLUE}💾 Checking Disk Space...${NC}"
     
-    local disk_usage=$(df -h ./data/postgres 2>/dev/null | tail -1 | awk '{print $5}' | sed 's/%//')
+    local disk_usage=$(df -h "$POSTGRES_DATA_PATH" 2>/dev/null | tail -1 | awk '{print $5}' | sed 's/%//')
     
     if [ -z "$disk_usage" ]; then
-        print_status "WARNING" "Could not check disk space"
+        print_status "WARNING" "Could not check disk space for $POSTGRES_DATA_PATH"
         return 1
     elif [ "$disk_usage" -lt 80 ]; then
         print_status "OK" "Disk space is healthy (${disk_usage}% used)"
@@ -167,11 +209,11 @@ check_memory() {
 check_network() {
     echo -e "${BLUE}🌐 Checking Network Connectivity...${NC}"
     
-    if docker compose exec postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
-        print_status "OK" "Network connectivity is working"
+    if docker compose exec postgres pg_isready -h localhost -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+        print_status "OK" "Network connectivity is working (port $POSTGRES_PORT)"
         return 0
     else
-        print_status "ERROR" "Network connectivity failed"
+        print_status "ERROR" "Network connectivity failed (port $POSTGRES_PORT)"
         return 1
     fi
 }
@@ -218,10 +260,12 @@ main() {
     
     echo ""
     echo "🔧 Troubleshooting Commands:"
-    echo "   • View logs: ./scripts/logs.sh"
-    echo "   • Restart service: ./scripts/restart.sh"
+    echo "   • View logs: ./scripts/logs.sh $DEPLOYMENT_MODE"
+    echo "   • Restart service: ./scripts/restart.sh $DEPLOYMENT_MODE"
     echo "   • Check container status: docker compose ps"
     echo "   • Connect to database: docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB"
+    echo "   • Run migrations: ./scripts/run-migrations.sh $DEPLOYMENT_MODE"
+    echo "   • Validate schema: ./scripts/validate-schema.sh $DEPLOYMENT_MODE"
     
     exit $overall_status
 }

@@ -3,8 +3,23 @@ set -e
 
 # PostgreSQL Service Logs Script
 # View and manage PostgreSQL service logs
+# Usage: ./logs.sh [local|vm] [OPTIONS]
+#   local: Local development deployment (default)
+#   vm: VM/production deployment
 
-echo "📋 HailMary PostgreSQL Service Logs"
+# Get deployment mode from first argument
+DEPLOYMENT_MODE=${1:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" == "local" || "$DEPLOYMENT_MODE" == "vm" ]]; then
+    # Valid deployment mode, shift it out of arguments
+    shift
+else
+    # Not a deployment mode, treat as local and don't shift
+    DEPLOYMENT_MODE="local"
+fi
+
+echo "📋 HailMary PostgreSQL Service Logs ($DEPLOYMENT_MODE mode)"
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,6 +27,27 @@ SERVICE_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Change to service directory
 cd "$SERVICE_DIR"
+
+# Function to configure local development environment
+configure_local() {
+    echo "🔧 Configuring for local development..."
+    # Local development doesn't need special configuration for logs
+    echo "✅ Local configuration complete"
+}
+
+# Function to configure VM/production environment
+configure_vm() {
+    echo "🔧 Configuring for VM/production deployment..."
+    # VM deployment doesn't need special configuration for logs
+    echo "✅ VM configuration complete"
+}
+
+# Configure based on deployment mode
+if [[ "$DEPLOYMENT_MODE" == "vm" ]]; then
+    configure_vm
+else
+    configure_local
+fi
 
 # Default options
 SERVICE="postgres"
@@ -39,7 +75,11 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            echo "Usage: $0 [OPTIONS]"
+            echo "Usage: $0 [local|vm] [OPTIONS]"
+            echo ""
+            echo "Deployment Modes:"
+            echo "  local                   Local development deployment (default)"
+            echo "  vm                      VM/production deployment"
             echo ""
             echo "Options:"
             echo "  -s, --service SERVICE    Service to show logs for (postgres, schema-migrator, postgres-admin)"
@@ -49,10 +89,12 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help              Show this help message"
             echo ""
             echo "Examples:"
-            echo "  $0                      # Show last 100 lines of postgres logs"
-            echo "  $0 -f                   # Follow postgres logs"
-            echo "  $0 -s schema-migrator   # Show schema migrator logs"
-            echo "  $0 -n 50                # Show last 50 lines"
+            echo "  $0                      # Show last 100 lines of postgres logs (local mode)"
+            echo "  $0 vm                   # Show last 100 lines of postgres logs (VM mode)"
+            echo "  $0 -f                   # Follow postgres logs (local mode)"
+            echo "  $0 vm -f                # Follow postgres logs (VM mode)"
+            echo "  $0 -s schema-migrator   # Show schema migrator logs (local mode)"
+            echo "  $0 vm -n 50             # Show last 50 lines (VM mode)"
             exit 0
             ;;
         *)
@@ -108,9 +150,10 @@ eval $LOG_CMD
 if [ "$FOLLOW" = false ]; then
     echo ""
     echo "🔧 Additional Commands:"
-    echo "   • Follow logs: $0 -f"
-    echo "   • Show more lines: $0 -n 500"
-    echo "   • Show schema migrator logs: $0 -s schema-migrator"
-    echo "   • Show pgAdmin logs: $0 -s postgres-admin"
+    echo "   • Follow logs: $0 $DEPLOYMENT_MODE -f"
+    echo "   • Show more lines: $0 $DEPLOYMENT_MODE -n 500"
+    echo "   • Show schema migrator logs: $0 $DEPLOYMENT_MODE -s schema-migrator"
+    echo "   • Show pgAdmin logs: $0 $DEPLOYMENT_MODE -s postgres-admin"
     echo "   • View all services: docker compose ps"
+    echo "   • Health check: ./scripts/health-check.sh $DEPLOYMENT_MODE"
 fi
