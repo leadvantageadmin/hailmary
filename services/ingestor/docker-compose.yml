@@ -35,12 +35,6 @@ services:
       - "${INGESTOR_PORT:-8080}:8080"
     
     volumes:
-      # CSV data directory
-      - csv_data:/app/data/csv
-      
-      # Logs directory
-      - ingestor_logs:/app/data/logs
-      
       # Local development mounts
       - ./data/csv:/app/data/csv:ro
       - ./data/schema:/app/data/schema:rw
@@ -70,8 +64,6 @@ services:
   # opensearch: hailmary-opensearch
 
 volumes:
-  csv_data:
-  ingestor_logs:
   schema_data:
 
 networks:
