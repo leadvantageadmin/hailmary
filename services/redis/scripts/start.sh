@@ -95,7 +95,7 @@ max_retries=30
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
-    if docker-compose exec redis redis-cli -p 6389 ping >/dev/null 2>&1; then
+    if docker-compose exec -T redis redis-cli -p 6389 ping >/dev/null 2>&1; then
         echo "✅ Redis is healthy and ready"
         break
     fi
@@ -117,7 +117,7 @@ echo ""
 echo "🎉 Redis service started successfully!"
 echo "🔧 Redis URL: redis://localhost:$REDIS_PORT"
 echo "📊 Redis Info:"
-docker-compose exec redis redis-cli info server | grep -E "(redis_version|uptime_in_seconds|connected_clients)"
+docker-compose exec -T redis redis-cli info server | grep -E "(redis_version|uptime_in_seconds|connected_clients)"
 
 echo ""
 echo "🔧 Management Commands:"
