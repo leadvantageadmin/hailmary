@@ -80,6 +80,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-app}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
       
+      # Deployment mode for materialized view refresh
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-local}
+      
     volumes:
       # Refresh service script
       - ./scripts/simple-polling-refresh.sh:/usr/local/bin/simple-polling-refresh.sh:rw
@@ -92,7 +95,7 @@ services:
         echo '🚀 Starting materialized view refresh service...' &&
         cp /usr/local/bin/simple-polling-refresh.sh /tmp/simple-polling-refresh.sh &&
         chmod +x /tmp/simple-polling-refresh.sh &&
-        /tmp/simple-polling-refresh.sh
+        /tmp/simple-polling-refresh.sh \$${DEPLOYMENT_MODE:-local}
       "
       
     depends_on:

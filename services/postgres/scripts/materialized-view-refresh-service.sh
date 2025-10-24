@@ -2,18 +2,59 @@
 
 # Materialized View Refresh Service
 # Listens for PostgreSQL notifications and refreshes materialized views
+# Usage: ./materialized-view-refresh-service.sh [local|vm] [start|stop|status|restart]
+#   local: Local development deployment (default)
+#   vm: VM/production deployment
 
 set -e
 
-# Configuration
-DB_HOST="${POSTGRES_HOST:-localhost}"
-DB_PORT="${POSTGRES_PORT:-5432}"
-DB_NAME="${POSTGRES_DB:-app}"
-DB_USER="${POSTGRES_USER:-app}"
-DB_PASSWORD="${POSTGRES_PASSWORD:-app}"
-REFRESH_CHANNEL="materialized_view_refresh"
-LOG_FILE="/var/log/postgresql/materialized_view_refresh.log"
-PID_FILE="/var/run/materialized_view_refresh.pid"
+# Get deployment mode from first argument
+DEPLOYMENT_MODE=${1:-local}
+
+# Validate deployment mode
+if [[ "$DEPLOYMENT_MODE" == "local" || "$DEPLOYMENT_MODE" == "vm" ]]; then
+    # Valid deployment mode, shift it out of arguments
+    shift
+else
+    # Not a deployment mode, treat as local and don't shift
+    DEPLOYMENT_MODE="local"
+fi
+
+# Function to configure local development environment
+configure_local() {
+    # Local development configurations
+    export DB_HOST="${POSTGRES_HOST:-localhost}"
+    export DB_PORT="${POSTGRES_PORT:-5432}"
+    export DB_NAME="${POSTGRES_DB:-app}"
+    export DB_USER="${POSTGRES_USER:-app}"
+    export DB_PASSWORD="${POSTGRES_PASSWORD:-app}"
+    export REFRESH_CHANNEL="materialized_view_refresh"
+    export LOG_FILE="./logs/postgres/materialized_view_refresh.log"
+    export PID_FILE="./logs/postgres/materialized_view_refresh.pid"
+}
+
+# Function to configure VM/production environment
+configure_vm() {
+    # VM-specific configurations
+    export DB_HOST="${POSTGRES_HOST:-localhost}"
+    export DB_PORT="${POSTGRES_PORT:-5433}"
+    export DB_NAME="${POSTGRES_DB:-app}"
+    export DB_USER="${POSTGRES_USER:-app}"
+    export DB_PASSWORD="${POSTGRES_PASSWORD:-app}"
+    export REFRESH_CHANNEL="materialized_view_refresh"
+    export LOG_FILE="/var/log/hailmary/postgres/materialized_view_refresh.log"
+    export PID_FILE="/var/run/materialized_view_refresh.pid"
+}
+
+# Configure based on deployment mode
+if [[ "$DEPLOYMENT_MODE" == "vm" ]]; then
+    configure_vm
+else
+    configure_local
+fi
+
+# Create log directory if it doesn't exist
+mkdir -p "$(dirname "$LOG_FILE")"
 
 # Colors for logging
 RED='\033[0;31m'
