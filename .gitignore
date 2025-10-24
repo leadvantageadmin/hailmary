@@ -1,36 +1,139 @@
-node_modules
-.next
-.dist
-.turbo
+# Node.js
+node_modules/
+.pnpm-store/
+**/.pnpm-store/
+.next/
+.dist/
+.turbo/
+package-lock.json
+pnpm-lock.yaml
+
+# Environment files
 .env
 .env.*
 !.env.local
-!apps/web/.env.production
-!apps/ingestor/.env.production
-!apps/web/.env.local
-apps/ingestor/.env.local
-__pycache__
-.venv
-.DS_Store
-.idea
-.vscode
-*.log
-apps/web/prisma/dev.db
-apps/web/prisma/dev.db-journal
+!.env.example
+!services/web/.env.local
+!services/ingestor/.env.local
+!services/postgres/.env.local
+!services/redis/.env.local
+!services/cdc/.env.local
 
-# Data files
-data/
+data/**.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+
+# IDE and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+*.log.*
+*.log.[0-9]*
+logs/
+services/*/logs/
+services/*/data/logs/
+services/*/logs/**/*.log*
+services/*/data/logs/**/*.log*
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Data directories (runtime data) - specific patterns to allow exceptions
+services/ingestor/data/postgres/
+services/ingestor/data/redis/
+services/ingestor/data/elasticsearch/
+services/ingestor/data/pgadmin/
+services/ingestor/data/csv/
+services/ingestor/data/opensearch/
+services/ingestor/data/logs/
+
+services/postgres/data/postgres/
+services/postgres/data/redis/
+services/postgres/data/elasticsearch/
+services/postgres/data/pgadmin/
+services/postgres/data/csv/
+services/postgres/data/opensearch/
+services/postgres/data/logs/
+
+services/web/data/postgres/
+services/web/data/redis/
+services/web/data/elasticsearch/
+services/web/data/pgadmin/
+services/web/data/csv/
+services/web/data/opensearch/
+services/web/data/logs/
+
+services/redis/data/postgres/
+services/redis/data/redis/
+services/redis/data/elasticsearch/
+services/redis/data/pgadmin/
+services/redis/data/csv/
+services/redis/data/opensearch/
+services/redis/data/logs/
+
+services/cdc/data/postgres/
+services/cdc/data/redis/
+services/cdc/data/elasticsearch/
+services/cdc/data/pgadmin/
+services/cdc/data/csv/
+services/cdc/data/opensearch/
+services/cdc/data/logs/
+
+# Docker volumes and runtime data
+services/postgres/data/postgres/
+services/redis/data/
+services/cdc/data/
+services/web/data/postgres/
+services/web/data/redis/
+services/web/data/elasticsearch/
+services/web/data/pgadmin/
+services/web/data/csv/
+services/web/data/opensearch/
+services/web/data/logs/
+
+# Temporary files
 cookies.txt
-# Data standardization files (handled in feature/data-standardization branch)
-apps/ingestor/standardization/
-apps/ingestor/fuzzy_standardizer.py
-apps/ingestor/comprehensive_standardizer.py
-apps/ingestor/standardization_loader.py
-apps/ingestor/full_cities_loader.py
-apps/ingestor/analyze_unknowns.py
-apps/ingestor/debug_riyadh.py
-apps/ingestor/test_enhanced_logic.py
-apps/ingestor/test_zipcode_data.py
-convert_standardization_files_simple.py
-scripts/test-comprehensive-standardization.py
-Data Standardization Solution.md
+*.tmp
+*.temp
+*.pid
+*.lock
+
+# Archive files (schema versions)
+*.tar.gz
+services/postgres/schema-v*.tar.gz
+services/postgres/test-schema.tar.gz
+services/schema/schema-v*.tar.gz
+
+# Build artifacts
+dist/
+build/
+out/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Runtime configuration (generated)
+services/*/config/generated/
+
+# Schema service (separate repo - ignore everything)
+services/schema/
+

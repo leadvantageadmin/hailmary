@@ -1,0 +1,49 @@
+# Ingestor Service Dependencies
+# Core dependencies for data ingestion
+
+# Database connectivity
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.23
+asyncpg==0.28.0
+
+# Search engine connectivity (removed - using CDC service for search indexing)
+# opensearch-py==2.4.0
+
+# Data processing
+pandas==2.1.4
+numpy==1.24.4
+
+# HTTP requests
+requests==2.31.0
+
+# Configuration management
+python-dotenv==1.0.0
+
+# Logging and monitoring
+structlog==23.2.0
+
+# Data validation
+pydantic==2.5.2
+
+# CSV processing
+csvkit==1.1.1
+
+# Date/time handling
+python-dateutil==2.8.2
+
+# JSON processing
+orjson==3.9.10
+
+# Progress bars
+tqdm==4.66.1
+
+# File handling
+pathlib2==2.3.7
+
+# Environment management
+click==8.1.7
+
+# Async support (optional)
+aiofiles==23.2.1
+asyncio==3.4.3
+aiohttp==3.9.1

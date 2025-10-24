@@ -1,0 +1,39 @@
+{
+  "version": "v3.1.0",
+  "author": "HailMary Team",
+  "createdAt": "2025-10-22T15:03:47Z",
+  "baseVersion": "latest",
+  "description": "Schema version v3.1.0 with enhanced materialized view for optimal search performance",
+  "changelog": "changelog.md",
+  "schemaFile": "schema.prisma",
+  "migrationScripts": [
+    "migrations/001_initial_schema.sql",
+    "migrations/002_materialized_views.sql",
+    "migrations/003_meaningful_ids_simple.sql",
+    "migrations/004_user_auth_tables.sql",
+    "migrations/005_enhanced_materialized_view.sql"
+  ],
+  "compatibility": {
+    "minPrismaVersion": "5.0.0",
+    "testedWith": [
+      "5.0.0",
+      "5.1.0"
+    ]
+  },
+  "features": [
+    "Customer table (legacy support)",
+    "Company table (normalized)",
+    "Prospect table (normalized)",
+    "Enhanced materialized view with all search fields",
+    "Automatic refresh triggers for real-time updates",
+    "Comprehensive indexing for optimal performance",
+    "Materialized view monitoring and error handling",
+    "Revenue field support",
+    "Domain extraction",
+    "User authentication tables"
+  ],
+  "dependencies": {
+    "prisma": "^5.0.0",
+    "@prisma/client": "^5.0.0"
+  }
+}

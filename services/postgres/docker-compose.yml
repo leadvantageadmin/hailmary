@@ -1,0 +1,214 @@
+# PostgreSQL Service Docker Compose Configuration
+# Independent PostgreSQL service with schema integration
+
+
+services:
+  postgres:
+    build: .
+    container_name: hailmary-postgres
+    environment:
+      # PostgreSQL Configuration
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      
+      # CDC Configuration
+      POSTGRES_WAL_LEVEL: logical
+      
+      # Schema Service Integration
+      SCHEMA_API_URL: ${SCHEMA_API_URL:-http://schema-api:3001}
+      SCHEMA_VERSION: ${SCHEMA_VERSION:-latest}
+      
+      # Database URLs for schema management
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@postgres:5432/${POSTGRES_DB:-app}"
+      
+      # Timezone
+      TZ: ${TZ:-UTC}
+      
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+      
+    volumes:
+      # Persistent data storage
+      - postgres_data:/var/lib/postgresql/data
+      
+      # Configuration files
+      - ./config:/etc/postgresql:ro
+      
+      # Initialization scripts
+      - ./init:/docker-entrypoint-initdb.d:ro
+      
+      # Schema files (mounted from local directory)
+      - ./data/schema:/app/schema:ro
+      
+      # Logs
+      - postgres_logs:/var/log/postgresql
+      
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-app}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      
+    networks:
+      - hailmary-network
+      
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Schema migrator service - runs migrations from schema service
+  schema-migrator:
+    image: node:18-slim
+    container_name: hailmary-schema-migrator
+    environment:
+      # Database connection
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@postgres:5432/${POSTGRES_DB:-app}"
+      
+      # Schema service configuration
+      SCHEMA_API_URL: ${SCHEMA_API_URL:-http://schema-api:3001}
+      SCHEMA_VERSION: ${SCHEMA_VERSION:-latest}
+      
+    volumes:
+      # Schema files
+      - schema_data:/app/schema:ro
+      
+      # Migration scripts
+      - ./scripts:/usr/local/bin:ro
+      
+    command: >
+      sh -c "
+        echo '🔧 Installing Prisma CLI...' &&
+        npm install -g prisma@latest &&
+        echo '📥 Pulling schema from Schema API...' &&
+        /usr/local/bin/pull-schema.sh ${SCHEMA_VERSION:-latest} &&
+        echo '🔄 Running database migrations...' &&
+        /usr/local/bin/run-migrations.sh &&
+        echo '✅ Schema migration completed successfully'
+      "
+      
+    depends_on:
+      postgres:
+        condition: service_healthy
+        
+    networks:
+      - hailmary-network
+      
+    restart: "no"  # Run once and exit
+
+  # Materialized view refresh service - handles automatic refresh of materialized views
+  materialized-view-refresh:
+    image: postgres:15-alpine
+    container_name: hailmary-materialized-view-refresh
+    environment:
+      # Database connection
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      
+    volumes:
+      # Refresh service script
+      - ./scripts/simple-polling-refresh.sh:/usr/local/bin/simple-polling-refresh.sh:rw
+      
+      # Logs
+      - postgres_logs:/var/log/postgresql
+      
+    command: >
+      sh -c "
+        echo '🚀 Starting materialized view refresh service...' &&
+        cp /usr/local/bin/simple-polling-refresh.sh /tmp/simple-polling-refresh.sh &&
+        chmod +x /tmp/simple-polling-refresh.sh &&
+        /tmp/simple-polling-refresh.sh
+      "
+      
+    depends_on:
+      postgres:
+        condition: service_healthy
+        
+    networks:
+      - hailmary-network
+      
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # PostgreSQL admin service - for database administration
+  postgres-admin:
+    image: dpage/pgadmin4:latest
+    container_name: hailmary-postgres-admin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@hailmary.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      
+    ports:
+      - "${PGADMIN_PORT:-8080}:80"
+      
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      
+    depends_on:
+      postgres:
+        condition: service_healthy
+        
+    networks:
+      - hailmary-network
+      
+    restart: unless-stopped
+    profiles:
+      - admin  # Only start with --profile admin
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${POSTGRES_DATA_PATH:-./data/postgres}
+      
+  postgres_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${POSTGRES_LOGS_PATH:-./logs/postgres}
+      
+  schema_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${SCHEMA_DATA_PATH:-./data/schema}
+      
+  pgadmin_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PGADMIN_DATA_PATH:-./data/pgadmin}
+
+networks:
+  hailmary-network:
+    external: true
+    name: hailmary-network

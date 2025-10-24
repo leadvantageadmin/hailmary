@@ -1,0 +1,40 @@
+# Web Service Development Dockerfile
+# Next.js application with hot reload for development
+
+FROM node:18-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    jq \
+    git \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+
+# Install pnpm and dependencies
+RUN corepack enable && corepack prepare pnpm@9.11.0 --activate
+RUN pnpm install
+
+# Copy application source
+COPY . .
+
+# Copy schema to prisma directory for generation
+RUN mkdir -p ./prisma && cp ./data/schema/schema.prisma ./prisma/schema.prisma
+
+# Generate Prisma client
+RUN pnpm prisma:generate
+
+# Expose port
+EXPOSE 3000
+
+# Set development environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Start development server
+CMD ["pnpm", "dev"]

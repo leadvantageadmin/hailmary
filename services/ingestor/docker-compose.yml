@@ -1,0 +1,79 @@
+# Independent Ingestor service for data processing
+
+services:
+  ingestor:
+    build: .
+    container_name: hailmary-ingestor
+    command: ["python", "app.py", "serve", "--port", "8080"]
+    environment:
+      # Database Configuration
+      POSTGRES_HOST: ${POSTGRES_HOST:-host.docker.internal}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5433}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      
+      # Elasticsearch Configuration (handled by CDC service)
+      # ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-host.docker.internal}
+      # ELASTICSEARCH_PORT: ${ELASTICSEARCH_PORT:-9200}
+      # ELASTICSEARCH_USE_SSL: ${ELASTICSEARCH_USE_SSL:-false}
+      # ELASTICSEARCH_VERIFY_CERTS: ${ELASTICSEARCH_VERIFY_CERTS:-false}
+      
+      # Ingestor Configuration
+      INGESTION_BATCH_SIZE: ${INGESTION_BATCH_SIZE:-1000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      
+      # Schema Service Integration
+      GITHUB_REPO: ${GITHUB_REPO:-leadvantageadmin/hailmary-schema}
+      SCHEMA_VERSION: ${SCHEMA_VERSION:-latest}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      
+      # Timezone
+      TZ: ${TZ:-UTC}
+    
+    ports:
+      - "${INGESTOR_PORT:-8080}:8080"
+    
+    volumes:
+      # CSV data directory
+      - csv_data:/app/data/csv
+      
+      # Logs directory
+      - ingestor_logs:/app/data/logs
+      
+      # Local development mounts
+      - ./data/csv:/app/data/csv:ro
+      - ./data/schema:/app/data/schema:rw
+      - ./data/logs:/app/data/logs:rw
+    
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
+    #   opensearch:
+    #     condition: service_healthy
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8080/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    networks:
+      - hailmary-network
+    
+    restart: unless-stopped
+
+  # External dependencies (referenced but not defined here)
+  # Note: These services are managed by their respective service directories
+  # postgres: hailmary-postgres
+  # opensearch: hailmary-opensearch
+
+volumes:
+  csv_data:
+  ingestor_logs:
+  schema_data:
+
+networks:
+  hailmary-network:
+    external: true

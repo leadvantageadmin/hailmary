@@ -1,0 +1,80 @@
+# Web Service Development Docker Compose Configuration
+# Next.js application with hot reload for development
+
+services:
+  web-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: hailmary-web-dev
+    environment:
+      # Application Configuration
+      NODE_ENV: development
+      PORT: 3000
+      HOSTNAME: "0.0.0.0"
+      
+      # Database Configuration
+      DATABASE_URL: ${DATABASE_URL:-postgresql://app:app@postgres:5432/app}
+      
+      # OpenSearch Configuration
+      OPENSEARCH_URL: ${OPENSEARCH_URL:-http://elasticsearch:9200}
+      ELASTICSEARCH_INDEX: ${ELASTICSEARCH_INDEX:-company_prospect_view}
+      
+      # Redis Configuration
+      REDIS_URL: ${REDIS_URL:-redis://redis:6389}
+      
+      # Schema Service Configuration
+      SCHEMA_VERSION: ${SCHEMA_VERSION:-latest}
+      SCHEMA_API_URL: ${SCHEMA_API_URL:-http://localhost:3001}
+      
+      # Authentication Configuration
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-secret-key}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      
+      # Development Configuration
+      DEBUG: ${DEBUG:-*}
+      
+      # Timezone
+      TZ: ${TZ:-UTC}
+      
+    ports:
+      - "3000:3000"
+      
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      
+      # Application logs
+      - web_logs:/app/logs
+      
+      # Schema files
+      - ./data/schema:/app/data/schema:ro
+      
+    # Dependencies are managed externally
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
+    #   opensearch:
+    #     condition: service_healthy
+    #   redis:
+    #     condition: service_healthy
+        
+    networks:
+      - hailmary-network
+      
+    restart: unless-stopped
+
+volumes:
+  web_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WEB_LOGS_PATH:-./logs/web}
+
+networks:
+  hailmary-network:
+    external: true
+    name: hailmary-network

@@ -1,0 +1,32 @@
+{
+  "version": "v3.0.1",
+  "author": "HailMary Team",
+  "createdAt": "2025-10-22T07:10:29Z",
+  "baseVersion": "latest",
+  "description": "Schema version v3.0.1 based on latest",
+  "changelog": "changelog.md",
+  "schemaFile": "schema.prisma",
+  "migrationScripts": [
+    "migrations/001_initial_schema.sql",
+    "migrations/002_materialized_views.sql"
+  ],
+  "compatibility": {
+    "minPrismaVersion": "5.0.0",
+    "testedWith": [
+      "5.0.0",
+      "5.1.0"
+    ]
+  },
+  "features": [
+    "Customer table (legacy support)",
+    "Company table (normalized)",
+    "Prospect table (normalized)",
+    "Materialized view monitoring",
+    "Revenue field support",
+    "Domain extraction"
+  ],
+  "dependencies": {
+    "prisma": "^5.0.0",
+    "@prisma/client": "^5.0.0"
+  }
+}

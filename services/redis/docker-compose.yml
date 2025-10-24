@@ -1,0 +1,89 @@
+# Redis Service Docker Compose Configuration
+# Independent Redis service with schema integration
+
+version: '3.8'
+
+services:
+  redis:
+    build: .
+    container_name: hailmary-services-redis
+    environment:
+      # Redis Configuration
+      REDIS_PORT: ${REDIS_PORT:-6390}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
+      
+      # Schema Service Integration
+      GITHUB_REPO: ${GITHUB_REPO:-leadvantageadmin/hailmary-schema}
+      SCHEMA_VERSION: ${SCHEMA_VERSION:-latest}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      
+      # Timezone
+      TZ: ${TZ:-UTC}
+      
+    ports:
+      - "${REDIS_PORT:-6390}:6389"
+      
+    volumes:
+      # Persistent data storage
+      - redis_data:/data
+      
+      # Configuration files
+      - ./config:/app/config:rw
+      
+      # Schema files (mounted from schema service)
+      - ./data/schema:/app/data/schema:rw
+      
+      # Logs
+      - redis_logs:/app/data/logs
+      
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      
+    networks:
+      - hailmary-network
+      
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Redis CLI service for management
+  redis-cli:
+    image: redis:7-alpine
+    container_name: hailmary-redis-cli
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6390}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - ./scripts:/app/scripts:ro
+    networks:
+      - hailmary-network
+    profiles:
+      - cli
+    command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  redis_data:
+    driver: local
+  redis_logs:
+    driver: local
+
+networks:
+  hailmary-network:
+    external: true

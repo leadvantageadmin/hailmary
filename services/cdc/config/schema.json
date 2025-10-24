@@ -1,0 +1,345 @@
+[
+    {
+      "database": "app", 
+      "index": "customer",
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        "analysis": {
+          "analyzer": {
+            "custom_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "stop"]
+            }
+          }
+        }
+      },
+      "nodes": {
+        "table": "Customer",
+        "schema": "public",
+        "label": "customer",
+        "columns": [
+          "id", "email", "firstName", "lastName", "company", "jobTitle",
+          "phone", "mobilePhone", "address", "city", "state", "country",
+          "zipCode", "revenue", "industry", "department", "jobTitleLevel",
+          "minEmployeeSize", "maxEmployeeSize", "externalSource", "externalId",
+          "createdAt", "updatedAt"
+        ],
+        "transform": {
+          "concat": {
+            "columns": ["firstName", "lastName"],
+            "destination": "fullName",
+            "delimiter": " "
+          },
+          "mapping": {
+            "id": { "type": "keyword" },
+            "email": { "type": "keyword" },
+            "firstName": { "type": "text", "analyzer": "standard" },
+            "lastName": { "type": "text", "analyzer": "standard" },
+            "fullName": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" }
+              }
+            },
+            "company": { "type": "text", "analyzer": "standard" },
+            "jobTitle": { "type": "text", "analyzer": "standard" },
+            "phone": { "type": "keyword" },
+            "mobilePhone": { "type": "keyword" },
+            "address": { "type": "text", "analyzer": "standard" },
+            "city": { "type": "keyword" },
+            "state": { "type": "keyword" },
+            "country": { "type": "keyword" },
+            "zipCode": { "type": "keyword" },
+            "revenue": { "type": "long" },
+            "industry": { "type": "keyword" },
+            "department": { "type": "keyword" },
+            "jobTitleLevel": { "type": "keyword" },
+            "minEmployeeSize": { "type": "integer" },
+            "maxEmployeeSize": { "type": "integer" },
+            "externalSource": { "type": "keyword" },
+            "externalId": { "type": "keyword" },
+            "createdAt": { "type": "date" },
+            "updatedAt": { "type": "date" }
+          }
+        }
+      }
+    },
+    {
+      "database": "app", 
+      "index": "company",
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        "analysis": {
+          "analyzer": {
+            "custom_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "stop"]
+            }
+          }
+        }
+      },
+      "nodes": {
+        "table": "Company",
+        "schema": "public",
+        "label": "company",
+        "columns": [
+          "id", "domain", "name", "industry", "revenue", "address", "city",
+          "state", "country", "zipCode", "phone", "mobilePhone", 
+          "minEmployeeSize", "maxEmployeeSize", "externalSource", "externalId",
+          "createdAt", "updatedAt"
+        ],
+        "transform": {
+          "rename": {
+            "domain": "website"
+          },
+          "concat": {
+            "columns": ["minEmployeeSize", "maxEmployeeSize"],
+            "destination": "size",
+            "delimiter": "-"
+          },
+          "mapping": {
+            "id": { "type": "keyword" },
+            "domain": { "type": "keyword" },
+            "name": { "type": "text", "analyzer": "standard" },
+            "industry": { "type": "keyword" },
+            "size": { "type": "keyword" },
+            "revenue": { "type": "long" },
+            "address": { "type": "text", "analyzer": "standard" },
+            "city": { "type": "keyword" },
+            "state": { "type": "keyword" },
+            "country": { "type": "keyword" },
+            "zipCode": { "type": "keyword" },
+            "phone": { "type": "keyword" },
+            "mobilePhone": { "type": "keyword" },
+            "website": { "type": "keyword" },
+            "minEmployeeSize": { "type": "integer" },
+            "maxEmployeeSize": { "type": "integer" },
+            "externalSource": { "type": "keyword" },
+            "externalId": { "type": "keyword" },
+            "createdAt": { "type": "date" },
+            "updatedAt": { "type": "date" }
+          }
+        }
+      }
+    },
+    {
+      "database": "app", 
+      "index": "prospect",
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        "analysis": {
+          "analyzer": {
+            "custom_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "stop"]
+            }
+          }
+        }
+      },
+      "nodes": {
+        "table": "Prospect",
+        "schema": "public",
+        "label": "prospect",
+        "columns": [
+          "id", "email", "firstName", "lastName", "jobTitle", "phone",
+          "mobilePhone", "companyId", "address", "city", "state", "country",
+          "zipCode", "department", "jobTitleLevel", "externalSource",
+          "externalId", "createdAt", "updatedAt"
+        ],
+        "transform": {
+          "concat": {
+            "columns": ["firstName", "lastName"],
+            "destination": "fullName",
+            "delimiter": " "
+          },
+          "mapping": {
+            "id": { "type": "keyword" },
+            "email": { "type": "keyword" },
+            "firstName": { "type": "text", "analyzer": "standard" },
+            "lastName": { "type": "text", "analyzer": "standard" },
+            "fullName": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" }
+              }
+            },
+            "jobTitle": { "type": "text", "analyzer": "standard" },
+            "phone": { "type": "keyword" },
+            "mobilePhone": { "type": "keyword" },
+            "companyId": { "type": "keyword" },
+            "companyDomain": { "type": "keyword" },
+            "companyName": { "type": "text", "analyzer": "standard" },
+            "address": { "type": "text", "analyzer": "standard" },
+            "city": { "type": "keyword" },
+            "state": { "type": "keyword" },
+            "country": { "type": "keyword" },
+            "zipCode": { "type": "keyword" },
+            "department": { "type": "keyword" },
+            "jobTitleLevel": { "type": "keyword" },
+            "externalSource": { "type": "keyword" },
+            "externalId": { "type": "keyword" },
+            "createdAt": { "type": "date" },
+            "updatedAt": { "type": "date" }
+          }
+        }
+      }
+    },
+    {
+      "database": "app",
+      "index": "company_prospect_view",
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        "analysis": {
+          "analyzer": {
+            "custom_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "stop"]
+            }
+          }
+        }
+      },
+      "nodes": {
+        "table": "company_prospect_view",
+        "schema": "public",
+        "label": "company_prospect",
+        "primary_key": ["company_id", "prospect_id"],
+        "columns": [
+          "company_id", "domain", "company_name", "industry", "revenue",
+          "minEmployeeSize", "maxEmployeeSize", "company_address", "company_city",
+          "company_state", "company_country", "company_zipcode", "company_phone",
+          "company_mobilephone", "company_externalsource", "company_externalid",
+          "company_createdat", "company_updatedat", "prospect_id", "salutation",
+          "firstName", "lastName", "email", "jobTitle", "jobTitleLevel",
+          "department", "jobTitleLink", "prospect_address", "prospect_city",
+          "prospect_state", "prospect_country", "prospect_zipcode", "prospect_phone",
+          "prospect_mobilephone", "companyId", "prospect_externalsource",
+          "prospect_externalid", "prospect_createdat", "prospect_updatedat",
+          "fullname", "companycontext", "last_updated"
+        ],
+        "transform": {
+          "mapping": {
+            "company_id": { "type": "keyword" },
+            "domain": { "type": "keyword" },
+            "company_name": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" },
+                "suggest": { 
+                  "type": "completion",
+                  "analyzer": "simple",
+                  "preserve_separators": true,
+                  "preserve_position_increments": true,
+                  "max_input_length": 50
+                }
+              }
+            },
+            "industry": { 
+              "type": "keyword",
+              "fields": {
+                "text": { "type": "text", "analyzer": "standard" }
+              }
+            },
+            "revenue": { "type": "long" },
+            "minEmployeeSize": { "type": "integer" },
+            "maxEmployeeSize": { "type": "integer" },
+            "company_address": { "type": "text", "analyzer": "standard" },
+            "company_city": { "type": "keyword" },
+            "company_state": { "type": "keyword" },
+            "company_country": { "type": "keyword" },
+            "company_zipcode": { "type": "keyword" },
+            "company_phone": { "type": "keyword" },
+            "company_mobilephone": { "type": "keyword" },
+            "company_externalsource": { "type": "keyword" },
+            "company_externalid": { "type": "keyword" },
+            "company_createdat": { "type": "date" },
+            "company_updatedat": { "type": "date" },
+            "prospect_id": { "type": "keyword" },
+            "salutation": { "type": "keyword" },
+            "firstName": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" }
+              }
+            },
+            "lastName": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" }
+              }
+            },
+            "fullname": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" },
+                "suggest": { 
+                  "type": "completion",
+                  "analyzer": "simple",
+                  "preserve_separators": true,
+                  "preserve_position_increments": true,
+                  "max_input_length": 50
+                }
+              }
+            },
+            "email": { 
+              "type": "keyword",
+              "fields": {
+                "text": { "type": "text", "analyzer": "standard" }
+              }
+            },
+            "jobTitle": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" },
+                "suggest": { 
+                  "type": "completion",
+                  "analyzer": "simple",
+                  "preserve_separators": true,
+                  "preserve_position_increments": true,
+                  "max_input_length": 50
+                }
+              }
+            },
+            "jobTitleLevel": { "type": "keyword" },
+            "department": { "type": "keyword" },
+            "jobTitleLink": { "type": "keyword" },
+            "prospect_address": { "type": "text", "analyzer": "standard" },
+            "prospect_city": { "type": "keyword" },
+            "prospect_state": { "type": "keyword" },
+            "prospect_country": { "type": "keyword" },
+            "prospect_zipcode": { "type": "keyword" },
+            "prospect_phone": { "type": "keyword" },
+            "prospect_mobilephone": { "type": "keyword" },
+            "companyId": { "type": "keyword" },
+            "prospect_externalsource": { "type": "keyword" },
+            "prospect_externalid": { "type": "keyword" },
+            "prospect_createdat": { "type": "date" },
+            "prospect_updatedat": { "type": "date" },
+            "companycontext": { 
+              "type": "text", 
+              "analyzer": "standard",
+              "fields": {
+                "keyword": { "type": "keyword" }
+              }
+            },
+            "last_updated": { "type": "date" }
+          }
+        }
+      }
+    }
+  ]
+  

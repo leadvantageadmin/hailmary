@@ -1,0 +1,171 @@
+// Datasource
+ datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+ }
+
+// Generators
+generator js_client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+generator py_client {
+  provider = "prisma-client-py"
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  salutation      String?
+  firstName       String?
+  lastName        String?
+  email           String?
+  company         String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  zipCode         String?
+  phone           String?
+  mobilePhone     String?
+  industry        String?
+  jobTitleLevel   String?
+  jobTitle        String?
+  department      String?
+  minEmployeeSize Int?
+  maxEmployeeSize Int?
+  jobTitleLink    String?
+  employeeSizeLink String?
+  revenue         BigInt?
+  externalSource  String
+  externalId      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([externalSource, externalId])
+  @@index([industry])
+  @@index([company])
+  @@index([country])
+  @@index([minEmployeeSize])
+  @@index([maxEmployeeSize])
+  @@index([jobTitle])
+  @@index([department])
+  @@index([revenue])
+}
+
+model Company {
+  id              String   @id // Use domain as ID
+  domain          String   @unique
+  name            String?
+  industry        String?
+  minEmployeeSize Int?
+  maxEmployeeSize Int?
+  employeeSizeLink String?
+  revenue         BigInt?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  zipCode         String?
+  phone           String?
+  mobilePhone     String?
+  externalSource  String
+  externalId      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  prospects       Prospect[]
+
+  @@index([domain])
+  @@index([name])
+  @@index([industry])
+  @@index([minEmployeeSize])
+  @@index([maxEmployeeSize])
+  @@index([revenue])
+  @@index([country])
+  @@index([city])
+  @@index([state])
+  @@unique([externalSource, externalId])
+}
+
+model Prospect {
+  id              String   @id // Use email as ID
+  salutation      String?
+  firstName       String?
+  lastName        String?
+  email           String?
+  jobTitle        String?
+  jobTitleLevel   String?
+  department      String?
+  jobTitleLink    String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  zipCode         String?
+  phone           String?
+  mobilePhone     String?
+  companyId       String
+  externalSource  String
+  externalId      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company         Company  @relation(fields: [companyId], references: [id])
+
+  @@index([email])
+  @@index([companyId])
+  @@index([jobTitle])
+  @@index([jobTitleLevel])
+  @@index([department])
+  @@index([country])
+  @@index([city])
+  @@index([state])
+  @@unique([externalSource, externalId])
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  MODERATOR
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  firstName String
+  lastName  String
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+// Monitoring tables for materialized views
+model MaterializedViewLog {
+  id                Int      @id @default(autoincrement())
+  viewName          String   @map("view_name")
+  refreshType       String   @map("refresh_type") // 'scheduled', 'ingestion', 'manual'
+  refreshedAt       DateTime @default(now()) @map("refreshed_at")
+  durationMs        Int?     @map("duration_ms")
+  recordsProcessed  Int?     @map("records_processed")
+
+  @@index([refreshedAt])
+  @@index([viewName])
+  @@map("materialized_view_log")
+}
+
+model MaterializedViewError {
+  id           Int      @id @default(autoincrement())
+  viewName     String?  @map("view_name")
+  errorMessage String?  @map("error_message")
+  occurredAt   DateTime @default(now()) @map("occurred_at")
+
+  @@index([occurredAt])
+  @@index([viewName])
+  @@map("materialized_view_errors")
+}
