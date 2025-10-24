@@ -145,13 +145,6 @@
         "schema": "public",
         "label": "company_prospect",
         "primary_key": ["company_id", "prospect_id"],
-        "mapping_settings": {
-          "dynamic": false,
-          "properties": {
-            "company_id": { "type": "keyword" },
-            "prospect_id": { "type": "keyword" }
-          }
-        },
         "columns": [
           "company_id", "domain", "company_name", "industry", "revenue",
           "minEmployeeSize", "maxEmployeeSize", "company_address", "company_city",
@@ -167,11 +160,7 @@
         ],
         "transform": {
           "mapping": {
-            "company_id": { 
-              "type": "keyword",
-              "index": true,
-              "doc_values": true
-            },
+            "company_id": { "type": "keyword" },
             "domain": { "type": "keyword" },
             "company_name": { 
               "type": "text", 
@@ -207,11 +196,7 @@
             "company_externalid": { "type": "keyword" },
             "company_createdat": { "type": "date" },
             "company_updatedat": { "type": "date" },
-            "prospect_id": { 
-              "type": "keyword",
-              "index": true,
-              "doc_values": true
-            },
+            "prospect_id": { "type": "keyword" },
             "salutation": { "type": "keyword" },
             "firstName": { 
               "type": "text", 
