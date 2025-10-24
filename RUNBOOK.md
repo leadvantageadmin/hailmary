@@ -304,35 +304,236 @@ docker compose logs materialized-view-refresh --tail 10
 
 ### 🔴 Redis Service
 
-**Purpose**: Caching and session management
+**Purpose**: Caching and session management with schema integration
 
-**Local Deployment**:
+#### **Local Development Setup**
+
+**Prerequisites**:
+- Docker and Docker Compose installed
+- Port 6379 available
+
+**Start Service**:
 ```bash
 cd services/redis
+./scripts/start.sh local
+# or simply (local is default)
 ./scripts/start.sh
 ```
 
-**VM Deployment**:
+**Configuration (Local)**:
+- Port: 6390
+- Database: 0
+- Password: None (default)
+- Data Directory: `./data/redis`
+- Logs Directory: `./logs/redis`
+- Schema Directory: `./data/schema`
+
+**Connection String**: `redis://localhost:6390`
+
+#### **VM/Production Setup**
+
+**Prerequisites**:
+- VM with Docker and Docker Compose installed
+- Port 6379 available
+- Environment variables configured
+
+**Start Service**:
 ```bash
 # On VM
 cd /opt/hailmary/services/redis
-./scripts/start.sh
+./scripts/start.sh vm
 ```
 
-**Configuration**:
-- Port: 6379
+**Configuration (VM)**:
+- Port: 6390
+- Database: 0
+- Password: None (default)
 - Data Directory: `./data/redis`
 - Logs Directory: `./logs/redis`
+- Schema Directory: `./data/schema`
+- Deployment Mode: vm
 
-**Management Scripts**:
-- `start.sh` - Start the service
-- `stop.sh` - Stop the service
-- `health-check.sh` - Check service health
-- `logs.sh` - View service logs
+**Connection String**: `redis://<vm-ip>:6390`
 
-**Dependencies**: None (base service)
+#### **Environment Variables**
 
-**Health Check**: `docker exec hailmary-redis redis-cli ping`
+**Required in `.env` file**:
+```bash
+# Redis Configuration
+REDIS_PORT=6390
+REDIS_PASSWORD=
+REDIS_DB=0
+
+# Schema Service Integration
+GITHUB_REPO=leadvantageadmin/hailmary-schema
+SCHEMA_VERSION=latest
+GITHUB_TOKEN=your-github-token-here
+
+# Data Paths
+REDIS_DATA_PATH=./data/redis
+REDIS_LOGS_PATH=./logs/redis
+SCHEMA_DATA_PATH=./data/schema
+
+# Deployment Mode (for VM)
+DEPLOYMENT_MODE=vm
+
+# Timezone
+TZ=UTC
+```
+
+#### **Daily Operations**
+
+**Service Management**:
+```bash
+# Start service
+./scripts/start.sh [local|vm]
+
+# Stop service
+./scripts/stop.sh [local|vm]
+
+# Check service health
+./scripts/health-check.sh [local|vm]
+
+# View service logs
+./scripts/logs.sh [local|vm]
+
+# View specific log types
+./scripts/logs.sh [local|vm] -f          # Follow logs
+./scripts/logs.sh [local|vm] -n 100      # Show last 100 lines
+./scripts/logs.sh [local|vm] -s redis-cli # Show logs for redis-cli service
+```
+
+**Schema Management**:
+```bash
+# Pull latest schema from schema service
+./scripts/pull-schema.sh [local|vm] [VERSION]
+
+# Examples:
+./scripts/pull-schema.sh local latest    # Pull latest schema (local mode)
+./scripts/pull-schema.sh vm v2.1.0       # Pull specific version (VM mode)
+```
+
+**Direct Redis Access**:
+```bash
+# Connect to Redis CLI
+docker compose exec redis redis-cli
+
+# Run Redis commands
+docker compose exec redis redis-cli ping
+docker compose exec redis redis-cli info
+docker compose exec redis redis-cli keys "*"
+
+# Set and get values
+docker compose exec redis redis-cli set "test_key" "test_value"
+docker compose exec redis redis-cli get "test_key"
+
+# Monitor Redis commands in real-time
+docker compose exec redis redis-cli monitor
+```
+
+#### **Health Checks**
+
+**Quick Health Check**:
+```bash
+# Check if container is running
+docker ps | grep hailmary-services-redis
+
+# Test Redis connectivity
+docker compose exec redis redis-cli ping
+
+# Check Redis info
+docker compose exec redis redis-cli info server
+```
+
+**Comprehensive Health Check**:
+```bash
+./scripts/health-check.sh [local|vm]
+```
+
+#### **Troubleshooting**
+
+**Common Issues**:
+
+1. **Service won't start**:
+   ```bash
+   # Check Docker is running
+   docker info
+   
+   # Check port conflicts
+   netstat -tulpn | grep :6379
+   
+   # Check logs
+   ./scripts/logs.sh [local|vm]
+   ```
+
+2. **Redis connection issues**:
+   ```bash
+   # Verify Redis is running
+   docker ps | grep redis
+   
+   # Test connection
+   docker compose exec redis redis-cli ping
+   
+   # Check Redis logs
+   docker compose logs redis
+   ```
+
+3. **Memory issues**:
+   ```bash
+   # Check Redis memory usage
+   docker compose exec redis redis-cli info memory
+   
+   # Check memory fragmentation
+   docker compose exec redis redis-cli info memory | grep mem_fragmentation_ratio
+   
+   # Clear Redis cache if needed
+   docker compose exec redis redis-cli flushall
+   ```
+
+4. **Permission issues (VM)**:
+   ```bash
+   # Fix data directory permissions
+   sudo chown -R $(whoami):$(whoami) ./data
+   
+   # Fix log directory permissions
+   sudo chown -R $(whoami):$(whoami) ./logs
+   ```
+
+5. **Schema integration issues**:
+   ```bash
+   # Check schema files
+   ls -la ./data/schema/
+   
+   # Pull latest schema
+   ./scripts/pull-schema.sh [local|vm] latest
+   
+   # Verify schema files
+   cat ./data/schema/metadata.json
+   ```
+
+#### **Services Included**
+
+The Redis service includes:
+
+1. **Redis Server** (`hailmary-services-redis`)
+   - Main Redis container
+   - Port: 6379 (external) → 6379 (internal)
+   - Health check: `docker exec hailmary-services-redis redis-cli ping`
+
+2. **Redis CLI** (`hailmary-redis-cli`) - Optional
+   - Management CLI container
+   - Available via `docker compose exec redis-cli redis-cli`
+
+#### **Dependencies**
+
+- **None**: Base service (can run independently)
+- **Optional**: Schema service for schema integration
+
+#### **Ports**
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Redis | 6379 | Redis server |
 
 ---
 
@@ -845,7 +1046,7 @@ cd services/schema && ./scripts/logs.sh
 | Service | Port | Purpose |
 |---------|------|---------|
 | PostgreSQL | 5433 | Database (external) |
-| Redis | 6379 | Cache |
+| Redis | 6390 | Cache |
 | Web | 3000 | Web Application |
 | Ingestor | 8080 | Data Processing |
 | CDC - Elasticsearch | 9200 | Search Engine HTTP API |
@@ -911,6 +1112,72 @@ sed -i 's/DEPLOYMENT_MODE=local/DEPLOYMENT_MODE=vm/' .env
 ./scripts/health-check.sh vm
 ```
 
+#### VM-Specific Setup Issues and Solutions
+
+**1. PostgreSQL wal_level Configuration**
+```bash
+# On VM, PostgreSQL may not have wal_level=logical set
+# This is required for CDC to work
+
+# Check current wal_level
+docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
+
+# If not 'logical', set it:
+docker-compose exec postgres psql -U app -d app -c "ALTER SYSTEM SET wal_level = logical;"
+
+# Restart PostgreSQL
+docker-compose restart postgres
+
+# Verify the change
+docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
+```
+
+**2. Permission Issues on VM**
+```bash
+# CDC service may fail due to permission issues on VM
+# Fix data directory permissions
+sudo chown -R $(whoami):$(whoami) ./data ./logs
+
+# Fix specific service permissions
+sudo chown -R 1000:1000 ./data/elasticsearch ./logs/elasticsearch
+sudo chown -R 999:999 ./data/redis
+
+# Restart services after fixing permissions
+docker-compose down && docker-compose up -d
+```
+
+**3. Elasticsearch JVM Issues on VM**
+```bash
+# Elasticsearch may fail to start due to JVM log permission issues
+# Check logs for "Permission denied" errors
+docker-compose logs elasticsearch --tail=20
+
+# Fix Elasticsearch log directory permissions
+sudo chown -R 1000:1000 ./logs/elasticsearch
+
+# Restart Elasticsearch
+docker-compose restart elasticsearch
+
+# Wait for startup (30-60 seconds)
+sleep 30 && docker-compose ps
+```
+
+**4. Redis RDB Snapshot Issues on VM**
+```bash
+# Redis may fail to save RDB snapshots due to permission issues
+# Check Redis logs for "Permission denied" errors
+docker-compose logs redis --tail=10
+
+# Fix Redis data directory permissions
+sudo chown -R 999:999 ./data/redis
+
+# Restart Redis
+docker-compose restart redis
+
+# Verify Redis is working
+docker-compose exec redis redis-cli ping
+```
+
 ### Configuration
 
 #### Local Development
@@ -953,7 +1220,7 @@ ELASTICSEARCH_PORT=9200
 ELASTICSEARCH_TRANSPORT_PORT=9300
 
 # Redis Configuration
-REDIS_PORT=6379
+REDIS_PORT=6390
 
 # PGSync Configuration
 PGSYNC_LOG_LEVEL=INFO
@@ -1046,6 +1313,22 @@ docker-compose exec pgsync pgrep -f python3.11
 
 #### Common Issues
 
+**PostgreSQL wal_level not set to logical (CDC prerequisite)**
+```bash
+# Check current wal_level
+docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
+
+# If showing 'replica' instead of 'logical', fix it:
+# 1. Set wal_level to logical
+docker-compose exec postgres psql -U app -d app -c "ALTER SYSTEM SET wal_level = logical;"
+
+# 2. Restart PostgreSQL for changes to take effect
+docker-compose restart postgres
+
+# 3. Verify the change
+docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
+```
+
 **PGSync shows as unhealthy**
 ```bash
 # Check if PGSync process is running
@@ -1058,6 +1341,21 @@ docker-compose logs pgsync
 docker-compose restart pgsync
 ```
 
+**Elasticsearch JVM issues (Permission denied for logs)**
+```bash
+# Check Elasticsearch logs for JVM errors
+docker-compose logs elasticsearch --tail=20
+
+# If you see "Permission denied" for logs/gc.log, fix permissions:
+sudo chown -R 1000:1000 ./logs/elasticsearch
+
+# Restart Elasticsearch
+docker-compose restart elasticsearch
+
+# Wait for Elasticsearch to start (30-60 seconds)
+sleep 30 && docker-compose ps
+```
+
 **Elasticsearch connection issues**
 ```bash
 # Check Elasticsearch health
@@ -1068,6 +1366,21 @@ docker-compose logs elasticsearch
 
 # Restart Elasticsearch
 docker-compose restart elasticsearch
+```
+
+**Redis permission issues (RDB snapshot failures)**
+```bash
+# Check Redis logs for permission errors
+docker-compose logs redis --tail=10
+
+# If you see "Permission denied" for RDB files, fix permissions:
+sudo chown -R 999:999 ./data/redis
+
+# Restart Redis
+docker-compose restart redis
+
+# Verify Redis is working
+docker-compose exec redis redis-cli ping
 ```
 
 **Redis connection issues**
@@ -1094,7 +1407,43 @@ cat config/schema.json
 docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
 ```
 
+**Permission issues on VM (Data directory access)**
+```bash
+# Fix CDC service data directory permissions
+sudo chown -R $(whoami):$(whoami) ./data ./logs
+
+# Fix specific service permissions
+sudo chown -R 1000:1000 ./data/elasticsearch ./logs/elasticsearch
+sudo chown -R 999:999 ./data/redis
+
+# Restart all services
+docker-compose down && docker-compose up -d
+```
+
 #### Solutions
+
+**Complete CDC Service Setup on VM (Step-by-Step)**
+```bash
+# 1. Ensure PostgreSQL has wal_level=logical
+docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
+# If not 'logical', set it:
+docker-compose exec postgres psql -U app -d app -c "ALTER SYSTEM SET wal_level = logical;"
+docker-compose restart postgres
+
+# 2. Fix all permission issues
+sudo chown -R $(whoami):$(whoami) ./data ./logs
+sudo chown -R 1000:1000 ./data/elasticsearch ./logs/elasticsearch
+sudo chown -R 999:999 ./data/redis
+
+# 3. Start CDC service
+./scripts/start.sh vm
+
+# 4. Wait for services to start (may take 2-3 minutes)
+sleep 60 && ./scripts/health-check.sh vm
+
+# 5. Verify all services are healthy
+docker-compose ps
+```
 
 **Reset CDC service completely**
 ```bash
@@ -1117,6 +1466,24 @@ docker-compose logs pgsync --tail=50 | grep "Sync"
 curl -s http://localhost:9200/_cat/indices?v
 ```
 
+**Verify CDC Service is Working**
+```bash
+# 1. Check all services are running
+docker-compose ps
+
+# 2. Verify PostgreSQL wal_level
+docker-compose exec postgres psql -U app -d app -c "SHOW wal_level;"
+
+# 3. Check Elasticsearch indices
+curl -s http://localhost:9200/_cat/indices?v
+
+# 4. Check Redis connectivity
+docker-compose exec redis redis-cli ping
+
+# 5. Check PGSync logs for sync activity
+docker-compose logs pgsync --tail=10
+```
+
 ### Dependencies
 
 - **PostgreSQL**: Must be running with logical replication enabled
@@ -1131,6 +1498,292 @@ curl -s http://localhost:9200/_cat/indices?v
 | Elasticsearch | 9200 | HTTP API |
 | Elasticsearch Transport | 9300 | Internal communication |
 | Redis | 6379 | Cache and checkpointing |
+
+---
+
+## 🌐 Web Service
+
+**Purpose**: Next.js web application with nginx reverse proxy for external access
+
+### **Local Development Setup**
+
+**Prerequisites**:
+- Docker and Docker Compose installed
+- Port 3000 available
+- Dependencies: PostgreSQL, Redis, Elasticsearch, Schema API
+
+**Start Service**:
+```bash
+cd services/web
+./scripts/start.sh local
+```
+
+**Configuration (Local)**:
+- Web Port: 3000
+- Node Environment: development
+- Database URL: postgresql://app:app@postgres:5432/app
+- Elasticsearch URL: http://elasticsearch:9200
+- Redis URL: redis://redis:6389
+- Nginx: Not used
+
+**Connection String**: `http://localhost:3000`
+
+### **VM/Production Setup**
+
+**Prerequisites**:
+- VM with Docker and Docker Compose installed
+- Port 80 available (nginx)
+- Dependencies: PostgreSQL, Redis, Elasticsearch, Schema API
+
+**Start Service**:
+```bash
+cd services/web
+./scripts/start.sh vm
+```
+
+**Configuration (VM)**:
+- Web Port: 3000 (internal)
+- Node Environment: production
+- Database URL: postgresql://app:app@postgres:5432/app
+- Elasticsearch URL: http://elasticsearch:9200
+- Redis URL: redis://redis:6389
+- Nginx: Enabled (port 80)
+- External Domain: hailmary.leadvantageglobal.com
+
+**Connection String**: `http://localhost` (via nginx)
+
+### **Environment Variables**
+
+**Required Variables**:
+```bash
+# Service Configuration
+WEB_PORT=3000
+NODE_ENV=production
+DEPLOYMENT_MODE=local  # or vm
+
+# Database Configuration
+DATABASE_URL=postgresql://app:app@postgres:5432/app
+
+# Search Configuration
+ELASTICSEARCH_URL=http://elasticsearch:9200
+
+# Cache Configuration
+REDIS_URL=redis://redis:6389
+
+# Schema Configuration
+SCHEMA_API_URL=http://localhost:3001  # local
+SCHEMA_API_URL=http://hailmary-schema-api:3001  # vm
+
+# Authentication
+NEXTAUTH_URL=http://localhost:3000  # local
+NEXTAUTH_URL=http://hailmary.leadvantageglobal.com  # vm
+NEXTAUTH_SECRET=your-secret-key
+
+# Paths
+WEB_LOGS_PATH=./logs/web
+SCHEMA_DATA_PATH=./data/schema
+```
+
+### **Daily Operations**
+
+**Service Management**:
+```bash
+# Start service
+./scripts/start.sh local    # Local development
+./scripts/start.sh vm       # VM/production
+
+# Stop service
+./scripts/stop.sh local     # Local development
+./scripts/stop.sh vm        # VM/production
+
+# Restart service
+./scripts/restart.sh local  # Local development
+./scripts/restart.sh vm     # VM/production
+
+# Health check
+./scripts/health-check.sh local  # Local development
+./scripts/health-check.sh vm     # VM/production
+```
+
+**Log Management**:
+```bash
+# View logs
+./scripts/logs.sh local                    # Last 100 lines
+./scripts/logs.sh vm -f                    # Follow logs
+./scripts/logs.sh local -n 500              # Last 500 lines
+./scripts/logs.sh vm -f -n 200             # Follow with 200 lines
+
+# Log files location
+./logs/web/                                # Web service logs
+```
+
+**Schema Management**:
+```bash
+# Pull latest schema
+./scripts/pull-schema.sh local             # Local development
+./scripts/pull-schema.sh vm                # VM/production
+./scripts/pull-schema.sh local v2.1.0      # Specific version
+```
+
+**Application Features**:
+- **Search Interface**: Advanced search with pagination and filters
+- **Direct Search**: Email-based direct lookup
+- **Admin Panel**: User management and system administration
+- **Authentication**: Secure login/logout with JWT tokens
+- **Profile Management**: User profile updates
+- **Responsive Design**: Mobile-friendly interface
+
+### **Health Checks**
+
+**Quick Health Check**:
+```bash
+# Check if containers are running
+docker ps | grep hailmary-web
+docker ps | grep hailmary-nginx  # VM mode only
+
+# Check health endpoint
+curl -f http://localhost:3000/api/health  # Local
+curl -f http://localhost/api/health        # VM
+```
+
+**Comprehensive Health Check**:
+```bash
+# Run full health check
+./scripts/health-check.sh local  # Local development
+./scripts/health-check.sh vm     # VM/production
+```
+
+**Health Check Components**:
+- ✅ Container Status: Web service container running
+- ✅ Nginx Status: Nginx container running (VM mode)
+- ✅ Health Endpoint: `/api/health` responding
+- ✅ Main Application: Root endpoint responding
+- ✅ Database Connection: PostgreSQL connectivity
+- ✅ Search Service: Elasticsearch connectivity
+- ✅ Cache Service: Redis connectivity
+
+### **Troubleshooting**
+
+**Common Issues**:
+
+1. **Port 3000 already in use**
+   ```bash
+   # Find and stop conflicting service
+   docker ps | grep 3000
+   docker stop <container-id>
+   
+   # Or use different port
+   export WEB_PORT=3001
+   ./scripts/start.sh local
+   ```
+
+2. **Web service not responding**
+   ```bash
+   # Check container logs
+   ./scripts/logs.sh local -f
+   
+   # Check health endpoint
+   curl -v http://localhost:3000/api/health
+   
+   # Restart service
+   ./scripts/restart.sh local
+   ```
+
+3. **Nginx not working (VM mode)**
+   ```bash
+   # Check nginx container
+   docker ps | grep nginx
+   
+   # Check nginx logs
+   docker logs hailmary-nginx
+   
+   # Verify nginx configuration
+   docker exec hailmary-nginx nginx -t
+   ```
+
+4. **Database connection issues**
+   ```bash
+   # Check PostgreSQL service
+   cd ../postgres && ./scripts/health-check.sh local
+   
+   # Verify database URL
+   echo $DATABASE_URL
+   ```
+
+5. **Authentication issues**
+   ```bash
+   # Check JWT secret
+   echo $NEXTAUTH_SECRET
+   
+   # Verify user exists
+   cd ../postgres && ./scripts/run-migrations.sh local
+   ```
+
+6. **Static file serving issues**
+   ```bash
+   # Check nginx configuration
+   cat nginx.conf
+   
+   # Verify static file paths
+   ls -la public/
+   ```
+
+**Performance Issues**:
+
+1. **Slow page loads**
+   ```bash
+   # Check Redis cache
+   cd ../redis && ./scripts/health-check.sh local
+   
+   # Check Elasticsearch
+   cd ../cdc && ./scripts/health-check.sh local
+   ```
+
+2. **High memory usage**
+   ```bash
+   # Check container resource usage
+   docker stats hailmary-web
+   
+   # Check nginx resource usage (VM mode)
+   docker stats hailmary-nginx
+   ```
+
+### **Dependencies**
+
+**Required Services**:
+- **PostgreSQL**: Database service (port 5432)
+- **Redis**: Cache service (port 6389)
+- **Elasticsearch**: Search service (port 9200)
+- **Schema API**: Schema management (port 3001)
+
+**Service Dependencies**:
+```bash
+# Start dependencies first
+cd ../postgres && ./scripts/start.sh local
+cd ../redis && ./scripts/start.sh local
+cd ../cdc && ./scripts/start.sh local
+cd ../schema && ./scripts/start.sh local
+
+# Then start web service
+cd ../web && ./scripts/start.sh local
+```
+
+### **Ports**
+
+**Local Development**:
+- Web Application: 3000
+- Health Check: 3000/api/health
+
+**VM/Production**:
+- Nginx: 80 (external)
+- Web Application: 3000 (internal)
+- Health Check: 80/api/health (external)
+
+**Internal Container Communication**:
+- Web → PostgreSQL: 5432
+- Web → Redis: 6389
+- Web → Elasticsearch: 9200
+- Web → Schema API: 3001
 
 ---
 

@@ -4,7 +4,35 @@ set -e
 # Web Service Schema Pull Script
 # Pulls schema from Schema API service for Web service
 
-echo "📥 Pulling schema for Web service..."
+# Show usage if no arguments provided
+show_usage() {
+    echo "Usage: $0 [local|vm] [VERSION]"
+    echo ""
+    echo "Modes:"
+    echo "  local    - Local development mode (default)"
+    echo "  vm       - VM/production mode"
+    echo ""
+    echo "Arguments:"
+    echo "  VERSION  - Schema version to pull (default: latest)"
+    echo ""
+    echo "Examples:"
+    echo "  $0 local                    # Pull latest schema (local mode)"
+    echo "  $0 vm v2.1.0               # Pull specific version (VM mode)"
+    echo "  $0 local latest            # Pull latest schema (local mode)"
+    exit 1
+}
+
+# Parse arguments
+DEPLOYMENT_MODE=${1:-local}
+VERSION=${2:-"latest"}
+
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo "❌ Invalid deployment mode: $DEPLOYMENT_MODE"
+    show_usage
+fi
+
+echo "📥 Pulling schema for Web service ($DEPLOYMENT_MODE mode)..."
+echo "Version: $VERSION"
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,9 +41,18 @@ SERVICE_DIR="$(dirname "$SCRIPT_DIR")"
 # Change to service directory
 cd "$SERVICE_DIR"
 
+# Load environment variables if .env file exists
+if [ -f ".env" ]; then
+    echo "📋 Loading environment variables from .env file..."
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
 # Configuration
-VERSION=${1:-"latest"}
-SCHEMA_API_URL=${SCHEMA_API_URL:-"http://localhost:3001"}
+if [ "$DEPLOYMENT_MODE" = "local" ]; then
+    SCHEMA_API_URL=${SCHEMA_API_URL:-"http://localhost:3001"}
+else
+    SCHEMA_API_URL=${SCHEMA_API_URL:-"http://hailmary-schema-api:3001"}
+fi
 TARGET_DIR=${TARGET_DIR:-"./data/schema"}
 
 echo "🔍 Configuration:"
@@ -140,7 +177,7 @@ echo ""
 echo "✅ Schema version $VERSION_FILE pulled successfully from Schema API!"
 echo ""
 echo "🚀 Next steps:"
-echo "   • Restart web service: ./scripts/restart.sh"
-echo "   • Check health: ./scripts/health-check.sh"
-echo "   • View logs: ./scripts/logs.sh"
+echo "   • Restart web service: ./scripts/restart.sh $DEPLOYMENT_MODE"
+echo "   • Check health: ./scripts/health-check.sh $DEPLOYMENT_MODE"
+echo "   • View logs: ./scripts/logs.sh $DEPLOYMENT_MODE"
 echo "   • View schema files: ls -la $TARGET_DIR/"
