@@ -4,8 +4,31 @@ set -e
 # Redis Service Start Script
 # Starts the Redis service with proper configuration
 
-echo "🚀 Starting HailMary Redis Service"
-echo "=================================="
+# Show usage if no arguments provided
+show_usage() {
+    echo "Usage: $0 [local|vm]"
+    echo ""
+    echo "Modes:"
+    echo "  local    - Local development mode (default)"
+    echo "  vm       - VM/production mode"
+    echo ""
+    echo "Examples:"
+    echo "  $0 local    # Start in local mode"
+    echo "  $0 vm       # Start in VM mode"
+    echo "  $0          # Start in local mode (default)"
+    exit 1
+}
+
+# Parse arguments
+DEPLOYMENT_MODE=${1:-local}
+
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo "❌ Invalid deployment mode: $DEPLOYMENT_MODE"
+    show_usage
+fi
+
+echo "🚀 Starting HailMary Redis Service ($DEPLOYMENT_MODE mode)"
+echo "========================================================"
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,15 +43,35 @@ if [ -f ".env" ]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
 
-# Configuration
-REDIS_PORT=${REDIS_PORT:-6379}
-REDIS_PASSWORD=${REDIS_PASSWORD:-}
-REDIS_DB=${REDIS_DB:-0}
+# Configuration functions
+configure_local() {
+    echo "🔧 Configuring for local development..."
+    REDIS_PORT=${REDIS_PORT:-6390}
+    REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    REDIS_DB=${REDIS_DB:-0}
+    echo "✅ Local configuration complete"
+}
+
+configure_vm() {
+    echo "🔧 Configuring for VM/production deployment..."
+    REDIS_PORT=${REDIS_PORT:-6390}
+    REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    REDIS_DB=${REDIS_DB:-0}
+    echo "✅ VM configuration complete"
+}
+
+# Configure based on deployment mode
+if [ "$DEPLOYMENT_MODE" = "local" ]; then
+    configure_local
+else
+    configure_vm
+fi
 
 echo "🔍 Configuration:"
 echo "   • Redis Port: $REDIS_PORT"
 echo "   • Redis DB: $REDIS_DB"
 echo "   • Password: ${REDIS_PASSWORD:+[SET]}${REDIS_PASSWORD:-[NOT SET]}"
+echo "   • Deployment Mode: $DEPLOYMENT_MODE"
 
 # Create necessary directories
 echo "📁 Creating necessary directories..."
@@ -79,6 +122,12 @@ docker compose exec redis redis-cli info server | grep -E "(redis_version|uptime
 echo ""
 echo "🔧 Management Commands:"
 echo "   • Connect to Redis: docker compose exec redis redis-cli"
-echo "   • View logs: ./scripts/logs.sh"
-echo "   • Health check: ./scripts/health-check.sh"
-echo "   • Stop service: ./scripts/stop.sh"
+echo "   • View logs: ./scripts/logs.sh $DEPLOYMENT_MODE"
+echo "   • Health check: ./scripts/health-check.sh $DEPLOYMENT_MODE"
+echo "   • Stop service: ./scripts/stop.sh $DEPLOYMENT_MODE"
+
+echo ""
+echo "🌐 Deployment Information:"
+echo "   • Mode: $DEPLOYMENT_MODE"
+echo "   • Port: $REDIS_PORT"
+echo "   • Container: hailmary-services-redis"

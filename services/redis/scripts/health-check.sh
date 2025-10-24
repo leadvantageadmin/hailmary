@@ -4,8 +4,31 @@ set -e
 # Redis Service Health Check Script
 # Comprehensive health check for Redis service
 
-echo "🔍 HailMary Redis Health Check"
-echo "=============================="
+# Show usage if no arguments provided
+show_usage() {
+    echo "Usage: $0 [local|vm]"
+    echo ""
+    echo "Modes:"
+    echo "  local    - Local development mode (default)"
+    echo "  vm       - VM/production mode"
+    echo ""
+    echo "Examples:"
+    echo "  $0 local    # Health check in local mode"
+    echo "  $0 vm       # Health check in VM mode"
+    echo "  $0          # Health check in local mode (default)"
+    exit 1
+}
+
+# Parse arguments
+DEPLOYMENT_MODE=${1:-local}
+
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo "❌ Invalid deployment mode: $DEPLOYMENT_MODE"
+    show_usage
+fi
+
+echo "🔍 HailMary Redis Health Check ($DEPLOYMENT_MODE mode)"
+echo "===================================================="
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,13 +43,14 @@ if [ -f ".env" ]; then
 fi
 
 # Configuration
-REDIS_PORT=${REDIS_PORT:-6379}
+REDIS_PORT=${REDIS_PORT:-6390}
 REDIS_PASSWORD=${REDIS_PASSWORD:-}
 
 echo "🔍 Configuration:"
 echo "   • Redis Port: $REDIS_PORT"
 echo "   • Redis DB: 0"
 echo "   • Password: ${REDIS_PASSWORD:+[SET]}${REDIS_PASSWORD:-[NOT SET]}"
+echo "   • Deployment Mode: $DEPLOYMENT_MODE"
 
 # Check if Redis container is running
 echo ""
@@ -42,7 +66,7 @@ fi
 # Check Redis connectivity
 echo ""
 echo "🔗 Connectivity Test:"
-if docker compose exec redis redis-cli ping >/dev/null 2>&1; then
+if docker compose exec redis redis-cli -p 6389 ping >/dev/null 2>&1; then
     echo "✅ Redis is responding to ping"
 else
     echo "❌ Redis is not responding to ping"
@@ -52,16 +76,16 @@ fi
 # Check Redis info
 echo ""
 echo "📊 Redis Information:"
-echo "   • Version: $(docker compose exec redis redis-cli info server | grep redis_version | cut -d: -f2 | tr -d '\r')"
-echo "   • Uptime: $(docker compose exec redis redis-cli info server | grep uptime_in_seconds | cut -d: -f2 | tr -d '\r') seconds"
-echo "   • Connected Clients: $(docker compose exec redis redis-cli info clients | grep connected_clients | cut -d: -f2 | tr -d '\r')"
-echo "   • Used Memory: $(docker compose exec redis redis-cli info memory | grep used_memory_human | cut -d: -f2 | tr -d '\r')"
+echo "   • Version: $(docker compose exec redis redis-cli -p 6389 info server | grep redis_version | cut -d: -f2 | tr -d '\r')"
+echo "   • Uptime: $(docker compose exec redis redis-cli -p 6389 info server | grep uptime_in_seconds | cut -d: -f2 | tr -d '\r') seconds"
+echo "   • Connected Clients: $(docker compose exec redis redis-cli -p 6389 info clients | grep connected_clients | cut -d: -f2 | tr -d '\r')"
+echo "   • Used Memory: $(docker compose exec redis redis-cli -p 6389 info memory | grep used_memory_human | cut -d: -f2 | tr -d '\r')"
 
 # Check Redis databases
 echo ""
 echo "🗄️  Database Status:"
 for db in {0..15}; do
-    key_count=$(docker compose exec redis redis-cli -n $db dbsize 2>/dev/null || echo "0")
+    key_count=$(docker compose exec redis redis-cli -p 6389 -n $db dbsize 2>/dev/null || echo "0")
     if [ "$key_count" -gt 0 ]; then
         echo "   • Database $db: $key_count keys"
     fi
@@ -74,7 +98,7 @@ test_key="health_check_$(date +%s)"
 test_value="test_value_$(date +%s)"
 
 # Set a test key
-if docker compose exec redis redis-cli set "$test_key" "$test_value" >/dev/null 2>&1; then
+if docker compose exec redis redis-cli -p 6389 set "$test_key" "$test_value" >/dev/null 2>&1; then
     echo "✅ SET operation successful"
 else
     echo "❌ SET operation failed"
@@ -82,7 +106,7 @@ else
 fi
 
 # Get the test key
-if docker compose exec redis redis-cli get "$test_key" | grep -q "$test_value"; then
+if docker compose exec redis redis-cli -p 6389 get "$test_key" | grep -q "$test_value"; then
     echo "✅ GET operation successful"
 else
     echo "❌ GET operation failed"
@@ -90,7 +114,7 @@ else
 fi
 
 # Delete the test key
-if docker compose exec redis redis-cli del "$test_key" >/dev/null 2>&1; then
+if docker compose exec redis redis-cli -p 6389 del "$test_key" >/dev/null 2>&1; then
     echo "✅ DEL operation successful"
 else
     echo "❌ DEL operation failed"
@@ -100,7 +124,7 @@ fi
 # Check memory usage
 echo ""
 echo "💾 Memory Usage:"
-memory_info=$(docker compose exec redis redis-cli info memory)
+memory_info=$(docker compose exec redis redis-cli -p 6389 info memory)
 echo "   • Used Memory: $(echo "$memory_info" | grep used_memory_human | cut -d: -f2 | tr -d '\r')"
 echo "   • Max Memory: $(echo "$memory_info" | grep maxmemory_human | cut -d: -f2 | tr -d '\r')"
 echo "   • Memory Fragmentation: $(echo "$memory_info" | grep mem_fragmentation_ratio | cut -d: -f2 | tr -d '\r')"
@@ -108,7 +132,7 @@ echo "   • Memory Fragmentation: $(echo "$memory_info" | grep mem_fragmentatio
 # Check persistence
 echo ""
 echo "💾 Persistence Status:"
-persistence_info=$(docker compose exec redis redis-cli info persistence)
+persistence_info=$(docker compose exec redis redis-cli -p 6389 info persistence)
 echo "   • RDB Last Save: $(echo "$persistence_info" | grep rdb_last_save_time | cut -d: -f2 | tr -d '\r')"
 echo "   • AOF Enabled: $(echo "$persistence_info" | grep aof_enabled | cut -d: -f2 | tr -d '\r')"
 

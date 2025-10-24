@@ -4,7 +4,35 @@ set -e
 # Redis Schema Pull Script
 # Pulls schema from GitHub repository for Redis service
 
-echo "📥 Pulling schema for Redis service..."
+# Show usage if no arguments provided
+show_usage() {
+    echo "Usage: $0 [local|vm] [VERSION]"
+    echo ""
+    echo "Modes:"
+    echo "  local    - Local development mode (default)"
+    echo "  vm       - VM/production mode"
+    echo ""
+    echo "Arguments:"
+    echo "  VERSION  - Schema version to pull (default: latest)"
+    echo ""
+    echo "Examples:"
+    echo "  $0 local                    # Pull latest schema (local mode)"
+    echo "  $0 vm v2.1.0               # Pull specific version (VM mode)"
+    echo "  $0 local latest            # Pull latest schema (local mode)"
+    exit 1
+}
+
+# Parse arguments
+DEPLOYMENT_MODE=${1:-local}
+VERSION=${2:-"latest"}
+
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo "❌ Invalid deployment mode: $DEPLOYMENT_MODE"
+    show_usage
+fi
+
+echo "📥 Pulling schema for Redis service ($DEPLOYMENT_MODE mode)..."
+echo "Version: $VERSION"
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,8 +41,13 @@ SERVICE_DIR="$(dirname "$SCRIPT_DIR")"
 # Change to service directory
 cd "$SERVICE_DIR"
 
+# Load environment variables if .env file exists
+if [ -f ".env" ]; then
+    echo "📋 Loading environment variables from .env file..."
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
 # Configuration
-VERSION=${1:-"latest"}
 GITHUB_REPO=${GITHUB_REPO:-"leadvantageadmin/hailmary-schema"}
 GITHUB_TOKEN=${GITHUB_TOKEN:-""}
 TARGET_DIR=${TARGET_DIR:-"./data/schema"}

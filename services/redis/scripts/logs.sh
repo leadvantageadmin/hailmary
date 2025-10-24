@@ -4,8 +4,41 @@ set -e
 # Redis Service Logs Script
 # View Redis service logs with various options
 
-echo "📋 HailMary Redis Logs"
-echo "====================="
+# Show usage if no arguments provided
+show_usage() {
+    echo "Usage: $0 [local|vm] [OPTIONS]"
+    echo ""
+    echo "Modes:"
+    echo "  local    - Local development mode (default)"
+    echo "  vm       - VM/production mode"
+    echo ""
+    echo "Options:"
+    echo "  -f, --follow     Follow log output"
+    echo "  -n, --lines N    Number of lines to show (default: 50)"
+    echo "  -s, --service S  Service to show logs for (default: redis)"
+    echo "  -h, --help       Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 local                    # Show last 50 lines (local mode)"
+    echo "  $0 vm -f                    # Follow logs (VM mode)"
+    echo "  $0 local -n 100             # Show last 100 lines (local mode)"
+    echo "  $0 vm -s redis-cli          # Show logs for redis-cli service (VM mode)"
+    exit 1
+}
+
+# Parse deployment mode
+DEPLOYMENT_MODE=${1:-local}
+
+if [[ "$DEPLOYMENT_MODE" != "local" && "$DEPLOYMENT_MODE" != "vm" ]]; then
+    echo "❌ Invalid deployment mode: $DEPLOYMENT_MODE"
+    show_usage
+fi
+
+# Shift to remove deployment mode from arguments
+shift
+
+echo "📋 HailMary Redis Logs ($DEPLOYMENT_MODE mode)"
+echo "============================================="
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -35,20 +68,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h|--help)
-            echo "Usage: $0 [OPTIONS]"
-            echo ""
-            echo "Options:"
-            echo "  -f, --follow     Follow log output"
-            echo "  -n, --lines N    Number of lines to show (default: 50)"
-            echo "  -s, --service S  Service to show logs for (default: redis)"
-            echo "  -h, --help       Show this help message"
-            echo ""
-            echo "Examples:"
-            echo "  $0                    # Show last 50 lines"
-            echo "  $0 -f                 # Follow logs"
-            echo "  $0 -n 100             # Show last 100 lines"
-            echo "  $0 -s redis-cli       # Show logs for redis-cli service"
-            exit 0
+            show_usage
             ;;
         *)
             echo "Unknown option: $1"
