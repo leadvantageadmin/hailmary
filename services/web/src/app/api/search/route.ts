@@ -162,7 +162,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   }
   if (filters.industry?.length) mustFilters.push(createPartialMatchQuery('industry', filters.industry));
 
-  const sort = [{ company_id: 'asc' }];
+  const sort = [{ 'company_id.keyword': 'asc' }];
   const from = (page.number - 1) * page.size;
   
   // If no filters, use match_all query, otherwise use filtered query
