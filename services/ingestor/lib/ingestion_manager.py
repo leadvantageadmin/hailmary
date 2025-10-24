@@ -35,10 +35,7 @@ class IngestionManager:
             batch_size = options.get('batch_size', self.batch_size)
             dry_run = options.get('dry_run', False)
             
-            # Get database counts before ingestion (excluding slow materialized view count)
-            logger.info("Capturing database state before ingestion...")
-            counts_before = await self.db_ops.get_fast_database_counts()
-            company_prospect_view_count_before = 0  # Skip slow materialized view count
+            # Skip database count queries for performance
             
             # Process CSV file
             logger.info("Processing CSV file...")
@@ -49,9 +46,7 @@ class IngestionManager:
                     "status": "success",
                     "message": "No data to process",
                     "records_processed": 0,
-                    "processing_time": 0,
-                    "company_prospect_view_count_before": company_prospect_view_count_before,
-                    "company_prospect_view_count_after": company_prospect_view_count_before
+                    "processing_time": 0
                 }
             
             # Separate data by type
@@ -66,18 +61,13 @@ class IngestionManager:
                     "records_processed": len(processed_data),
                     "companies": len(companies),
                     "prospects": len(prospects),
-                    "processing_time": (datetime.utcnow() - start_time).total_seconds(),
-                    "company_prospect_view_count_before": company_prospect_view_count_before,
-                    "company_prospect_view_count_after": company_prospect_view_count_before
+                    "processing_time": (datetime.utcnow() - start_time).total_seconds()
                 }
             
             # Ingest to database
             db_results = await self._ingest_to_database(companies, prospects, batch_size)
             
-            # Get database counts after ingestion (excluding slow materialized view count)
-            logger.info("Capturing database state after ingestion...")
-            counts_after = await self.db_ops.get_fast_database_counts()
-            company_prospect_view_count_after = 0  # Skip slow materialized view count
+            # Skip database count queries for performance
             
             processing_time = (datetime.utcnow() - start_time).total_seconds()
             
@@ -89,15 +79,10 @@ class IngestionManager:
                 "prospects": len(prospects),
                 "database_results": db_results,
                 "processing_time": processing_time,
-                "timestamp": start_time.isoformat(),
-                "company_prospect_view_count_before": company_prospect_view_count_before,
-                "company_prospect_view_count_after": company_prospect_view_count_after,
-                "database_counts_before": counts_before,
-                "database_counts_after": counts_after
+                "timestamp": start_time.isoformat()
             }
             
             logger.info(f"Ingestion completed for file: {file_path}")
-            logger.info(f"Company Prospect View: {company_prospect_view_count_before} -> {company_prospect_view_count_after} (+{company_prospect_view_count_after - company_prospect_view_count_before})")
             return result
             
         except Exception as e:
