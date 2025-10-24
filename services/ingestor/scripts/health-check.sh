@@ -189,7 +189,7 @@ show_troubleshooting() {
     echo -e "${BLUE}🔧 Troubleshooting Commands:${NC}"
     echo -e "   • View logs: ./scripts/logs.sh"
     echo -e "   • Restart service: ./scripts/restart.sh"
-    echo -e "   • Check container status: docker compose ps"
+    echo -e "   • Check container status: docker-compose ps"
     echo -e "   • Test health endpoint: curl '$INGESTOR_URL/health'"
     echo -e "   • Test ingestion: curl -X POST '$INGESTOR_URL/ingest' -H 'Content-Type: application/json' -d '{\"file_path\": \"./data/csv/test.csv\"}'"
 }

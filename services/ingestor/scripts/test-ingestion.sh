@@ -113,7 +113,7 @@ test_cli_ingestion() {
     fi
     
     echo -e "${BLUE}📤 Running CLI ingestion...${NC}"
-    docker compose exec ingestor python app.py ingest --file "$csv_file" --batch-size 100 $dry_run_flag
+    docker-compose exec ingestor python app.py ingest --file "$csv_file" --batch-size 100 $dry_run_flag
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ CLI ingestion completed${NC}"
@@ -130,7 +130,7 @@ verify_database_data() {
     
     # Check if we can connect to the database through the ingestor
     echo -e "${BLUE}📊 Checking database connectivity...${NC}"
-    docker compose exec ingestor python -c "
+    docker-compose exec ingestor python -c "
 import asyncio
 import sys
 sys.path.append('/app/lib')

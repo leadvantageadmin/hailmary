@@ -79,7 +79,7 @@ check_service_health() {
     done
 
     echo -e "${RED}❌ $service_name service did not become healthy in time.${NC}"
-    docker compose -f "$DOCKER_COMPOSE_FILE" logs "$container_name"
+    docker-compose -f "$DOCKER_COMPOSE_FILE" logs "$container_name"
     exit 1
 }
 
@@ -89,7 +89,7 @@ test_schema_integration() {
     
     # Test 1: Check if schema operations are initialized
     echo -e "${BLUE}📋 Test 1: Schema Operations Initialization${NC}"
-    local schema_result=$(docker compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
+    local schema_result=$(docker-compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
 import asyncio
 import sys
 sys.path.append('/app/lib')
@@ -121,7 +121,7 @@ sys.exit(0 if result else 1)
     
     # Test 2: Check schema info via CLI
     echo -e "${BLUE}📋 Test 2: Schema Info CLI Command${NC}"
-    local schema_info_result=$(docker compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python app.py schema 2>&1)
+    local schema_info_result=$(docker-compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python app.py schema 2>&1)
     
     if echo "$schema_info_result" | grep -q "Schema info:"; then
         echo -e "${GREEN}✅ Schema info CLI test passed${NC}"
@@ -134,7 +134,7 @@ sys.exit(0 if result else 1)
     
     # Test 3: Check if schema files are present
     echo -e "${BLUE}📋 Test 3: Schema Files Presence${NC}"
-    local schema_files_result=$(docker compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" find /app/data/schema -name "*.prisma" -o -name "*.json" 2>/dev/null)
+    local schema_files_result=$(docker-compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" find /app/data/schema -name "*.prisma" -o -name "*.json" 2>/dev/null)
     
     if [ -n "$schema_files_result" ]; then
         echo -e "${GREEN}✅ Schema files found${NC}"
@@ -145,7 +145,7 @@ sys.exit(0 if result else 1)
     
     # Test 4: Test database operations with schema
     echo -e "${BLUE}📋 Test 4: Database Operations with Schema${NC}"
-    local db_schema_result=$(docker compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
+    local db_schema_result=$(docker-compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
 import asyncio
 import sys
 sys.path.append('/app/lib')
@@ -231,7 +231,7 @@ check_service_health "OpenSearch" "hailmary-opensearch" "9200" "/_cluster/health
 # Build images if requested
 if $BUILD_IMAGES; then
     echo -e "${BLUE}🔨 Building Docker images...${NC}"
-    docker compose -f "$DOCKER_COMPOSE_FILE" build "$SERVICE_NAME"
+    docker-compose -f "$DOCKER_COMPOSE_FILE" build "$SERVICE_NAME"
     if [ $? -ne 0 ]; then
         echo -e "${RED}❌ Docker build failed for $SERVICE_NAME!${NC}"
         exit 1

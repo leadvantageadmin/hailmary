@@ -74,7 +74,7 @@ echo "   • Database: $POSTGRES_DB"
 echo "   • User: $POSTGRES_USER"
 
 # Check if PostgreSQL is running
-if ! docker compose ps postgres | grep -q "Up"; then
+if ! docker-compose ps postgres | grep -q "Up"; then
     echo "❌ PostgreSQL service is not running"
     echo "   Start it with: ./scripts/start.sh"
     exit 1
@@ -111,7 +111,7 @@ done
 # Check current migration status
 echo ""
 echo "🔍 Checking current migration status..."
-CURRENT_MIGRATIONS=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" 2>/dev/null | tr -d ' \n' || echo "0")
+CURRENT_MIGRATIONS=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" 2>/dev/null | tr -d ' \n' || echo "0")
 echo "   • Current migrations applied: $CURRENT_MIGRATIONS"
 
 # Run migrations
@@ -128,18 +128,18 @@ for migration_file in "${MIGRATION_FILES[@]}"; do
     echo "📋 Processing: $migration_name"
     
     # Check if migration has already been applied
-    if docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT 1 FROM schema_migrations WHERE version = '$migration_version';" | grep -q "1"; then
+    if docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT 1 FROM schema_migrations WHERE version = '$migration_version';" | grep -q "1"; then
         echo "   ⏭️  Migration already applied, skipping"
         continue
     fi
     
     # Run the migration
     echo "   🔄 Applying migration..."
-    if docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f "/app/schema/migrations/$migration_name"; then
+    if docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f "/app/schema/migrations/$migration_name"; then
         echo "   ✅ Migration applied successfully"
         
         # Log the migration
-        docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "INSERT INTO schema_migrations (version, description, applied_at) VALUES ('$migration_version', 'Applied migration: $migration_name', NOW());"
+        docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "INSERT INTO schema_migrations (version, description, applied_at) VALUES ('$migration_version', 'Applied migration: $migration_name', NOW());"
         
         MIGRATIONS_APPLIED=$((MIGRATIONS_APPLIED + 1))
     else
@@ -160,13 +160,13 @@ if [ $MIGRATIONS_FAILED -eq 0 ]; then
     echo "✅ All migrations completed successfully!"
     
     # Show final migration status
-    FINAL_MIGRATIONS=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" | tr -d ' \n')
+    FINAL_MIGRATIONS=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" | tr -d ' \n')
     echo "   • Total migrations in database: $FINAL_MIGRATIONS"
     
     echo ""
     echo "🔧 Next steps:"
     echo "   • Check database schema: ./scripts/validate-schema.sh $DEPLOYMENT_MODE"
-    echo "   • View migration history: docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB -c 'SELECT * FROM schema_migrations ORDER BY applied_at DESC;'"
+    echo "   • View migration history: docker-compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB -c 'SELECT * FROM schema_migrations ORDER BY applied_at DESC;'"
     echo "   • Health check: ./scripts/health-check.sh $DEPLOYMENT_MODE"
     echo "   • Start materialized view refresh: ./scripts/materialized-view-refresh-service.sh $DEPLOYMENT_MODE"
 else
@@ -176,7 +176,7 @@ else
     echo "🔧 Troubleshooting:"
     echo "   • Check PostgreSQL logs: ./scripts/logs.sh $DEPLOYMENT_MODE"
     echo "   • Verify schema files: ls -la $SCHEMA_DIR/migrations/"
-    echo "   • Check database connection: docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB -c 'SELECT 1;'"
-    echo "   • Check PostgreSQL status: docker compose ps postgres"
+    echo "   • Check database connection: docker-compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB -c 'SELECT 1;'"
+    echo "   • Check PostgreSQL status: docker-compose ps postgres"
     exit 1
 fi

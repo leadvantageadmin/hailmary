@@ -44,7 +44,7 @@ stop_service() {
     
     # Stop the containers
     echo -e "${BLUE}🛑 Stopping Ingestor containers...${NC}"
-    docker compose down
+    docker-compose down
     
     echo -e "${GREEN}✅ Ingestor Service stopped successfully!${NC}"
 }
@@ -52,7 +52,7 @@ stop_service() {
 # Function to show service status
 show_status() {
     echo -e "${BLUE}📋 Service Status:${NC}"
-    docker compose ps
+    docker-compose ps
 }
 
 # Function to show data preservation info

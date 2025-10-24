@@ -207,10 +207,10 @@ fi
 echo "🌐 Starting web application..."
 if [ "$DEPLOYMENT_MODE" = "vm" ]; then
     echo "🔧 Using nginx configuration for VM deployment..."
-    docker compose -f docker-compose.vm.yml up -d
+    docker-compose -f docker-compose.vm.yml up -d
 else
     echo "🔧 Using standard configuration for local development..."
-    docker compose up -d web
+    docker-compose up -d web
 fi
 
 # Wait for web service to be healthy
@@ -239,9 +239,9 @@ if [ $counter -ge $timeout ]; then
     echo "❌ Web service failed to start within $timeout seconds"
     echo "📋 Checking web service logs..."
     if [ "$DEPLOYMENT_MODE" = "vm" ]; then
-        docker compose -f docker-compose.vm.yml logs
+        docker-compose -f docker-compose.vm.yml logs
     else
-        docker compose logs web
+        docker-compose logs web
     fi
     exit 1
 fi

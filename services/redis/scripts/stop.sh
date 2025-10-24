@@ -45,7 +45,7 @@ fi
 
 # Stop Redis service
 echo "🛑 Stopping Redis service..."
-docker compose down
+docker-compose down
 
 echo "✅ Redis service stopped successfully"
 echo "🌐 Deployment Mode: $DEPLOYMENT_MODE"

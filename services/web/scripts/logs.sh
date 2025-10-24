@@ -94,15 +94,15 @@ echo "=========================================="
 if [ "$FOLLOW" = true ]; then
     echo "🔄 Following logs (Ctrl+C to stop)..."
     if [ "$DEPLOYMENT_MODE" = "vm" ]; then
-        docker compose -f docker-compose.vm.yml logs -f --tail=$LINES
+        docker-compose -f docker-compose.vm.yml logs -f --tail=$LINES
     else
-        docker compose logs -f --tail=$LINES web
+        docker-compose logs -f --tail=$LINES web
     fi
 else
     if [ "$DEPLOYMENT_MODE" = "vm" ]; then
-        docker compose -f docker-compose.vm.yml logs --tail=$LINES
+        docker-compose -f docker-compose.vm.yml logs --tail=$LINES
     else
-        docker compose logs --tail=$LINES web
+        docker-compose logs --tail=$LINES web
     fi
 fi
 

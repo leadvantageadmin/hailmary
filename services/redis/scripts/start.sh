@@ -79,7 +79,7 @@ mkdir -p data/schema data/logs
 echo "✅ Directories created"
 
 # Check if Redis is already running
-if docker compose ps redis | grep -q "Up"; then
+if docker-compose ps redis | grep -q "Up"; then
     echo "⚠️  Redis service is already running"
     echo "   Use './scripts/restart.sh' to restart or './scripts/stop.sh' to stop"
     exit 0
@@ -87,7 +87,7 @@ fi
 
 # Start Redis service
 echo "🚀 Starting Redis service..."
-docker compose up -d redis
+docker-compose up -d redis
 
 # Wait for Redis to be healthy
 echo "⏳ Waiting for Redis to be healthy..."
@@ -95,7 +95,7 @@ max_retries=30
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
-    if docker compose exec redis redis-cli ping >/dev/null 2>&1; then
+    if docker-compose exec redis redis-cli ping >/dev/null 2>&1; then
         echo "✅ Redis is healthy and ready"
         break
     fi
@@ -108,7 +108,7 @@ done
 if [ $retry_count -eq $max_retries ]; then
     echo "❌ Redis failed to start within expected time"
     echo "📋 Checking logs..."
-    docker compose logs redis --tail 20
+    docker-compose logs redis --tail 20
     exit 1
 fi
 
@@ -117,11 +117,11 @@ echo ""
 echo "🎉 Redis service started successfully!"
 echo "🔧 Redis URL: redis://localhost:$REDIS_PORT"
 echo "📊 Redis Info:"
-docker compose exec redis redis-cli info server | grep -E "(redis_version|uptime_in_seconds|connected_clients)"
+docker-compose exec redis redis-cli info server | grep -E "(redis_version|uptime_in_seconds|connected_clients)"
 
 echo ""
 echo "🔧 Management Commands:"
-echo "   • Connect to Redis: docker compose exec redis redis-cli"
+echo "   • Connect to Redis: docker-compose exec redis redis-cli"
 echo "   • View logs: ./scripts/logs.sh $DEPLOYMENT_MODE"
 echo "   • Health check: ./scripts/health-check.sh $DEPLOYMENT_MODE"
 echo "   • Stop service: ./scripts/stop.sh $DEPLOYMENT_MODE"

@@ -30,7 +30,7 @@ echo "   • Database: $POSTGRES_DB"
 echo "   • User: $POSTGRES_USER"
 
 # Check if PostgreSQL is running
-if ! docker compose ps postgres | grep -q "Up"; then
+if ! docker-compose ps postgres | grep -q "Up"; then
     echo "❌ PostgreSQL service is not running"
     echo "   Start it with: ./scripts/start.sh"
     exit 1
@@ -66,7 +66,7 @@ print_status() {
 # Function to check if table exists
 check_table_exists() {
     local table_name=$1
-    local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table_name');" | tr -d ' \n')
+    local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table_name');" | tr -d ' \n')
     echo "$result"
 }
 
@@ -74,28 +74,28 @@ check_table_exists() {
 check_column_exists() {
     local table_name=$1
     local column_name=$2
-    local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '$table_name' AND column_name = '$column_name');" | tr -d ' \n')
+    local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '$table_name' AND column_name = '$column_name');" | tr -d ' \n')
     echo "$result"
 }
 
 # Function to check if index exists
 check_index_exists() {
     local index_name=$1
-    local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM pg_indexes WHERE indexname = '$index_name');" | tr -d ' \n')
+    local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM pg_indexes WHERE indexname = '$index_name');" | tr -d ' \n')
     echo "$result"
 }
 
 # Function to check if function exists
 check_function_exists() {
     local function_name=$1
-    local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM pg_proc WHERE proname = '$function_name');" | tr -d ' \n')
+    local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM pg_proc WHERE proname = '$function_name');" | tr -d ' \n')
     echo "$result"
 }
 
 # Function to check if view exists
 check_view_exists() {
     local view_name=$1
-    local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM information_schema.views WHERE table_schema = 'public' AND table_name = '$view_name');" | tr -d ' \n')
+    local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT EXISTS (SELECT FROM information_schema.views WHERE table_schema = 'public' AND table_name = '$view_name');" | tr -d ' \n')
     echo "$result"
 }
 
@@ -139,7 +139,7 @@ main() {
     
     # Check database tables
     echo -e "${BLUE}🗄️  Database Tables${NC}"
-    local db_tables=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';" | tr -d ' \n' | tr '\n' ' ')
+    local db_tables=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';" | tr -d ' \n' | tr '\n' ' ')
     local db_table_count=$(echo $db_tables | wc -w)
     
     if [ $db_table_count -gt 0 ]; then
@@ -172,12 +172,12 @@ main() {
     if [ "$(check_table_exists "schema_migrations")" = "t" ]; then
         print_status "OK" "Schema migrations table exists"
         
-        local migration_count=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" | tr -d ' \n')
+        local migration_count=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" | tr -d ' \n')
         echo "   • Applied migrations: $migration_count"
         
         # Show recent migrations
         echo "   • Recent migrations:"
-        docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version, description, applied_at FROM schema_migrations ORDER BY applied_at DESC LIMIT 5;" | tail -n +3 | head -n -2 | while read line; do
+        docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version, description, applied_at FROM schema_migrations ORDER BY applied_at DESC LIMIT 5;" | tail -n +3 | head -n -2 | while read line; do
             echo "     - $line"
         done
     else
@@ -192,7 +192,7 @@ main() {
     local all_extensions_ok=true
     
     for ext in "${extensions[@]}"; do
-        if docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1 FROM pg_extension WHERE extname = '$ext';" | grep -q "1 row"; then
+        if docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1 FROM pg_extension WHERE extname = '$ext';" | grep -q "1 row"; then
             print_status "OK" "Extension '$ext' is installed"
         else
             print_status "WARNING" "Extension '$ext' is not installed"
@@ -255,7 +255,7 @@ main() {
     echo "🔧 Troubleshooting Commands:"
     echo "   • Run migrations: ./scripts/run-migrations.sh"
     echo "   • Pull latest schema: ./scripts/pull-schema.sh"
-    echo "   • Check database: docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB"
+    echo "   • Check database: docker-compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB"
     echo "   • View logs: ./scripts/logs.sh"
     
     exit $overall_status

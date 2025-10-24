@@ -75,7 +75,7 @@ fi
 
 # Start the development service
 echo "🌐 Starting web application in development mode..."
-docker compose -f docker-compose.dev.yml up -d web-dev
+docker-compose -f docker-compose.dev.yml up -d web-dev
 
 # Wait for web service to be ready
 echo "⏳ Waiting for web service to be ready..."
@@ -94,7 +94,7 @@ done
 if [ $counter -ge $timeout ]; then
     echo "❌ Web service failed to start within $timeout seconds"
     echo "📋 Checking web service logs..."
-    docker compose -f docker-compose.dev.yml logs web-dev
+    docker-compose -f docker-compose.dev.yml logs web-dev
     exit 1
 fi
 
@@ -112,9 +112,9 @@ echo "   • OpenSearch: $OPENSEARCH_URL"
 echo "   • Redis: $REDIS_URL"
 echo ""
 echo "🔧 Management Commands:"
-echo "   • View logs: docker compose -f docker-compose.dev.yml logs -f web-dev"
-echo "   • Stop service: docker compose -f docker-compose.dev.yml down"
-echo "   • Restart service: docker compose -f docker-compose.dev.yml restart web-dev"
+echo "   • View logs: docker-compose -f docker-compose.dev.yml logs -f web-dev"
+echo "   • Stop service: docker-compose -f docker-compose.dev.yml down"
+echo "   • Restart service: docker-compose -f docker-compose.dev.yml restart web-dev"
 echo ""
 echo "🌐 Application Features:"
 echo "   • Search Interface: http://localhost:$WEB_PORT/search"

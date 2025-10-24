@@ -47,10 +47,10 @@ fi
 echo "🌐 Stopping web application..."
 if [ "$DEPLOYMENT_MODE" = "vm" ]; then
     echo "🔧 Stopping nginx configuration for VM deployment..."
-    docker compose -f docker-compose.vm.yml down
+    docker-compose -f docker-compose.vm.yml down
 else
     echo "🔧 Stopping standard configuration for local development..."
-    docker compose down
+    docker-compose down
 fi
 
 # Display service information

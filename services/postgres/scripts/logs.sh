@@ -112,15 +112,15 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 # Check if the service is running
-if ! docker compose ps "$SERVICE" | grep -q "Up"; then
+if ! docker-compose ps "$SERVICE" | grep -q "Up"; then
     echo "⚠️  Service '$SERVICE' is not running"
     echo "Available services:"
-    docker compose ps
+    docker-compose ps
     exit 1
 fi
 
-# Build docker compose logs command
-LOG_CMD="docker compose logs"
+# Build docker-compose logs command
+LOG_CMD="docker-compose logs"
 
 if [ "$TIMESTAMPS" = true ]; then
     LOG_CMD="$LOG_CMD -t"
@@ -154,6 +154,6 @@ if [ "$FOLLOW" = false ]; then
     echo "   • Show more lines: $0 $DEPLOYMENT_MODE -n 500"
     echo "   • Show schema migrator logs: $0 $DEPLOYMENT_MODE -s schema-migrator"
     echo "   • Show pgAdmin logs: $0 $DEPLOYMENT_MODE -s postgres-admin"
-    echo "   • View all services: docker compose ps"
+    echo "   • View all services: docker-compose ps"
     echo "   • Health check: ./scripts/health-check.sh $DEPLOYMENT_MODE"
 fi

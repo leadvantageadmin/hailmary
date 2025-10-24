@@ -118,11 +118,11 @@ start_service() {
     
     # Build the Docker image
     echo -e "${BLUE}🔨 Building Docker image...${NC}"
-    docker compose build
+    docker-compose build
     
     # Start the service
     echo -e "${BLUE}🚀 Starting Ingestor container...${NC}"
-    docker compose up -d
+    docker-compose up -d
     
     # Wait for service to be healthy
     echo -e "${BLUE}⏳ Waiting for Ingestor to be healthy...${NC}"
@@ -130,7 +130,7 @@ start_service() {
     local attempt=1
     
     while [ $attempt -le $max_attempts ]; do
-        if docker compose ps | grep -q "healthy"; then
+        if docker-compose ps | grep -q "healthy"; then
             echo -e "${GREEN}✅ Ingestor is healthy and ready!${NC}"
             break
         fi
@@ -143,7 +143,7 @@ start_service() {
     if [ $attempt -gt $max_attempts ]; then
         echo -e "${RED}❌ Ingestor failed to start within expected time${NC}"
         echo -e "${BLUE}📋 Checking logs...${NC}"
-        docker compose logs --tail=20
+        docker-compose logs --tail=20
         exit 1
     fi
 }

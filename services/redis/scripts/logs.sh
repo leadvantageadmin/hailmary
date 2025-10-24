@@ -79,10 +79,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check if service is running
-if ! docker compose ps $SERVICE | grep -q "Up"; then
+if ! docker-compose ps $SERVICE | grep -q "Up"; then
     echo "❌ Service '$SERVICE' is not running"
     echo "   Available services:"
-    docker compose ps --services
+    docker-compose ps --services
     exit 1
 fi
 
@@ -94,7 +94,7 @@ echo ""
 # Show logs
 if [ "$FOLLOW" = true ]; then
     echo "🔄 Following logs (Press Ctrl+C to stop)..."
-    docker compose logs -f --tail $LINES $SERVICE
+    docker-compose logs -f --tail $LINES $SERVICE
 else
-    docker compose logs --tail $LINES $SERVICE
+    docker-compose logs --tail $LINES $SERVICE
 fi

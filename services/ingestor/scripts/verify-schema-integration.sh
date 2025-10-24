@@ -91,7 +91,7 @@ check_local_schema_files() {
 test_schema_operations() {
     echo -e "${BLUE}🧪 Testing schema operations...${NC}"
     
-    local test_result=$(docker compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
+    local test_result=$(docker-compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
 import asyncio
 import sys
 sys.path.append('/app/lib')
@@ -145,7 +145,7 @@ sys.exit(0 if result else 1)
 test_sql_generation() {
     echo -e "${BLUE}🔧 Testing dynamic SQL generation...${NC}"
     
-    local test_result=$(docker compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
+    local test_result=$(docker-compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
 import asyncio
 import sys
 sys.path.append('/app/lib')
@@ -197,7 +197,7 @@ sys.exit(0 if result else 1)
 test_schema_cli() {
     echo -e "${BLUE}💻 Testing schema CLI command...${NC}"
     
-    local test_result=$(docker compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
+    local test_result=$(docker-compose -f "$DOCKER_COMPOSE_FILE" run --rm "$SERVICE_NAME" python -c "
 import asyncio
 import sys
 sys.path.append('/app/lib')

@@ -72,9 +72,9 @@ show_container_logs() {
     echo -e "${BLUE}📋 Showing Ingestor container logs...${NC}"
     
     if [ "$follow" = "true" ]; then
-        docker compose logs -f --tail="$tail_lines" ingestor
+        docker-compose logs -f --tail="$tail_lines" ingestor
     else
-        docker compose logs --tail="$tail_lines" ingestor
+        docker-compose logs --tail="$tail_lines" ingestor
     fi
 }
 

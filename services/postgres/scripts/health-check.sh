@@ -90,7 +90,7 @@ print_status() {
 check_container() {
     echo -e "${BLUE}📦 Checking PostgreSQL Container...${NC}"
     
-    if docker compose ps postgres | grep -q "Up"; then
+    if docker-compose ps postgres | grep -q "Up"; then
         print_status "OK" "PostgreSQL container is running"
         return 0
     else
@@ -103,7 +103,7 @@ check_container() {
 check_connectivity() {
     echo -e "${BLUE}🔌 Checking PostgreSQL Connectivity...${NC}"
     
-    if docker compose exec postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+    if docker-compose exec postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
         print_status "OK" "PostgreSQL is accepting connections"
         return 0
     else
@@ -117,7 +117,7 @@ check_database_access() {
     echo -e "${BLUE}🗄️  Checking Database Access...${NC}"
     
     # Test basic query
-    if docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
+    if docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
         print_status "OK" "Database access is working"
         return 0
     else
@@ -134,7 +134,7 @@ check_extensions() {
     local all_ok=true
     
     for ext in "${extensions[@]}"; do
-        if docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1 FROM pg_extension WHERE extname = '$ext';" | grep -q "1 row"; then
+        if docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1 FROM pg_extension WHERE extname = '$ext';" | grep -q "1 row"; then
             print_status "OK" "Extension '$ext' is installed"
         else
             print_status "WARNING" "Extension '$ext' is not installed"
@@ -153,8 +153,8 @@ check_extensions() {
 check_migrations() {
     echo -e "${BLUE}📋 Checking Schema Migrations...${NC}"
     
-    if docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT COUNT(*) FROM schema_migrations;" >/dev/null 2>&1; then
-        local migration_count=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" | tr -d ' \n')
+    if docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT COUNT(*) FROM schema_migrations;" >/dev/null 2>&1; then
+        local migration_count=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM schema_migrations;" | tr -d ' \n')
         print_status "OK" "Schema migrations table exists ($migration_count migrations applied)"
         return 0
     else
@@ -209,7 +209,7 @@ check_memory() {
 check_network() {
     echo -e "${BLUE}🌐 Checking Network Connectivity...${NC}"
     
-    if docker compose exec postgres pg_isready -h localhost -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+    if docker-compose exec postgres pg_isready -h localhost -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
         print_status "OK" "Network connectivity is working (port $POSTGRES_PORT)"
         return 0
     else
@@ -262,8 +262,8 @@ main() {
     echo "🔧 Troubleshooting Commands:"
     echo "   • View logs: ./scripts/logs.sh $DEPLOYMENT_MODE"
     echo "   • Restart service: ./scripts/restart.sh $DEPLOYMENT_MODE"
-    echo "   • Check container status: docker compose ps"
-    echo "   • Connect to database: docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB"
+    echo "   • Check container status: docker-compose ps"
+    echo "   • Connect to database: docker-compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB"
     echo "   • Run migrations: ./scripts/run-migrations.sh $DEPLOYMENT_MODE"
     echo "   • Validate schema: ./scripts/validate-schema.sh $DEPLOYMENT_MODE"
     

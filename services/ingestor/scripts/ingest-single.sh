@@ -63,7 +63,7 @@ check_services() {
     fi
     
     # Check if ingestor service is running
-    if ! docker compose ps | grep -q "hailmary-ingestor.*Up"; then
+    if ! docker-compose ps | grep -q "hailmary-ingestor.*Up"; then
         echo -e "${RED}❌ Ingestor service is not running.${NC}"
         echo -e "${BLUE}💡 Start the service first with: ./scripts/start.sh${NC}"
         exit 1
@@ -86,7 +86,7 @@ clear_cache() {
     # Try to clear Redis cache if available
     if docker ps | grep -q "redis"; then
         echo -e "${BLUE}🔄 Clearing Redis cache...${NC}"
-        docker compose exec redis redis-cli FLUSHALL 2>/dev/null || echo -e "${YELLOW}⚠️ Redis not available, skipping cache clear${NC}"
+        docker-compose exec redis redis-cli FLUSHALL 2>/dev/null || echo -e "${YELLOW}⚠️ Redis not available, skipping cache clear${NC}"
     else
         echo -e "${YELLOW}⚠️ Redis not running, skipping cache clear${NC}"
     fi
@@ -142,7 +142,7 @@ process_via_cli() {
     fi
     
     echo -e "${BLUE}📤 Running CLI ingestion...${NC}"
-    docker compose exec ingestor python app.py ingest \
+    docker-compose exec ingestor python app.py ingest \
         --file "/app/data/csv/$filename" \
         --batch-size "$batch_size" \
         $dry_run_flag

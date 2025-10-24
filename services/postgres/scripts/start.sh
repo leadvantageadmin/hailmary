@@ -130,7 +130,7 @@ start_postgres() {
     if [ $counter -ge $timeout ]; then
         echo "❌ PostgreSQL failed to start within $timeout seconds"
         echo "📋 Checking PostgreSQL logs..."
-        docker compose logs postgres
+        docker-compose logs postgres
         exit 1
     fi
 
@@ -142,12 +142,12 @@ start_postgres() {
     sleep 3
     
     # Check if materialized view refresh service is running
-    if docker compose ps materialized-view-refresh | grep -q "Up"; then
+    if docker-compose ps materialized-view-refresh | grep -q "Up"; then
         echo "✅ Materialized view refresh service started successfully!"
     else
         echo "⚠️  Materialized view refresh service may not be running properly"
         echo "📋 Checking materialized view refresh logs..."
-        docker compose logs materialized-view-refresh
+        docker-compose logs materialized-view-refresh
     fi
 }
 
@@ -190,7 +190,7 @@ display_local_info() {
     echo "🔄 Materialized View Refresh:"
     echo "   • Service: Running automatically"
     echo "   • Polling Interval: 10 seconds (local mode)"
-    echo "   • Logs: docker compose logs materialized-view-refresh"
+    echo "   • Logs: docker-compose logs materialized-view-refresh"
     echo ""
     echo "🌐 Optional Services:"
     echo "   • Start with pgAdmin: docker-compose --profile admin up -d"
@@ -223,7 +223,7 @@ display_vm_info() {
     echo "🔄 Materialized View Refresh:"
     echo "   • Service: Running automatically"
     echo "   • Polling Interval: 30 seconds (VM mode)"
-    echo "   • Logs: docker compose logs materialized-view-refresh"
+    echo "   • Logs: docker-compose logs materialized-view-refresh"
     echo ""
     echo "🌐 VM Access:"
     echo "   • External Access: postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$(hostname -I | awk '{print $1}'):$POSTGRES_PORT/$POSTGRES_DB"

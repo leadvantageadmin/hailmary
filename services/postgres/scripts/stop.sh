@@ -70,19 +70,19 @@ if [ -f ".env" ]; then
 fi
 
 # Check if PostgreSQL container is running
-if ! docker compose ps postgres | grep -q "Up"; then
+if ! docker-compose ps postgres | grep -q "Up"; then
     echo "⚠️  PostgreSQL service is not running"
     exit 0
 fi
 
 # Stop all PostgreSQL-related containers
 echo "🛑 Stopping PostgreSQL containers..."
-docker compose down
+docker-compose down
 
 # Stop pgAdmin if running
-if docker compose ps postgres-admin | grep -q "Up"; then
+if docker-compose ps postgres-admin | grep -q "Up"; then
     echo "🛑 Stopping pgAdmin..."
-    docker compose --profile admin down
+    docker-compose --profile admin down
 fi
 
 # Display status
@@ -90,7 +90,7 @@ echo ""
 echo "✅ PostgreSQL Service stopped successfully!"
 echo ""
 echo "📋 Service Status:"
-docker compose ps
+docker-compose ps
 
 echo ""
 echo "💾 Data is preserved in:"

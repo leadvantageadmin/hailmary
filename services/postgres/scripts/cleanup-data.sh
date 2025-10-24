@@ -70,7 +70,7 @@ show_usage() {
 check_postgres() {
     echo -e "${BLUE}🔍 Checking PostgreSQL service...${NC}"
     
-    if ! docker compose ps postgres | grep -q "Up"; then
+    if ! docker-compose ps postgres | grep -q "Up"; then
         print_status "ERROR" "PostgreSQL service is not running"
         echo -e "${BLUE}💡 Start PostgreSQL service first:${NC}"
         echo -e "   ./scripts/start.sh"
@@ -87,7 +87,7 @@ get_table_counts() {
     local tables=("Customer" "Company" "Prospect")
     
     for table in "${tables[@]}"; do
-        local count=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM \"$table\";" 2>/dev/null | tr -d ' \n' || echo "0")
+        local count=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM \"$table\";" 2>/dev/null | tr -d ' \n' || echo "0")
         if [ "$count" = "0" ]; then
             echo -e "   • $table: ${YELLOW}0 rows${NC}"
         else
@@ -136,10 +136,10 @@ cleanup_tables() {
         echo -e "${BLUE}🗑️  Cleaning table: $table${NC}"
         
         # Get count before deletion
-        local before_count=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM \"$table\";" 2>/dev/null | tr -d ' \n' || echo "0")
+        local before_count=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT COUNT(*) FROM \"$table\";" 2>/dev/null | tr -d ' \n' || echo "0")
         
         # Delete all rows
-        local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DELETE FROM \"$table\";" 2>&1)
+        local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DELETE FROM \"$table\";" 2>&1)
         
         if [ $? -eq 0 ]; then
             print_status "OK" "Cleaned $table ($before_count rows deleted)"
@@ -167,7 +167,7 @@ reset_sequences() {
     
     for seq in "${sequences[@]}"; do
         echo -e "${BLUE}🔄 Resetting sequence: $seq${NC}"
-        local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT setval('\"$seq\"', 1, false);" 2>&1)
+        local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT setval('\"$seq\"', 1, false);" 2>&1)
         
         if [ $? -eq 0 ]; then
             print_status "OK" "Reset sequence $seq"
@@ -183,7 +183,7 @@ refresh_materialized_views() {
     echo -e "${BLUE}🔄 Refreshing materialized views...${NC}"
     
     # Get list of materialized views
-    local views=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT matviewname FROM pg_matviews WHERE schemaname = 'public';" 2>/dev/null | tr -d ' \n' || echo "")
+    local views=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -c "SELECT matviewname FROM pg_matviews WHERE schemaname = 'public';" 2>/dev/null | tr -d ' \n' || echo "")
     
     if [ -n "$views" ]; then
         echo -e "${BLUE}📋 Found materialized views: $views${NC}"
@@ -191,7 +191,7 @@ refresh_materialized_views() {
         # Refresh each materialized view
         for view in $views; do
             echo -e "${BLUE}🔄 Refreshing materialized view: $view${NC}"
-            local result=$(docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "REFRESH MATERIALIZED VIEW \"$view\";" 2>&1)
+            local result=$(docker-compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "REFRESH MATERIALIZED VIEW \"$view\";" 2>&1)
             
             if [ $? -eq 0 ]; then
                 print_status "OK" "Refreshed materialized view $view"
