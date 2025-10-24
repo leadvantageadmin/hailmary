@@ -80,7 +80,7 @@ services:
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT:-6390}:6379"
     
     volumes:
       - redis_data:/data
@@ -128,8 +128,8 @@ services:
       # Elasticsearch Configuration
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: 9200
-      ELASTICSEARCH_USE_SSL: false
-      ELASTICSEARCH_VERIFY_CERTS: false
+      ELASTICSEARCH_USE_SSL: "false"
+      ELASTICSEARCH_VERIFY_CERTS: "false"
       ELASTICSEARCH_TIMEOUT: 30
       
       # Redis Configuration
