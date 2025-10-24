@@ -67,44 +67,6 @@ services:
           memory: 512M
           cpus: '0.5'
 
-  # Schema migrator service - runs migrations from schema service
-  schema-migrator:
-    image: node:18-slim
-    container_name: hailmary-schema-migrator
-    environment:
-      # Database connection
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@postgres:5432/${POSTGRES_DB:-app}"
-      
-      # Schema service configuration
-      SCHEMA_API_URL: ${SCHEMA_API_URL:-http://schema-api:3001}
-      SCHEMA_VERSION: ${SCHEMA_VERSION:-latest}
-      
-    volumes:
-      # Schema files
-      - schema_data:/app/schema:ro
-      
-      # Migration scripts
-      - ./scripts:/usr/local/bin:ro
-      
-    command: >
-      sh -c "
-        echo '🔧 Installing Prisma CLI...' &&
-        npm install -g prisma@latest &&
-        echo '📥 Pulling schema from Schema API...' &&
-        /usr/local/bin/pull-schema.sh ${SCHEMA_VERSION:-latest} &&
-        echo '🔄 Running database migrations...' &&
-        /usr/local/bin/run-migrations.sh &&
-        echo '✅ Schema migration completed successfully'
-      "
-      
-    depends_on:
-      postgres:
-        condition: service_healthy
-        
-    networks:
-      - hailmary-network
-      
-    restart: "no"  # Run once and exit
 
   # Materialized view refresh service - handles automatic refresh of materialized views
   materialized-view-refresh:

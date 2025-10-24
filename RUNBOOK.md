@@ -1,742 +1,468 @@
-# Customer Search Platform - Runbook
+# HailMary Services Runbook
 
-This runbook provides step-by-step instructions for operating and maintaining the Customer Search Platform.
+## 🏗️ Architecture Overview
 
-## Table of Contents
-1. [Data Ingestion](#data-ingestion)
-2. [Database Operations](#database-operations)
-3. [OpenSearch Operations](#opensearch-operations)
-4. [Backend Updates](#backend-updates)
-5. [Frontend Updates](#frontend-updates)
+HailMary is a microservices-based application with the following services:
+
+- **🐘 PostgreSQL** - Primary database service
+- **🔴 Redis** - Caching and session management
+- **📥 Ingestor** - Data ingestion and processing service
+- **🌐 Web** - Next.js web application
+- **🔄 CDC** - Change Data Capture service (Elasticsearch/OpenSearch)
+- **📊 Schema** - Schema management service (separate repo)
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker and Docker Compose
+- Git
+- Node.js 18+ (for local development)
+- Python 3.8+ (for local development)
+
+### Local Development Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/leadvantageadmin/hailmary.git
+   cd hailmary
+   ```
+
+2. **Start services in order**
+   ```bash
+   # Start PostgreSQL first (local mode)
+   cd services/postgres && ./scripts/start.sh local
+   
+   # Start Redis (local mode)
+   cd ../redis && ./scripts/start.sh local
+   
+   # Start Schema service (local mode)
+   cd ../schema && ./scripts/start.sh local
+   
+   # Start CDC service (local mode)
+   cd ../cdc && ./scripts/start.sh local
+   
+   # Start Ingestor service (local mode)
+   cd ../ingestor && ./scripts/start.sh local
+   
+   # Start Web service (local mode)
+   cd ../web && ./scripts/start.sh local
+   ```
+
+3. **Access the application**
+   - Web Application: http://localhost:3000
+   - Admin Panel: http://localhost:3000/admin
+   - Direct Search: http://localhost:3000/direct-search
+
+## 📋 Service Details
+
+### 🐘 PostgreSQL Service
+
+**Purpose**: Primary database for the application
+
+**Local Deployment**:
+```bash
+cd services/postgres
+./scripts/start.sh local
+# or simply (local is default)
+./scripts/start.sh
+```
+
+**VM Deployment**:
+```bash
+# On VM
+cd /opt/hailmary/services/postgres
+./scripts/start.sh vm
+```
+
+**Configuration**:
+- Port: 5432
+- Database: app
+- User: app
+- Password: app
+- Data Directory: `./data/postgres`
+- Logs Directory: `./logs/postgres`
+
+**Management Scripts**:
+- `start.sh [local|vm]` - Start the service (local is default)
+- `stop.sh [local|vm]` - Stop the service
+- `restart.sh [local|vm]` - Restart the service
+- `health-check.sh [local|vm]` - Check service health
+- `logs.sh [local|vm]` - View service logs
+- `run-migrations.sh` - Run database migrations
+
+**Dependencies**: None (base service)
+
+**Health Check**: `docker exec hailmary-postgres pg_isready -U app -d app`
 
 ---
 
-## Data Ingestion
+### 🔴 Redis Service
 
-### How to Ingest New Data
+**Purpose**: Caching and session management
 
-#### Method 1: Using Docker Compose (Recommended)
+**Local Deployment**:
 ```bash
-# 1. Place your CSV file in the data/ directory
-cp your-customers.csv data/customers.csv
-
-# 2. Restart the ingestor service
-docker compose restart ingestor
-
-# 3. Check ingestion logs
-docker compose logs -f ingestor
+cd services/redis
+./scripts/start.sh
 ```
 
-#### Method 2: Manual Ingestion
+**VM Deployment**:
 ```bash
-# 1. Ensure services are running
-docker compose up -d postgres opensearch
-
-# 2. Run the ingestor manually (incremental update)
-docker compose run --rm ingestor python app.py /data/customers.csv
-
-# 3. Run the ingestor with full data replacement
-docker compose run --rm ingestor python app.py /data/customers.csv --clear
+# On VM
+cd /opt/hailmary/services/redis
+./scripts/start.sh
 ```
 
-### Data Management Strategies
+**Configuration**:
+- Port: 6379
+- Data Directory: `./data/redis`
+- Logs Directory: `./logs/redis`
 
-#### Option 1: Incremental Updates (Default)
-- **Behavior**: Updates existing records, adds new ones, keeps old records
-- **Use Case**: When you want to add new customers or update existing ones
-- **Command**: `docker compose run --rm ingestor python app.py /data/customers.csv`
+**Management Scripts**:
+- `start.sh` - Start the service
+- `stop.sh` - Stop the service
+- `health-check.sh` - Check service health
+- `logs.sh` - View service logs
 
-#### Option 2: Full Data Replacement
-- **Behavior**: Clears all existing data, then ingests new data
-- **Use Case**: When you want to completely replace all customer data
-- **Command**: `docker compose run --rm ingestor python app.py /data/customers.csv --clear`
+**Dependencies**: None (base service)
 
-#### Option 3: Manual Data Clearing
-```bash
-# Clear all data from PostgreSQL, OpenSearch, and Redis
-docker compose exec postgres psql -U app -d app -c 'DELETE FROM "Customer";'
-curl -X POST http://localhost:9200/customers/_delete_by_query -H "Content-Type: application/json" -d '{"query":{"match_all":{}}}'
-docker compose exec redis redis-cli FLUSHALL
-```
-
-### Automatic Cache Management
-The ingestion pipeline now automatically clears the Redis cache after every successful ingestion to ensure users always get fresh data. No manual cache clearing is required.
-
-### CSV Format Requirements
-Your CSV file must have the following columns:
-```csv
-Salutation,First Name,Last Name,Email address,Company,Address,City,State,Country,Zip Code,Phone,Mobile Phone,Industry,Job Title Level,Job Title,Department,Employee Size,Job Title Link,Employee Size Link
-Ms.,Laura,Maggioni,laura.maggioni@st.com,Stmicroelectronics,"Via Camillo Olivetti 2",Agrate Brianza,NON US,Italy,20864,393489995537,NA,Semiconductor Manufacturing,Director,"Digital Information Technology | Agrate IT Director",Information Technology,10001+,https://www.linkedin.com/in/laura-maggioni-5103a84/,https://www.linkedin.com/company/stmicroelectronics/about/
-```
-
-### How to Verify Ingestion is Completed Correctly
-
-#### 1. Check Ingestor Logs
-```bash
-# View recent logs
-docker compose logs --tail=50 ingestor
-
-# Look for success message like:
-# "Ingested X rows from /data/customers.csv"
-```
-
-#### 2. Verify Database Records
-```bash
-# Connect to PostgreSQL and check record count
-docker compose exec postgres psql -U app -d app -c "SELECT COUNT(*) FROM \"Customer\";"
-
-# View sample records with new fields
-docker compose exec postgres psql -U app -d app -c "SELECT id, \"firstName\", \"lastName\", email, company, industry, \"jobTitle\", department FROM \"Customer\" LIMIT 5;"
-```
-
-#### 3. Verify OpenSearch Index
-```bash
-# Check index exists and document count
-curl -s http://localhost:9200/_cat/indices/customers?v
-
-# View sample documents
-curl -s http://localhost:9200/customers/_search?size=5 | jq '.hits.hits[]._source'
-```
-
-#### 4. Test Search API
-```bash
-# Test basic search
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{},"page":{"size":5}}'
-
-# Test filtered search by company (exact match)
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"company":["Stmicroelectronics"]},"page":{"size":5}}'
-
-# Test partial matching (case-insensitive)
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"department":["Technology"]},"page":{"size":5}}'
-
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"company":["Micro"]},"page":{"size":5}}'
-
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"industry":["Semi"]},"page":{"size":5}}'
-
-# Test numeric employee size filtering
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"employeeSize":[10000]},"page":{"size":5}}'
-
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"employeeSize":[5000]},"page":{"size":5}}'
-
-# Test filtered search by country
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"country":["Italy"]},"page":{"size":5}}'
-
-# Test filtered search by industry
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{"industry":["Semiconductor Manufacturing"]},"page":{"size":5}}'
-```
+**Health Check**: `docker exec hailmary-redis redis-cli ping`
 
 ---
 
-## Database Operations
+### 📥 Ingestor Service
 
-### How to Connect to Database
+**Purpose**: Data ingestion and processing
 
-#### Method 1: Using Docker Compose
+**Local Deployment**:
 ```bash
-# Connect to PostgreSQL
-docker compose exec postgres psql -U app -d app
-
-# Connect to Redis
-docker compose exec redis redis-cli
+cd services/ingestor
+./scripts/start.sh
 ```
 
-#### Method 2: External Connection
+**VM Deployment**:
 ```bash
-# PostgreSQL (from host machine)
-psql -h localhost -p 5432 -U app -d app
-
-# Redis (from host machine)
-redis-cli -h localhost -p 6379
+# On VM
+cd /opt/hailmary/services/ingestor
+./scripts/start.sh
 ```
 
-### Database Connection Details
-- **PostgreSQL**: `postgresql://app:app@localhost:5432/app`
-- **Redis**: `redis://localhost:6379`
+**Configuration**:
+- Port: 8000
+- Data Directory: `./data/csv`
+- Logs Directory: `./logs/ingestor`
 
-### Common Database Queries
+**Management Scripts**:
+- `start.sh` - Start the service
+- `stop.sh` - Stop the service
+- `restart.sh` - Restart the service
+- `health-check.sh` - Check service health
+- `logs.sh` - View service logs
+- `ingest-single.sh` - Ingest a single CSV file
+- `test-ingestion.sh` - Test ingestion process
 
-#### PostgreSQL Queries
+**Dependencies**: PostgreSQL, Redis
 
-##### Basic Table Information
-```sql
--- List all tables in the database
-\dt
-
--- View table schema and structure
-\d "Customer"
-
--- Check total customer count
-SELECT COUNT(*) FROM "Customer";
-
--- View all columns in Customer table
-SELECT column_name, data_type, is_nullable 
-FROM information_schema.columns 
-WHERE table_name = 'Customer' 
-ORDER BY ordinal_position;
-```
-
-##### Sample Data Queries
-```sql
--- View all customers with new fields
-SELECT id, "firstName", "lastName", email, company, industry, "jobTitle", department 
-FROM "Customer" 
-LIMIT 10;
-
--- View complete customer record
-SELECT * FROM "Customer" LIMIT 5;
-
--- Check recent updates
-SELECT id, "firstName", "lastName", "updatedAt" 
-FROM "Customer" 
-ORDER BY "updatedAt" DESC 
-LIMIT 5;
-```
-
-##### Search Queries by New Fields
-```sql
--- Search by company
-SELECT "firstName", "lastName", email, company, "jobTitle", department 
-FROM "Customer" 
-WHERE company = 'Stmicroelectronics';
-
--- Search by country
-SELECT "firstName", "lastName", company, country, city, state 
-FROM "Customer" 
-WHERE country = 'Italy';
-
--- Search by industry
-SELECT "firstName", "lastName", company, industry, "jobTitle" 
-FROM "Customer" 
-WHERE industry = 'Semiconductor Manufacturing';
-
--- Search by job title (partial match)
-SELECT "firstName", "lastName", company, "jobTitle", department 
-FROM "Customer" 
-WHERE "jobTitle" LIKE '%Director%';
-
--- Search by department
-SELECT "firstName", "lastName", company, department, "jobTitle" 
-FROM "Customer" 
-WHERE department = 'Information Technology';
-
--- Search by employee size
-SELECT "firstName", "lastName", company, "employeeSize", industry 
-FROM "Customer" 
-WHERE "employeeSize" = '10001+';
-```
-
-##### Advanced Queries
-```sql
--- Find customers by location (country and city)
-SELECT "firstName", "lastName", company, country, city, state 
-FROM "Customer" 
-WHERE country = 'Italy' AND city = 'Agrate Brianza';
-
--- Find customers with LinkedIn profiles
-SELECT "firstName", "lastName", company, "jobTitleLink", "employeeSizeLink" 
-FROM "Customer" 
-WHERE "jobTitleLink" IS NOT NULL OR "employeeSizeLink" IS NOT NULL;
-
--- Count customers by country
-SELECT country, COUNT(*) as customer_count 
-FROM "Customer" 
-WHERE country IS NOT NULL 
-GROUP BY country 
-ORDER BY customer_count DESC;
-
--- Count customers by industry
-SELECT industry, COUNT(*) as customer_count 
-FROM "Customer" 
-WHERE industry IS NOT NULL 
-GROUP BY industry 
-ORDER BY customer_count DESC;
-
--- Count customers by employee size
-SELECT "employeeSize", COUNT(*) as customer_count 
-FROM "Customer" 
-WHERE "employeeSize" IS NOT NULL 
-GROUP BY "employeeSize" 
-ORDER BY customer_count DESC;
-
--- Find customers by job title level
-SELECT "firstName", "lastName", company, "jobTitleLevel", "jobTitle" 
-FROM "Customer" 
-WHERE "jobTitleLevel" = 'Director';
-
--- Search by phone number pattern
-SELECT "firstName", "lastName", company, phone, "mobilePhone" 
-FROM "Customer" 
-WHERE phone LIKE '39%' OR "mobilePhone" LIKE '39%';
-```
-
-##### Data Quality and Validation Queries
-```sql
--- Find customers with missing email addresses
-SELECT id, "firstName", "lastName", company 
-FROM "Customer" 
-WHERE email IS NULL OR email = '';
-
--- Find customers with missing company information
-SELECT id, "firstName", "lastName", email 
-FROM "Customer" 
-WHERE company IS NULL OR company = '';
-
--- Check for duplicate email addresses
-SELECT email, COUNT(*) as count 
-FROM "Customer" 
-WHERE email IS NOT NULL 
-GROUP BY email 
-HAVING COUNT(*) > 1;
-
--- Find customers with invalid phone numbers (too short)
-SELECT "firstName", "lastName", company, phone 
-FROM "Customer" 
-WHERE phone IS NOT NULL AND LENGTH(phone) < 10;
-
--- Check data completeness by field
-SELECT 
-  COUNT(*) as total_records,
-  COUNT("firstName") as has_first_name,
-  COUNT("lastName") as has_last_name,
-  COUNT(email) as has_email,
-  COUNT(company) as has_company,
-  COUNT(industry) as has_industry,
-  COUNT("jobTitle") as has_job_title,
-  COUNT(department) as has_department,
-  COUNT(country) as has_country
-FROM "Customer";
-```
-
-##### Legacy Field Queries (Backward Compatibility)
-```sql
--- Search by legacy sector field
-SELECT * FROM "Customer" WHERE sector = 'technology';
-
--- Search by legacy size range
-SELECT * FROM "Customer" WHERE size BETWEEN 1000 AND 5000;
-
--- Search by legacy name field
-SELECT * FROM "Customer" WHERE name LIKE '%Laura%';
-```
-
-#### Redis Queries
-```bash
-# List all keys
-KEYS *
-
-# Check cache for search results
-GET "search:{\"filters\":{},\"pageSize\":20,\"cursor\":null}"
-
-# Clear all cache
-FLUSHALL
-
-# Check Redis info
-INFO
-```
+**Health Check**: `curl -f http://localhost:8000/health`
 
 ---
 
-## OpenSearch Operations
+### 🌐 Web Service
 
-### Search Features
+**Purpose**: Next.js web application
 
-#### Partial Matching
-All search filters support **partial matching** with **case-insensitive** search:
-- Search for "Tech" to find "Technology"
-- Search for "Micro" to find "Stmicroelectronics"  
-- Search for "Semi" to find "Semiconductor Manufacturing"
-- Search for "IT" to find "Information Technology"
-
-This makes the search much more user-friendly and forgiving of typos or incomplete entries.
-
-#### Numeric Employee Size Filtering
-The **Employee Size** field uses **numeric range filtering**:
-- **Input**: Enter a minimum employee count (e.g., 1000)
-- **Behavior**: Finds companies with employee size ≥ entered value
-- **Examples**: 
-  - Enter `1000` → finds companies with 1000+ employees
-  - Enter `5000` → finds companies with 5000+ employees
-  - Enter `10000` → finds companies with 10000+ employees
-- **Data Processing**: Values like "10001+", "50+", "100-500" are automatically converted to numeric values (10001, 50, 100)
-
-### How to Ensure OpenSearch is Working Fine
-
-#### 1. Health Check
+**Local Deployment**:
 ```bash
-# Check cluster health
-curl -s http://localhost:9200/_cluster/health | jq .
-
-# Should return: {"status":"green"}
+cd services/web
+./scripts/start.sh
 ```
 
-#### 2. Index Operations
+**VM Deployment**:
 ```bash
-# List all indices
-curl -s http://localhost:9200/_cat/indices?v
-
-# Check customers index specifically
-curl -s http://localhost:9200/_cat/indices/customers?v
-
-# View index mapping
-curl -s http://localhost:9200/customers/_mapping | jq .
+# On VM
+cd /opt/hailmary/services/web
+./scripts/start.sh
 ```
 
-#### 3. Search Operations
-```bash
-# Basic search
-curl -s http://localhost:9200/customers/_search | jq '.hits.total'
+**Configuration**:
+- Port: 3000
+- Environment: production
+- Database URL: postgresql://app:app@localhost:5432/app
+- OpenSearch URL: http://localhost:9201
+- Redis URL: redis://localhost:6379
 
-# Search by company
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"term":{"company":"Stmicroelectronics"}}}' | jq '.hits.total'
+**Management Scripts**:
+- `start.sh` - Start the service
+- `stop.sh` - Stop the service
+- `restart.sh` - Restart the service
+- `dev.sh` - Start in development mode
+- `health-check.sh` - Check service health
+- `logs.sh` - View service logs
 
-# Search by country
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"term":{"country":"Italy"}}}' | jq '.hits.total'
+**Dependencies**: PostgreSQL, Redis, OpenSearch, Schema API
 
-# Search by industry
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"term":{"industry":"Semiconductor Manufacturing"}}}' | jq '.hits.total'
-
-# Search by job title (partial match)
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"wildcard":{"jobTitle":"*Director*"}}}' | jq '.hits.total'
-
-# Search by department
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"term":{"department":"Information Technology"}}}' | jq '.hits.total'
-
-# Search by employee size
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"term":{"employeeSize":"10001+"}}}' | jq '.hits.total'
-
-# Legacy: Search by sector
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"term":{"sector":"technology"}}}' | jq '.hits.total'
-
-# Legacy: Search by size range
-curl -s -H "content-type: application/json" http://localhost:9200/customers/_search \
-  -d '{"query":{"range":{"size":{"gte":1000,"lte":5000}}}}' | jq '.hits.total'
-```
-
-### Basic Troubleshooting
-
-#### Common Issues and Solutions
-
-**1. OpenSearch Not Starting**
-```bash
-# Check container logs
-docker compose logs opensearch
-
-# Check if port 9200 is available
-lsof -i :9200
-
-# Restart OpenSearch
-docker compose restart opensearch
-```
-
-**2. Index Not Found**
-```bash
-# Check if index exists
-curl -s http://localhost:9200/_cat/indices/customers
-
-# If missing, re-run ingestion
-docker compose restart ingestor
-```
-
-**3. Search Returns No Results**
-```bash
-# Check document count
-curl -s http://localhost:9200/customers/_count
-
-# Check sample documents
-curl -s http://localhost:9200/customers/_search?size=1 | jq '.hits.hits[0]._source'
-
-# Verify mapping
-curl -s http://localhost:9200/customers/_mapping | jq '.customers.mappings.properties'
-```
-
-**4. Performance Issues**
-```bash
-# Check cluster stats
-curl -s http://localhost:9200/_cluster/stats | jq .
-
-# Check node stats
-curl -s http://localhost:9200/_nodes/stats | jq .
-```
+**Health Check**: `curl -f http://localhost:3000/api/health`
 
 ---
 
-## Backend Updates
+### 🔄 CDC Service
 
-### How to Update Server-Side Code
+**Purpose**: Change Data Capture with Elasticsearch/OpenSearch
 
-#### 1. Update Ingestor (Python)
+**Local Deployment**:
 ```bash
-# 1. Edit the Python code
-vim apps/ingestor/app.py
-
-# 2. Rebuild the ingestor image
-docker compose build ingestor --no-cache
-
-# 3. Restart the service
-docker compose up -d ingestor
-
-# 4. Check logs
-docker compose logs -f ingestor
+cd services/cdc
+./scripts/start.sh
 ```
 
-#### 2. Update Web API (Node.js/Next.js)
+**VM Deployment**:
 ```bash
-# 1. Edit the API code
-vim apps/web/src/app/api/search/route.ts
-
-# 2. Rebuild the web image
-docker compose build web --no-cache
-
-# 3. Restart the service
-docker compose up -d web
-
-# 4. Test the API
-curl -s http://localhost:3000/api/health
+# On VM
+cd /opt/hailmary/services/cdc
+./scripts/start.sh
 ```
 
-#### 3. Update Environment Variables
-```bash
-# 1. Edit environment files
-vim apps/web/.env.local
-vim apps/ingestor/.env.local
+**Configuration**:
+- OpenSearch Port: 9201
+- Redis Port: 6380
+- Data Directory: `./data/elasticsearch`
+- Logs Directory: `./logs/elasticsearch`
 
-# 2. Restart affected services
-docker compose up -d web ingestor
-```
+**Management Scripts**:
+- `start.sh` - Start the service
+- `stop.sh` - Stop the service
+- `health-check.sh` - Check service health
+- `logs.sh` - View service logs
+- `setup-cdc.sh` - Setup CDC configuration
 
-#### 4. Update Dependencies
-```bash
-# For Python dependencies
-vim apps/ingestor/requirements.txt
-docker compose build ingestor --no-cache
+**Dependencies**: PostgreSQL, Redis
 
-# For Node.js dependencies
-vim apps/web/package.json
-docker compose build web --no-cache
-```
-
-### Development Workflow
-```bash
-# 1. Make code changes
-# 2. Test locally (optional)
-# 3. Rebuild affected services
-docker compose build [service-name] --no-cache
-
-# 4. Deploy changes
-docker compose up -d [service-name]
-
-# 5. Verify deployment
-docker compose logs [service-name]
-curl -s http://localhost:3000/api/health
-```
+**Health Check**: `curl -f http://localhost:9201/_cluster/health`
 
 ---
 
-## Frontend Updates
+### 📊 Schema Service
 
-### How to Update Frontend Code
+**Purpose**: Schema management and versioning
 
-#### 1. Update React Components
+**Local Deployment**:
 ```bash
-# 1. Edit the frontend code
-vim apps/web/src/app/page.tsx
-
-# 2. Rebuild the web image
-docker compose build web --no-cache
-
-# 3. Restart the web service
-docker compose up -d web
-
-# 4. Test the UI
-open http://localhost:3000/
+cd services/schema
+./scripts/start.sh
 ```
 
-#### 2. Update Styling/CSS
+**VM Deployment**:
 ```bash
-# 1. Edit styles (inline styles in React components)
-vim apps/web/src/app/page.tsx
-
-# 2. Rebuild and restart
-docker compose build web --no-cache
-docker compose up -d web
+# On VM
+cd /opt/hailmary/services/schema
+./scripts/start.sh
 ```
 
-#### 3. Update Dependencies
+**Configuration**:
+- Port: 3001
+- Environment: production
+
+**Management Scripts**:
+- `start.sh` - Start the service
+- `stop.sh` - Stop the service
+- `health-check.sh` - Check service health
+- `logs.sh` - View service logs
+- `publish.sh` - Publish schema version
+- `validate-schema.sh` - Validate schema
+
+**Dependencies**: None (standalone service)
+
+**Health Check**: `curl -f http://localhost:3001/health`
+
+## 🔧 VM Deployment Strategy
+
+### Prerequisites for VM
+- Ubuntu 20.04+ or CentOS 8+
+- Docker and Docker Compose installed
+- Git installed
+- Firewall configured for required ports
+- Sufficient disk space (50GB+ recommended)
+
+### VM Setup Process
+
+#### Option 1: Automated Setup (Recommended)
 ```bash
-# 1. Edit package.json
-vim apps/web/package.json
+# From your local machine, run the setup script
+./scripts/setup-vm.sh <vm-ip> [ssh-user] [ssh-key]
 
-# 2. Rebuild with new dependencies
-docker compose build web --no-cache
-
-# 3. Restart service
-docker compose up -d web
+# Example:
+./scripts/setup-vm.sh 34.123.45.67 ubuntu ~/.ssh/gcp_key
 ```
 
-### Frontend Development Workflow
+#### Option 2: Manual Setup
+1. **Install Docker and Docker Compose**
+   ```bash
+   # Ubuntu/Debian
+   sudo apt update
+   sudo apt install docker.io docker-compose
+   sudo systemctl enable docker
+   sudo systemctl start docker
+   
+   # Add user to docker group
+   sudo usermod -aG docker $USER
+   ```
+
+2. **Clone repository on VM**
+   ```bash
+   git clone https://github.com/leadvantageadmin/hailmary.git /opt/hailmary
+   cd /opt/hailmary
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   # Create environment files for each service
+   cp services/postgres/env.example services/postgres/.env
+   cp services/redis/env.example services/redis/.env
+   cp services/web/env.example services/web/.env
+   cp services/ingestor/env.example services/ingestor/.env
+   cp services/cdc/env.example services/cdc/.env
+   cp services/schema/env.example services/schema/.env
+   ```
+
+4. **Start services in order**
+   ```bash
+   # Start base services (VM mode)
+   cd services/postgres && ./scripts/start.sh vm
+   cd ../redis && ./scripts/start.sh vm
+   cd ../schema && ./scripts/start.sh vm
+   
+   # Start application services (VM mode)
+   cd ../cdc && ./scripts/start.sh vm
+   cd ../ingestor && ./scripts/start.sh vm
+   cd ../web && ./scripts/start.sh vm
+   ```
+
+### VM Update Process
+
+#### Update from Local Machine
 ```bash
-# 1. Make UI changes
-# 2. Rebuild web service
-docker compose build web --no-cache
+# Pull latest code and update VM deployment
+./scripts/update-vm.sh [branch]
 
-# 3. Deploy changes
-docker compose up -d web
-
-# 4. Test in browser
-open http://localhost:3000/
-
-# 5. Check browser console for errors
-# (Open Developer Tools -> Console)
+# Example:
+./scripts/update-vm.sh main
 ```
 
-### Testing Frontend Changes
+#### Update on VM
 ```bash
-# 1. Test basic functionality
-curl -s http://localhost:3000/ | grep -i "customer search"
+# SSH into VM and run update
+ssh -i ~/.ssh/gcp_key ubuntu@<vm-ip>
+cd /opt/hailmary
+git pull origin main
 
-# 2. Test API integration
-curl -X POST http://localhost:3000/api/search \
-  -H "content-type: application/json" \
-  -d '{"filters":{},"page":{"size":1}}'
-
-# 3. Manual UI testing
-# - Open http://localhost:3000/
-# - Test search form
-# - Verify results display
-# - Check error handling
+# Restart services if needed
+/opt/hailmary/start-all.sh
 ```
 
----
+### VM Service Management
 
-## Quick Reference Commands
+**Create systemd services for auto-start**:
 
-### Service Management
 ```bash
-# Start all services
-docker compose up -d
+# Create systemd service for each service
+sudo tee /etc/systemd/system/hailmary-postgres.service > /dev/null <<EOF
+[Unit]
+Description=HailMary PostgreSQL Service
+After=docker.service
+Requires=docker.service
 
-# Stop all services
-docker compose down
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/hailmary/services/postgres
+ExecStart=/opt/hailmary/services/postgres/scripts/start.sh
+ExecStop=/opt/hailmary/services/postgres/scripts/stop.sh
+User=root
 
-# Restart specific service
-docker compose restart [service-name]
+[Install]
+WantedBy=multi-user.target
+EOF
 
-# View logs
-docker compose logs -f [service-name]
-
-# Check service status
-docker compose ps
+# Enable and start services
+sudo systemctl daemon-reload
+sudo systemctl enable hailmary-postgres
+sudo systemctl start hailmary-postgres
 ```
+
+## 🔍 Monitoring and Troubleshooting
 
 ### Health Checks
 ```bash
-# API health
-curl -s http://localhost:3000/api/health
+# Check all services
+./scripts/health-check-all.sh
 
-# Database connection
-docker compose exec postgres pg_isready -U app -d app
-
-# OpenSearch health
-curl -s http://localhost:9200/_cluster/health
-
-# Redis health
-docker compose exec redis redis-cli ping
+# Check individual services
+cd services/postgres && ./scripts/health-check.sh
+cd services/redis && ./scripts/health-check.sh
+cd services/web && ./scripts/health-check.sh
+cd services/ingestor && ./scripts/health-check.sh
+cd services/cdc && ./scripts/health-check.sh
+cd services/schema && ./scripts/health-check.sh
 ```
 
-### Data Operations
+### Logs
 ```bash
-# Ingest new data
-cp new-data.csv data/customers.csv
-docker compose restart ingestor
+# View all service logs
+./scripts/logs-all.sh
 
-# Clear cache (usually not needed - automatic after ingestion)
-docker compose exec redis redis-cli FLUSHALL
-
-# Backup database
-docker compose exec postgres pg_dump -U app app > backup.sql
+# View individual service logs
+cd services/postgres && ./scripts/logs.sh
+cd services/redis && ./scripts/logs.sh
+cd services/web && ./scripts/logs.sh
+cd services/ingestor && ./scripts/logs.sh
+cd services/cdc && ./scripts/logs.sh
+cd services/schema && ./scripts/logs.sh
 ```
-
-### Quick Database Inspection
-```bash
-# Connect to database interactively
-docker compose exec postgres psql -U app -d app
-
-# Quick table overview
-docker compose exec postgres psql -U app -d app -c "\dt"
-
-# Check customer table structure
-docker compose exec postgres psql -U app -d app -c "\d \"Customer\""
-
-# Count total customers
-docker compose exec postgres psql -U app -d app -c "SELECT COUNT(*) FROM \"Customer\";"
-
-# View sample customer data
-docker compose exec postgres psql -U app -d app -c "SELECT \"firstName\", \"lastName\", company, industry, country FROM \"Customer\" LIMIT 5;"
-
-# Check data completeness
-docker compose exec postgres psql -U app -d app -c "SELECT COUNT(*) as total, COUNT(email) as has_email, COUNT(company) as has_company, COUNT(industry) as has_industry FROM \"Customer\";"
-```
-
----
-
-## Troubleshooting Guide
 
 ### Common Issues
 
-1. **Port Conflicts**: If port 3000 is in use, the web service uses port 3001
-2. **Memory Issues**: OpenSearch requires at least 1GB RAM
-3. **Permission Issues**: Ensure Docker has proper permissions
-4. **Network Issues**: Check if all services can communicate
+1. **Service won't start**
+   - Check Docker is running: `docker info`
+   - Check port conflicts: `netstat -tulpn | grep :PORT`
+   - Check logs: `./scripts/logs.sh`
 
-### Log Locations
-- **Web API**: `docker compose logs web`
-- **Ingestor**: `docker compose logs ingestor`
-- **PostgreSQL**: `docker compose logs postgres`
-- **OpenSearch**: `docker compose logs opensearch`
-- **Redis**: `docker compose logs redis`
+2. **Database connection issues**
+   - Verify PostgreSQL is running: `docker ps | grep postgres`
+   - Check connection: `docker exec hailmary-postgres pg_isready -U app -d app`
 
-### Emergency Procedures
-```bash
-# Complete restart
-docker compose down
-docker compose up -d
+3. **Web service issues**
+   - Check dependencies are running
+   - Verify environment variables
+   - Check logs: `cd services/web && ./scripts/logs.sh`
 
-# Reset all data (WARNING: This deletes all data)
-docker compose down -v
-docker compose up -d
-```
+## 📊 Port Configuration
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| PostgreSQL | 5432 | Database |
+| Redis | 6379 | Cache |
+| Web | 3000 | Web Application |
+| Ingestor | 8000 | Data Processing |
+| CDC/OpenSearch | 9201 | Search Engine |
+| Schema API | 3001 | Schema Management |
+| pgAdmin | 8080 | Database Admin (optional) |
+
+## 🔐 Security Considerations
+
+1. **Change default passwords** in production
+2. **Use environment variables** for sensitive data
+3. **Configure firewall** to restrict access
+4. **Use HTTPS** in production
+5. **Regular security updates** for base images
+
+## 📈 Scaling Considerations
+
+1. **Database**: Consider read replicas for high traffic
+2. **Web Service**: Use load balancer for multiple instances
+3. **Redis**: Configure clustering for high availability
+4. **Monitoring**: Implement proper monitoring and alerting
 
 ---
 
-## Support
-
-For issues not covered in this runbook:
-1. Check service logs: `docker compose logs [service-name]`
-2. Verify service health: Use health check commands above
-3. Check resource usage: `docker stats`
-4. Review configuration files in `apps/` directory
+*Last Updated: $(date)*
+*Version: 1.0.0*
