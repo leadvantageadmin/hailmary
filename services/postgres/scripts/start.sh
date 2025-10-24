@@ -111,14 +111,14 @@ setup_common() {
 # Function to start PostgreSQL service
 start_postgres() {
     echo "🐘 Starting PostgreSQL container..."
-    docker compose up -d postgres
+    docker-compose up -d postgres
 
     # Wait for PostgreSQL to be healthy
     echo "⏳ Waiting for PostgreSQL to be healthy..."
     timeout=60
     counter=0
     while [ $counter -lt $timeout ]; do
-        if docker compose exec postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+        if docker-compose exec postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
             echo "✅ PostgreSQL is healthy and ready!"
             break
         fi
@@ -136,7 +136,7 @@ start_postgres() {
 
     # Start materialized view refresh service
     echo "🔄 Starting materialized view refresh service..."
-    docker compose up -d materialized-view-refresh
+    docker-compose up -d materialized-view-refresh
     
     # Wait a moment for the service to start
     sleep 3
@@ -193,7 +193,7 @@ display_local_info() {
     echo "   • Logs: docker compose logs materialized-view-refresh"
     echo ""
     echo "🌐 Optional Services:"
-    echo "   • Start with pgAdmin: docker compose --profile admin up -d"
+    echo "   • Start with pgAdmin: docker-compose --profile admin up -d"
     echo "   • pgAdmin URL: http://localhost:8080"
     echo "   • pgAdmin Email: admin@hailmary.local"
     echo "   • pgAdmin Password: admin"
