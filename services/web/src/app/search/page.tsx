@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import TypeAheadInputBootstrapMultiSelect from '@/components/TypeAheadInputBootstrapMultiSelect';
+import ProfileDropdown from '@/components/ProfileDropdown';
 
 // Utility function to format revenue from whole dollars to display format
 function formatRevenue(revenue: number | null | undefined): string {
@@ -276,7 +277,7 @@ export default function SearchPage() {
                 Welcome back, {user.firstName} {user.lastName}
               </p>
             </div>
-            <div className="d-flex gap-2">
+            <div className="d-flex gap-2 align-items-center">
               <button
                 onClick={() => router.push('/direct-search')}
                 className="btn btn-outline-light"
@@ -285,32 +286,7 @@ export default function SearchPage() {
                 <i className="fas fa-user me-2"></i>
                 Direct Lookup
               </button>
-              <button
-                onClick={() => router.push('/profile')}
-                className="btn btn-outline-light"
-                style={{ fontSize: '1.1em' }}
-              >
-                <i className="fas fa-user-circle me-2"></i>
-                Profile
-              </button>
-              {user.role === 'ADMIN' && (
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="btn btn-outline-light"
-                  style={{ fontSize: '1.1em' }}
-                >
-                  <i className="fas fa-cog me-2"></i>
-                  Admin Panel
-                </button>
-              )}
-              <button
-                onClick={handleLogout}
-                className="btn btn-outline-light"
-                style={{ fontSize: '1.1em' }}
-              >
-                <i className="fas fa-sign-out-alt me-2"></i>
-                Logout
-              </button>
+              {user && <ProfileDropdown user={user} onLogout={handleLogout} />}
             </div>
           </div>
         </div>

@@ -44,8 +44,8 @@ fi
 export NODE_ENV=${NODE_ENV:-development}
 export WEB_PORT=${WEB_PORT:-3000}
 export DATABASE_URL=${DATABASE_URL:-postgresql://app:app@localhost:5433/app}
-export OPENSEARCH_URL=${OPENSEARCH_URL:-http://localhost:9201}
-export REDIS_URL=${REDIS_URL:-redis://localhost:6379}
+export ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://localhost:9200}
+export REDIS_URL=${REDIS_URL:-redis://localhost:6390}
 export WEB_LOGS_PATH=${WEB_LOGS_PATH:-./logs/web}
 export SCHEMA_DATA_PATH=${SCHEMA_DATA_PATH:-./data/schema}
 
@@ -59,17 +59,17 @@ if ! docker ps | grep -q hailmary-postgres; then
     exit 1
 fi
 
-# Check OpenSearch
-if ! docker ps | grep -q hailmary-opensearch; then
-    echo "⚠️  OpenSearch service is not running. Please start it first:"
-    echo "   cd ../opensearch && ./scripts/start.sh"
+# Check Elasticsearch
+if ! docker ps | grep -q hailmary-elasticsearch; then
+    echo "⚠️  Elasticsearch service is not running. Please start it first:"
+    echo "   cd ../cdc && ./scripts/start.sh local"
     exit 1
 fi
 
 # Check Redis
-if ! docker ps | grep -q hailmary-redis; then
+if ! docker ps | grep -q hailmary-services-redis; then
     echo "⚠️  Redis service is not running. Please start it first:"
-    echo "   cd ../redis && ./scripts/start.sh"
+    echo "   cd ../redis && ./scripts/start.sh local"
     exit 1
 fi
 
@@ -108,7 +108,7 @@ echo "   • Health Check: http://localhost:$WEB_PORT/api/health"
 echo "   • Environment: $NODE_ENV"
 echo "   • Hot Reload: Enabled"
 echo "   • Database: $DATABASE_URL"
-echo "   • OpenSearch: $OPENSEARCH_URL"
+echo "   • Elasticsearch: $ELASTICSEARCH_URL"
 echo "   • Redis: $REDIS_URL"
 echo ""
 echo "🔧 Management Commands:"

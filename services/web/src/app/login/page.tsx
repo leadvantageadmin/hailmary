@@ -167,46 +167,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Demo Credentials */}
-          <div className="card mt-4 border-0" style={{ 
-            background: 'rgba(255, 255, 255, 0.95)', 
-            border: '2px solid rgba(30, 144, 255, 0.2)' 
-          }}>
-            <div className="card-body p-4">
-              <div className="text-center">
-                <div className="d-flex align-items-center justify-content-center mb-3">
-                  <i className="fas fa-info-circle text-primary me-2"></i>
-                  <span className="fw-semibold">Demo Credentials</span>
-                </div>
-                <div className="row g-3">
-                  <div className="col-12">
-                    <div className="bg-light rounded-3 p-3 border">
-                      <p className="fw-semibold text-dark mb-2 small">Admin Account:</p>
-                      <div className="row g-2">
-                        <div className="col-12">
-                          <p className="font-monospace small text-dark mb-0">
-                            <i className="fas fa-envelope text-muted me-2"></i>
-                            admin@leadvantageglobal.com
-                          </p>
-                        </div>
-                        <div className="col-12">
-                          <p className="font-monospace small text-muted mb-0">
-                            <i className="fas fa-key text-muted me-2"></i>
-                            Password: admin123
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <p className="small text-muted mb-0">
-                      Use these credentials to explore the platform features
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Footer */}
           <div className="text-center mt-5">

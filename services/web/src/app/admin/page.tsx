@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ProfileDropdown from '@/components/ProfileDropdown';
 
 interface User {
   id: string;
@@ -175,7 +176,7 @@ export default function AdminPage() {
                 Welcome back, {currentUser?.firstName} {currentUser?.lastName}
               </p>
             </div>
-            <div className="d-flex gap-2">
+            <div className="d-flex gap-2 align-items-center">
               <button
                 onClick={() => router.push('/search')}
                 className="btn btn-outline-light"
@@ -192,22 +193,7 @@ export default function AdminPage() {
                 <i className="fas fa-user me-2"></i>
                 Direct Lookup
               </button>
-              <button
-                onClick={() => router.push('/profile')}
-                className="btn btn-outline-light"
-                style={{ fontSize: '1.1em' }}
-              >
-                <i className="fas fa-user-circle me-2"></i>
-                Profile
-              </button>
-              <button
-                onClick={handleLogout}
-                className="btn btn-outline-light"
-                style={{ fontSize: '1.1em' }}
-              >
-                <i className="fas fa-sign-out-alt me-2"></i>
-                Logout
-              </button>
+              {currentUser && <ProfileDropdown user={currentUser} onLogout={handleLogout} />}
             </div>
           </div>
         </div>

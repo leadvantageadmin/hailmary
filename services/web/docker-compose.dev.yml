@@ -14,14 +14,14 @@ services:
       HOSTNAME: "0.0.0.0"
       
       # Database Configuration
-      DATABASE_URL: ${DATABASE_URL:-postgresql://app:app@postgres:5432/app}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://app:app@hailmary-postgres:5432/app}
       
-      # OpenSearch Configuration
-      OPENSEARCH_URL: ${OPENSEARCH_URL:-http://elasticsearch:9200}
+      # Elasticsearch Configuration
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL:-http://hailmary-elasticsearch:9200}
       ELASTICSEARCH_INDEX: ${ELASTICSEARCH_INDEX:-company_prospect_view}
       
       # Redis Configuration
-      REDIS_URL: ${REDIS_URL:-redis://redis:6389}
+      REDIS_URL: ${REDIS_URL:-redis://hailmary-services-redis:6389}
       
       # Schema Service Configuration
       SCHEMA_VERSION: ${SCHEMA_VERSION:-latest}
@@ -43,7 +43,9 @@ services:
     volumes:
       # Mount source code for hot reload
       - .:/app
-      - /app/node_modules
+      # Use named volume to preserve container's node_modules
+      - node_modules:/app/node_modules
+      # Preserve container's .next build cache
       - /app/.next
       
       # Application logs
@@ -73,6 +75,7 @@ volumes:
       type: none
       o: bind
       device: ${WEB_LOGS_PATH:-./logs/web}
+  node_modules:
 
 networks:
   hailmary-network:
