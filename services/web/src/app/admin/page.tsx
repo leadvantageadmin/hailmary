@@ -158,12 +158,12 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-vh-100" style={{ background: 'var(--bg-light)' }}>
+    <div className="min-vh-100" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       {/* Header */}
       <header 
         className="bg-primary text-white shadow-sm"
         style={{
-          background: 'var(--gradient-primary)'
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
         }}
       >
         <div className="container-fluid" style={{ paddingLeft: '3.5rem', paddingRight: '3.5rem' }}>
@@ -177,22 +177,111 @@ export default function AdminPage() {
               </p>
             </div>
             <div className="d-flex gap-2 align-items-center">
-              <button
-                onClick={() => router.push('/search')}
-                className="btn btn-outline-light"
-                style={{ fontSize: '1.1em' }}
-              >
-                <i className="fas fa-search me-2"></i>
-                Search Portal
-              </button>
-              <button
-                onClick={() => router.push('/direct-search')}
-                className="btn btn-outline-light"
-                style={{ fontSize: '1.1em' }}
-              >
-                <i className="fas fa-user me-2"></i>
-                Direct Lookup
-              </button>
+              {/* Company Dropdown */}
+              <div className="dropdown">
+                <button
+                  className="btn btn-outline-light dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  style={{ fontSize: '1.1em' }}
+                >
+                  <i className="fas fa-building me-2"></i>
+                  Company
+                </button>
+                <ul className="dropdown-menu" style={{ 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                }}>
+                  <li>
+                    <button 
+                      className="dropdown-item text-white"
+                      onClick={() => router.push('/company-search')}
+                      style={{ 
+                        background: 'transparent',
+                        border: 'none',
+                        transition: 'background-color 0.2s ease',
+                        padding: '12px 20px',
+                        minHeight: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '0.95em'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <i className="fas fa-building me-2"></i>
+                      Company Search
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Prospect Dropdown */}
+              <div className="dropdown">
+                <button
+                  className="btn btn-outline-light dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  style={{ fontSize: '1.1em' }}
+                >
+                  <i className="fas fa-user me-2"></i>
+                  Prospect
+                </button>
+                <ul className="dropdown-menu" style={{ 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                }}>
+                  <li>
+                    <button 
+                      className="dropdown-item text-white"
+                      onClick={() => router.push('/direct-search')}
+                      style={{ 
+                        background: 'transparent',
+                        border: 'none',
+                        transition: 'background-color 0.2s ease',
+                        padding: '12px 20px',
+                        minHeight: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '0.95em'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <i className="fas fa-user me-2"></i>
+                      Direct Search
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      className="dropdown-item text-white"
+                      onClick={() => router.push('/search')}
+                      style={{ 
+                        background: 'transparent',
+                        border: 'none',
+                        transition: 'background-color 0.2s ease',
+                        padding: '12px 20px',
+                        minHeight: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '0.95em'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <i className="fas fa-search me-2"></i>
+                      Advanced Search
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
               {currentUser && <ProfileDropdown user={currentUser} onLogout={handleLogout} />}
             </div>
           </div>
@@ -201,11 +290,11 @@ export default function AdminPage() {
 
       <div className="container-fluid py-4">
         {/* User Management */}
-        <div className="card shadow-sm">
+        <div className="card shadow-lg border-0">
           <div 
             className="card-header border-0 p-4"
             style={{
-              background: 'var(--gradient-primary)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               borderRadius: '16px 16px 0 0'
             }}
           >
@@ -350,7 +439,7 @@ export default function AdminPage() {
                             padding: '12px 24px', 
                             fontSize: '1rem',
                             borderRadius: '12px',
-                            background: 'var(--gradient-primary)',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                             border: 'none'
                           }}
                         >

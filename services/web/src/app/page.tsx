@@ -1,18 +1,36 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Redirect to login page
-    router.push('/login');
+    const checkAuthAndRedirect = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          // User is logged in, redirect to advanced search
+          router.push('/search');
+        } else {
+          // User is not logged in, redirect to login
+          router.push('/login');
+        }
+      } catch (error) {
+        // Error checking auth, redirect to login
+        router.push('/login');
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuthAndRedirect();
   }, [router]);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-20 h-20 bg-white opacity-10 rounded-full animate-pulse"></div>
@@ -37,7 +55,7 @@ export default function Home() {
           </p>
           <div className="flex items-center justify-center space-x-3 text-white text-opacity-80">
             <div className="spinner h-5 w-5"></div>
-            <span className="text-lg">Redirecting to login...</span>
+            <span className="text-lg">{isChecking ? 'Checking authentication...' : 'Redirecting...'}</span>
           </div>
           <div className="mt-8 text-white text-opacity-60 text-sm">
             <p>Powered by LeadAdvantage Global</p>

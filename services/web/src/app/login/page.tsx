@@ -27,11 +27,8 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json();
         // Redirect based on user role
-        if (data.user.role === 'ADMIN') {
-          router.push('/admin');
-        } else {
-          router.push('/search');
-        }
+        // Always redirect to advanced search page after login
+        router.push('/search');
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Login failed');
@@ -44,7 +41,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-vh-100" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="min-vh-100" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       {/* Background Elements */}
       <div className="position-absolute top-0 start-0 w-100 h-100 overflow-hidden">
         <div className="position-absolute bg-white bg-opacity-10 rounded-circle animate-pulse" style={{ top: '80px', left: '40px', width: '80px', height: '80px' }}></div>
@@ -147,7 +144,7 @@ export default function LoginPage() {
                     padding: '12px 24px', 
                     fontSize: '1.1rem',
                     borderRadius: '12px',
-                    background: 'var(--gradient-primary)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     border: 'none'
                   }}
                 >
