@@ -76,18 +76,17 @@ export async function POST(request: NextRequest) {
         country: company.country,
         zipCode: company.zipCode,
         phone: company.phone,
+        mobilePhone: company.mobilePhone,
         minEmployeeSize: company.minEmployeeSize,
         maxEmployeeSize: company.maxEmployeeSize,
+        employeeSizeLink: company.employeeSizeLink,
         revenue: company.revenue,
-        description: company.description,
-        website: company.website,
-        linkedinUrl: company.linkedinUrl,
         externalSource: company.externalSource,
         externalId: company.externalId,
         createdAt: company.createdAt,
         updatedAt: company.updatedAt
       },
-      prospects: prospects.map(prospect => ({
+      prospects: prospects.map((prospect: any) => ({
         id: prospect.id,
         salutation: prospect.salutation,
         firstName: prospect.firstName,
