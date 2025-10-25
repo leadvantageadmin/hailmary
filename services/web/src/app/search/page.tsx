@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import TypeAheadInputBootstrapMultiSelect from '@/components/TypeAheadInputBootstrapMultiSelect';
 import ProfileDropdown from '@/components/ProfileDropdown';
 
@@ -49,6 +49,61 @@ function formatPhoneNumber(phoneNumber: string | undefined): string {
     // For other formats, return as is
     return phoneNumber;
   }
+}
+
+// Utility functions to serialize/deserialize search state to/from URL
+function serializeFiltersToUrl(filters: SearchFilters, pagination: Pagination): string {
+  const params = new URLSearchParams();
+  
+  // Add filter arrays
+  Object.entries(filters).forEach(([key, value]) => {
+    if (Array.isArray(value) && value.length > 0) {
+      params.set(key, value.join(','));
+    } else if (typeof value === 'number' && value !== undefined) {
+      params.set(key, value.toString());
+    }
+  });
+  
+  // Add pagination
+  if (pagination.currentPage > 1) {
+    params.set('page', pagination.currentPage.toString());
+  }
+  
+  return params.toString();
+}
+
+function deserializeFiltersFromUrl(searchParams: URLSearchParams): { filters: SearchFilters; page: number } {
+  const filters: SearchFilters = {
+    company: [],
+    country: [],
+    city: [],
+    state: [],
+    jobTitle: [],
+    jobTitleLevel: [],
+    department: [],
+    industry: [],
+    minEmployeeSize: undefined,
+    maxEmployeeSize: undefined
+  };
+  
+  // Deserialize filter arrays
+  Object.keys(filters).forEach(key => {
+    const value = searchParams.get(key);
+    if (value) {
+      if (key === 'minEmployeeSize' || key === 'maxEmployeeSize') {
+        const numValue = parseInt(value, 10);
+        if (!isNaN(numValue)) {
+          (filters as any)[key] = numValue;
+        }
+      } else {
+        (filters as any)[key] = value.split(',').filter(Boolean);
+      }
+    }
+  });
+  
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  
+  return { filters, page };
 }
 
 interface DirectSearchResult {
@@ -99,31 +154,23 @@ interface Pagination {
 }
 
 export default function SearchPage() {
-  const [filters, setFilters] = useState<SearchFilters>({
-    company: [],
-    country: [],
-    city: [],
-    state: [],
-    jobTitle: [],
-    jobTitleLevel: [],
-    department: [],
-    industry: [],
-    minEmployeeSize: undefined,
-    maxEmployeeSize: undefined
-  });
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchRef = useRef<number>(0);
   
+  // Initialize state from URL parameters
+  const { filters: initialFilters, page: initialPage } = deserializeFiltersFromUrl(searchParams);
+  
+  const [filters, setFilters] = useState<SearchFilters>(initialFilters);
   const [results, setResults] = useState<DirectSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
-    currentPage: 1,
+    currentPage: initialPage,
     totalPages: 0,
     totalResults: 0,
     pageSize: 25
   });
-  
-  const searchRef = useRef<number>(0);
-  const router = useRouter();
 
   useEffect(() => {
     // Check authentication
@@ -138,6 +185,52 @@ export default function SearchPage() {
       })
       .catch(() => router.push('/login'));
   }, [router]);
+
+  // Auto-search when component loads with URL parameters
+  useEffect(() => {
+    const hasFilters = Object.values(initialFilters).some(value => 
+      Array.isArray(value) ? value.length > 0 : value !== undefined
+    );
+    
+    if (hasFilters) {
+      performSearch(initialPage);
+    }
+  }, []); // Only run once on mount
+
+  // Update URL when filters or pagination change
+  useEffect(() => {
+    const urlParams = serializeFiltersToUrl(filters, pagination);
+    const newUrl = urlParams ? `?${urlParams}` : '/search';
+    
+    // Only update URL if it's different from current URL
+    if (window.location.search !== (urlParams ? `?${urlParams}` : '')) {
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [filters, pagination.currentPage, router]);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const { filters: newFilters, page: newPage } = deserializeFiltersFromUrl(new URLSearchParams(window.location.search));
+      setFilters(newFilters);
+      setPagination(prev => ({ ...prev, currentPage: newPage }));
+      
+      // Perform search if there are filters
+      const hasFilters = Object.values(newFilters).some(value => 
+        Array.isArray(value) ? value.length > 0 : value !== undefined
+      );
+      
+      if (hasFilters) {
+        performSearch(newPage);
+      } else {
+        setResults([]);
+        setPagination(prev => ({ ...prev, totalPages: 0, totalResults: 0 }));
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const performSearch = async (page: number = 1) => {
     const searchId = ++searchRef.current;

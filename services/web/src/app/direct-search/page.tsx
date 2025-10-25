@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ProfileDropdown from '@/components/ProfileDropdown';
 
 // Utility function to format revenue from whole dollars to display format
@@ -26,6 +26,21 @@ function formatRevenue(revenue: number | null | undefined): string {
     // Less than 1000
     return `$${revenue.toFixed(0)}`;
   }
+}
+
+// Utility functions to serialize/deserialize direct search state to/from URL
+function serializeDirectSearchToUrl(email: string): string {
+  const params = new URLSearchParams();
+  
+  if (email.trim()) {
+    params.set('email', email.trim());
+  }
+  
+  return params.toString();
+}
+
+function deserializeDirectSearchFromUrl(searchParams: URLSearchParams): string {
+  return searchParams.get('email') || '';
 }
 
 interface DirectSearchResult {
@@ -66,12 +81,17 @@ interface User {
 }
 
 export default function DirectSearchPage() {
-  const [email, setEmail] = useState('');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Initialize email from URL parameters
+  const initialEmail = deserializeDirectSearchFromUrl(searchParams);
+  
+  const [email, setEmail] = useState(initialEmail);
   const [result, setResult] = useState<DirectSearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [user, setUser] = useState<User | null>(null);
-  const router = useRouter();
 
   // Function to format phone numbers
   const formatPhoneNumber = (phoneNumber: string | undefined): string => {
@@ -108,6 +128,43 @@ export default function DirectSearchPage() {
       })
       .catch(() => router.push('/login'));
   }, [router]);
+
+  // Auto-search when component loads with email in URL
+  useEffect(() => {
+    if (initialEmail.trim()) {
+      handleSearch();
+    }
+  }, []); // Only run once on mount
+
+  // Update URL when email changes
+  useEffect(() => {
+    const urlParams = serializeDirectSearchToUrl(email);
+    const newUrl = urlParams ? `?${urlParams}` : '/direct-search';
+    
+    // Only update URL if it's different from current URL
+    if (window.location.search !== (urlParams ? `?${urlParams}` : '')) {
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [email, router]);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const newEmail = deserializeDirectSearchFromUrl(new URLSearchParams(window.location.search));
+      setEmail(newEmail);
+      
+      // Perform search if there's an email
+      if (newEmail.trim()) {
+        handleSearch();
+      } else {
+        setResult(null);
+        setError('');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleSearch = async () => {
     if (!email.trim()) {
