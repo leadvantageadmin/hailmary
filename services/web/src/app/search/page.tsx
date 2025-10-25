@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import TypeAheadInputBootstrapMultiSelect from '@/components/TypeAheadInputBootstrapMultiSelect';
 import ProfileDropdown from '@/components/ProfileDropdown';
@@ -153,7 +153,7 @@ interface Pagination {
   pageSize: number;
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const searchRef = useRef<number>(0);
@@ -795,6 +795,9 @@ export default function SearchPage() {
                             <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                               <i className="fas fa-dollar-sign me-2"></i>Revenue
                             </th>
+                            <th className="fw-bold text-center" style={{ width: '100px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                              <i className="fas fa-eye me-2"></i>Actions
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -855,6 +858,23 @@ export default function SearchPage() {
                                       {formatRevenue(result.revenue)}
                                     </span>
                                   </div>
+                                </td>
+                                <td className="text-center" style={{ fontSize: '11px' }}>
+                                  <button
+                                    onClick={() => router.push(`/direct-search?email=${encodeURIComponent(result.email || '')}`)}
+                                    className="btn btn-sm btn-outline-primary"
+                                    disabled={!result.email}
+                                    style={{ 
+                                      fontSize: '10px',
+                                      padding: '4px 12px',
+                                      borderWidth: '1px',
+                                      borderRadius: '50px'
+                                    }}
+                                    title={result.email ? "View detailed information" : "No email available"}
+                                  >
+                                    <i className="fas fa-eye me-1"></i>
+                                    View
+                                  </button>
                                 </td>
                               </tr>
                             );
@@ -1008,5 +1028,22 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted">Loading search page...</p>
+        </div>
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
   );
 }

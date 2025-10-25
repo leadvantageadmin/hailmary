@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProfileDropdown from '@/components/ProfileDropdown';
 
@@ -80,7 +80,7 @@ interface User {
   role: string;
 }
 
-export default function DirectSearchPage() {
+function DirectSearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -587,5 +587,22 @@ export default function DirectSearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DirectSearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted">Loading direct search page...</p>
+        </div>
+      </div>
+    }>
+      <DirectSearchPageContent />
+    </Suspense>
   );
 }
