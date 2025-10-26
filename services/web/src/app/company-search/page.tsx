@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ProfileDropdown from '@/components/ProfileDropdown';
+import Header from '@/components/Header';
 import TypeAheadInputBootstrapMultiSelect from '@/components/TypeAheadInputBootstrapMultiSelect';
 
 // Utility function to format revenue from whole dollars to display format
@@ -472,162 +472,31 @@ function CompanySearchPageContent() {
           font-weight: 600 !important;
         }
       `}</style>
-      {/* Header */}
-      <header 
-        className="text-white shadow-sm"
-        style={{
-          background: 'rgba(102, 126, 234, 0.15)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          position: 'relative',
-          zIndex: 10
-        }}
-      >
-        <div className="container-fluid" style={{ paddingLeft: '3.5rem', paddingRight: '3.5rem' }}>
-          <div className="d-flex justify-content-between align-items-center py-3">
-            <div>
-              <h2 className="text-white mb-2" style={{ 
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#fff'
-              }}>
-                Company Direct Lookup
-              </h2>
-              <p className="mb-0" style={{ 
-                fontSize: '12px',
-                fontWeight: '400',
-                color: 'rgba(255, 255, 255, 0.7)'
-              }}>
-                Search by company name or domain
-              </p>
-            </div>
-            <div className="d-flex gap-2 align-items-center">
-              {/* Company Dropdown */}
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-light dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                        style={{ 
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#fff'
-                        }}
-                >
-                  <i className="fas fa-building me-2"></i>
-                  Company
-                </button>
-                <ul className="dropdown-menu" style={{ 
-                  background: 'rgba(102, 126, 234, 0.2)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-                }}>
-                  <li>
-                    <button 
-                      className="dropdown-item text-white"
-                      onClick={() => router.push('/company-search')}
-                             style={{ 
-                               background: 'transparent',
-                               border: 'none',
-                               transition: 'background-color 0.2s ease',
-                               padding: '12px 20px',
-                               minHeight: '48px',
-                               display: 'flex',
-                               alignItems: 'center',
-                               fontSize: '14px',
-                               fontWeight: '400',
-                               color: '#333'
-                             }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <i className="fas fa-building me-2"></i>
-                      Direct Search
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Prospect Dropdown */}
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-light dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                        style={{ 
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#fff'
-                        }}
-                >
-                  <i className="fas fa-user me-2"></i>
-                  Prospect
-                </button>
-                <ul className="dropdown-menu" style={{ 
-                  background: 'rgba(102, 126, 234, 0.2)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-                }}>
-                  <li>
-                    <button 
-                      className="dropdown-item text-white"
-                      onClick={() => router.push('/direct-search')}
-                             style={{ 
-                               background: 'transparent',
-                               border: 'none',
-                               transition: 'background-color 0.2s ease',
-                               padding: '12px 20px',
-                               minHeight: '48px',
-                               display: 'flex',
-                               alignItems: 'center',
-                               fontSize: '14px',
-                               fontWeight: '400',
-                               color: '#333'
-                             }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <i className="fas fa-user me-2"></i>
-                      Direct Search
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className="dropdown-item text-white"
-                      onClick={() => router.push('/search')}
-                             style={{ 
-                               background: 'transparent',
-                               border: 'none',
-                               transition: 'background-color 0.2s ease',
-                               padding: '12px 20px',
-                               minHeight: '48px',
-                               display: 'flex',
-                               alignItems: 'center',
-                               fontSize: '14px',
-                               fontWeight: '400',
-                               color: '#333'
-                             }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <i className="fas fa-search me-2"></i>
-                      Advanced Search
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              {user && <ProfileDropdown user={user} onLogout={handleLogout} />}
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header
+        title="Company Direct Lookup"
+        subtitle="Search by company name or domain"
+        user={user}
+        onLogout={handleLogout}
+        companyDropdownItems={[
+          {
+            label: 'Direct Search',
+            icon: 'fas fa-building',
+            onClick: () => router.push('/company-search')
+          }
+        ]}
+        prospectDropdownItems={[
+          {
+            label: 'Direct Search',
+            icon: 'fas fa-user',
+            onClick: () => router.push('/direct-search')
+          },
+          {
+            label: 'Advanced Search',
+            icon: 'fas fa-search',
+            onClick: () => router.push('/search')
+          }
+        ]}
+      />
 
       <div className="container-fluid py-4">
         <div className="row justify-content-center">
@@ -920,36 +789,102 @@ function CompanySearchPageContent() {
                     </div>
                   </div>
                 </div>
-                <div className="card-body p-0">
-                  <div style={{ width: '100%', overflowX: 'auto' }}>
-                    <table className="table table-hover mb-0" style={{ width: '100%', minWidth: '100%' }}>
+                <div className="card-body p-4">
+                  <div className="card shadow-sm" style={{ 
+                    borderRadius: '16px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                  }}>
+                    <div className="table-responsive" style={{ borderRadius: '16px', overflowX: 'auto', overflowY: 'hidden' }}>
+                      <table className="table table-hover mb-0" style={{ 
+                        minWidth: '1200px', 
+                        marginBottom: '0', 
+                        marginTop: '0',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '16px'
+                      }}>
                       <thead style={{ marginTop: '0' }}>
                         <tr>
-                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '60px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-hashtag me-2"></i>
                           </th>
-                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '180px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-user me-2"></i>Name
                           </th>
-                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '160px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-briefcase me-2"></i>Job Title
                           </th>
-                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '120px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-layer-group me-2"></i>Job Level
                           </th>
-                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '140px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-sitemap me-2"></i>Department
                           </th>
-                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '200px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-map-marker-alt me-2"></i>Location
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '200px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '200px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-envelope me-2"></i>Email
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '150px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-phone me-2"></i>Phone
                           </th>
-                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="text-center" style={{ 
+                            width: '100px', 
+                            whiteSpace: 'nowrap', 
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: '#444'
+                          }}>
                             <i className="fas fa-eye me-2"></i>Actions
                           </th>
                         </tr>
@@ -968,32 +903,32 @@ function CompanySearchPageContent() {
                               </div>
                             </td>
                             <td className="text-center" style={{ fontSize: '11px' }}>
-                              <div className="fw-semibold text-dark">{prospect.jobTitle || '-'}</div>
+                              <span className="text-dark">{prospect.jobTitle || '-'}</span>
                             </td>
                             <td className="text-center" style={{ fontSize: '11px' }}>
-                              <div className="fw-semibold text-dark">{prospect.jobTitleLevel || '-'}</div>
+                              <span className="text-dark">{prospect.jobTitleLevel || '-'}</span>
                             </td>
                             <td className="text-center" style={{ fontSize: '11px' }}>
-                              <div className="fw-semibold text-dark">{prospect.department || '-'}</div>
+                              <span className="text-dark">{prospect.department || '-'}</span>
                             </td>
                             <td className="text-center" style={{ fontSize: '11px' }}>
-                              <div className="fw-semibold text-dark">
+                              <span className="text-dark">
                                 {[prospect.city, prospect.state, prospect.country]
                                   .filter(Boolean)
                                   .join(', ') || '-'}
-                              </div>
+                              </span>
                             </td>
                             <td className="text-center" style={{ fontSize: '11px' }}>
-                              <div className="fw-semibold text-dark">
+                              <span className="text-dark">
                                 {prospect.email ? (
                                   <a href={`mailto:${prospect.email}`} className="text-primary text-decoration-none">
                                     {prospect.email}
                                   </a>
                                 ) : '-'}
-                              </div>
+                              </span>
                             </td>
                             <td className="text-center" style={{ fontSize: '11px' }}>
-                              <div className="fw-semibold text-dark">
+                              <span className="text-dark">
                                 {prospect.phone || prospect.mobilePhone ? (
                                   <a 
                                     href={`tel:${prospect.phone || prospect.mobilePhone}`} 
@@ -1002,7 +937,7 @@ function CompanySearchPageContent() {
                                     {formatPhoneNumber(prospect.phone || prospect.mobilePhone)}
                                   </a>
                                 ) : '-'}
-                              </div>
+                              </span>
                             </td>
                             <td className="text-center" style={{ fontSize: '11px' }}>
                               <button
@@ -1025,6 +960,7 @@ function CompanySearchPageContent() {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </div>
               </div>

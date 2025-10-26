@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ProfileDropdown from '@/components/ProfileDropdown';
+import Header from '@/components/Header';
 
 // Utility function to format revenue from whole dollars to display format
 function formatRevenue(revenue: number | null | undefined): string {
@@ -432,162 +432,31 @@ function DirectSearchPageContent() {
           backdrop-filter: blur(20px) !important;
         }
       `}</style>
-      {/* Header */}
-      <header 
-        className="text-white shadow-sm"
-        style={{
-          background: 'rgba(102, 126, 234, 0.15)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          position: 'relative',
-          zIndex: 10
-        }}
-      >
-        <div className="container-fluid" style={{ paddingLeft: '3.5rem', paddingRight: '3.5rem' }}>
-          <div className="d-flex justify-content-between align-items-center py-3">
-            <div>
-              <h2 className="text-white mb-2" style={{ 
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#fff'
-              }}>
-                Prospect Direct Lookup
-              </h2>
-              <p className="mb-0" style={{ 
-                fontSize: '12px',
-                fontWeight: '400',
-                color: 'rgba(255, 255, 255, 0.7)'
-              }}>
-                Search by email address
-              </p>
-            </div>
-            <div className="d-flex gap-2 align-items-center">
-              {/* Company Dropdown */}
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-light dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                        style={{ 
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#fff'
-                        }}
-                >
-                  <i className="fas fa-building me-2"></i>
-                  Company
-                </button>
-                <ul className="dropdown-menu" style={{ 
-                  background: 'rgba(102, 126, 234, 0.2)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-                }}>
-                  <li>
-                    <button 
-                      className="dropdown-item text-white"
-                      onClick={() => router.push('/company-search')}
-                             style={{ 
-                               background: 'transparent',
-                               border: 'none',
-                               transition: 'background-color 0.2s ease',
-                               padding: '12px 20px',
-                               minHeight: '48px',
-                               display: 'flex',
-                               alignItems: 'center',
-                               fontSize: '14px',
-                               fontWeight: '400',
-                               color: '#333'
-                             }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <i className="fas fa-building me-2"></i>
-                      Direct Search
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Prospect Dropdown */}
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-light dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                        style={{ 
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#fff'
-                        }}
-                >
-                  <i className="fas fa-user me-2"></i>
-                  Prospect
-                </button>
-                <ul className="dropdown-menu" style={{ 
-                  background: 'rgba(102, 126, 234, 0.2)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-                }}>
-                  <li>
-                    <button 
-                      className="dropdown-item text-white"
-                      onClick={() => router.push('/direct-search')}
-                             style={{ 
-                               background: 'transparent',
-                               border: 'none',
-                               transition: 'background-color 0.2s ease',
-                               padding: '12px 20px',
-                               minHeight: '48px',
-                               display: 'flex',
-                               alignItems: 'center',
-                               fontSize: '14px',
-                               fontWeight: '400',
-                               color: '#333'
-                             }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <i className="fas fa-user me-2"></i>
-                      Direct Search
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className="dropdown-item text-white"
-                      onClick={() => router.push('/search')}
-                             style={{ 
-                               background: 'transparent',
-                               border: 'none',
-                               transition: 'background-color 0.2s ease',
-                               padding: '12px 20px',
-                               minHeight: '48px',
-                               display: 'flex',
-                               alignItems: 'center',
-                               fontSize: '14px',
-                               fontWeight: '400',
-                               color: '#333'
-                             }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <i className="fas fa-search me-2"></i>
-                      Advanced Search
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              {user && <ProfileDropdown user={user} onLogout={handleLogout} />}
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header
+        title="Prospect Direct Lookup"
+        subtitle="Search by email address"
+        user={user}
+        onLogout={handleLogout}
+        companyDropdownItems={[
+          {
+            label: 'Direct Search',
+            icon: 'fas fa-building',
+            onClick: () => router.push('/company-search')
+          }
+        ]}
+        prospectDropdownItems={[
+          {
+            label: 'Direct Search',
+            icon: 'fas fa-user',
+            onClick: () => router.push('/direct-search')
+          },
+          {
+            label: 'Advanced Search',
+            icon: 'fas fa-search',
+            onClick: () => router.push('/search')
+          }
+        ]}
+      />
 
       <div className="container-fluid py-4">
         <div className="row g-4">
