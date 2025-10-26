@@ -106,71 +106,71 @@ services:
           cpus: '0.25'
 
   # --------------------
-  # 3. PGSync
+  # 3. PGSync (COMMENTED OUT - Replaced by Logstash)
   # --------------------
-  pgsync:
-    image: toluaina1/pgsync:latest
-    container_name: hailmary-pgsync
-    restart: unless-stopped
-    
-    volumes:
-      - ./config/schema.json:/app/schema.json:ro
-      - pgsync_logs:/app/logs
-    
-    environment:
-      # PostgreSQL Configuration
-      PG_HOST: ${PG_HOST:-hailmary-postgres}
-      PG_PORT: ${PG_PORT:-5432}
-      PG_DATABASE: ${PG_DATABASE:-app}
-      PG_USER: ${PG_USER:-app}
-      PG_PASSWORD: ${PG_PASSWORD:-app}
-      
-      # Elasticsearch Configuration
-      ELASTICSEARCH_HOST: elasticsearch
-      ELASTICSEARCH_PORT: 9200
-      ELASTICSEARCH_USE_SSL: "false"
-      ELASTICSEARCH_VERIFY_CERTS: "false"
-      ELASTICSEARCH_TIMEOUT: 30
-      
-      # Redis Configuration
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_CHECKPOINT: "true"
-      REDIS_TIMEOUT: 10
-      
-      # PGSync Configuration
-      PGSYNC_LOG_LEVEL: ${PGSYNC_LOG_LEVEL:-INFO}
-      PGSYNC_BATCH_SIZE: ${PGSYNC_BATCH_SIZE:-1000}
-      PGSYNC_FLUSH_INTERVAL: ${PGSYNC_FLUSH_INTERVAL:-1}
-    
-    entrypoint: ["pgsync"]
-    command: ["-c", "/app/schema.json", "-d", "-b"]
-    
-    depends_on:
-      redis:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-    
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-          cpus: '2.0'
-        reservations:
-          memory: 1g
-          cpus: '1.0'
-    
-    networks:
-      - cdc-network
-      - hailmary-network
-    
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f python3.11 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+  # pgsync:
+  #   image: toluaina1/pgsync:latest
+  #   container_name: hailmary-pgsync
+  #   restart: unless-stopped
+  #   
+  #   volumes:
+  #     - ./config/schema.json:/app/schema.json:ro
+  #     - pgsync_logs:/app/logs
+  #   
+  #   environment:
+  #     # PostgreSQL Configuration
+  #     PG_HOST: ${PG_HOST:-hailmary-postgres}
+  #     PG_PORT: ${PG_PORT:-5432}
+  #     PG_DATABASE: ${PG_DATABASE:-app}
+  #     PG_USER: ${PG_USER:-app}
+  #     PG_PASSWORD: ${PG_PASSWORD:-app}
+  #     
+  #     # Elasticsearch Configuration
+  #     ELASTICSEARCH_HOST: elasticsearch
+  #     ELASTICSEARCH_PORT: 9200
+  #     ELASTICSEARCH_USE_SSL: "false"
+  #     ELASTICSEARCH_VERIFY_CERTS: "false"
+  #     ELASTICSEARCH_TIMEOUT: 30
+  #     
+  #     # Redis Configuration
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     REDIS_CHECKPOINT: "true"
+  #     REDIS_TIMEOUT: 10
+  #     
+  #     # PGSync Configuration
+  #     PGSYNC_LOG_LEVEL: ${PGSYNC_LOG_LEVEL:-INFO}
+  #     PGSYNC_BATCH_SIZE: ${PGSYNC_BATCH_SIZE:-1000}
+  #     PGSYNC_FLUSH_INTERVAL: ${PGSYNC_FLUSH_INTERVAL:-1}
+  #   
+  #   entrypoint: ["pgsync"]
+  #   command: ["-c", "/app/schema.json", "-d", "-b"]
+  #   
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #     elasticsearch:
+  #       condition: service_healthy
+  #   
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 2g
+  #         cpus: '2.0'
+  #       reservations:
+  #         memory: 1g
+  #         cpus: '1.0'
+  #   
+  #   networks:
+  #     - cdc-network
+  #     - hailmary-network
+  #   
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pgrep -f python3.11 || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
 
 # =============================================================================
 # Volumes

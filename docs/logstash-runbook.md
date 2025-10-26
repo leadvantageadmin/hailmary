@@ -442,7 +442,7 @@ rm -rf /opt/hailmary/services/logstash/data/checkpoints/*
 
 ### VM Configuration
 - **PostgreSQL Host**: `hailmary-postgres` (Docker network)
-- **Elasticsearch Host**: `elasticsearch` (Docker network)
+- **Elasticsearch Host**: `hailmary-elasticsearch` (Docker network)
 - **Data Persistence**: Docker volumes for checkpoints and logs
 - **Network**: Internal Docker network communication
 
