@@ -41,14 +41,113 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-vh-100" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-      {/* Background Elements */}
-      <div className="position-absolute top-0 start-0 w-100 h-100 overflow-hidden">
-        <div className="position-absolute bg-white bg-opacity-10 rounded-circle animate-pulse" style={{ top: '80px', left: '40px', width: '80px', height: '80px' }}></div>
-        <div className="position-absolute bg-white bg-opacity-10 rounded-circle animate-pulse" style={{ top: '160px', right: '80px', width: '64px', height: '64px', animationDelay: '1s' }}></div>
-        <div className="position-absolute bg-white bg-opacity-10 rounded-circle animate-pulse" style={{ bottom: '80px', left: '80px', width: '96px', height: '96px', animationDelay: '2s' }}></div>
-        <div className="position-absolute bg-white bg-opacity-10 rounded-circle animate-pulse" style={{ bottom: '160px', right: '40px', width: '48px', height: '48px', animationDelay: '0.5s' }}></div>
-      </div>
+    <div className="min-vh-100" style={{ 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Glass morphism background elements */}
+      <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+        background: `
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%)
+        `,
+        filter: 'blur(1px)'
+      }}></div>
+      
+      {/* CSS for typography and glass morphism effects */}
+      <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        
+        * {
+          font-family: 'Inter', sans-serif;
+        }
+        
+        /* Ensure FontAwesome icons are not affected by font-family */
+        .fas, .far, .fab, .fal, .fad, .fa, i[class*="fa-"] {
+          font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "Font Awesome 6 Brands" !important;
+          font-style: normal !important;
+          font-variant: normal !important;
+          text-rendering: auto !important;
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        body {
+          font-size: 14px;
+          font-weight: 400;
+          color: #333;
+        }
+        
+        /* Main title */
+        h1 {
+          font-size: 18px;
+          font-weight: 600;
+          color: #fff;
+        }
+        
+        /* Form labels */
+        .form-label {
+          font-size: 13px;
+          font-weight: 400;
+          color: #555;
+        }
+        
+        /* Input field text */
+        .form-control {
+          font-size: 14px;
+          font-weight: 400;
+          color: #333;
+        }
+        
+        /* Button text */
+        .btn {
+          font-size: 15px;
+          font-weight: 600;
+          color: #fff;
+        }
+        
+        /* Card styling with glass morphism */
+        .card {
+          background: rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 16px !important;
+        }
+        
+        /* Input focus states */
+        .form-control:focus {
+          border-color: #20c997 !important;
+          box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25) !important;
+        }
+        
+        /* Button hover effects */
+        .btn:hover {
+          transform: translateY(-1px);
+          transition: all 0.3s ease;
+        }
+        
+        /* Card hover effects */
+        .card:hover {
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+          transform: translateY(-1px);
+          transition: all 0.3s ease;
+        }
+        
+        /* Ensure glass morphism effects are visible */
+        .card {
+          background: rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        .card-header {
+          background: rgba(102, 126, 234, 0.2) !important;
+          backdrop-filter: blur(15px) !important;
+        }
+      `}</style>
 
       <div className="d-flex align-items-center justify-content-center min-vh-100">
         <div className="w-100" style={{ maxWidth: '500px' }}>
@@ -68,22 +167,45 @@ export default function LoginPage() {
           </div>
 
           {/* Login Form */}
-          <div className="card shadow-lg border-0">
-            <div className="card-header bg-transparent border-0 p-4">
+          <div className="card shadow-lg" style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div className="card-header border-0 p-4" style={{
+              background: 'rgba(102, 126, 234, 0.2)',
+              backdropFilter: 'blur(15px)',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px 16px 0 0'
+            }}>
               <div className="text-center">
-                <h2 className="h4 fw-bold text-dark mb-2" style={{ fontFamily: 'var(--font-primary)' }}>
+                <h2 className="h4 mb-2 text-white" style={{
+                  fontSize: '20px',
+                  fontWeight: '600',
+                  color: '#333'
+                }}>
                   Welcome Back
                 </h2>
-                <p className="text-muted mb-0">
-                  Sign in to access your customer search portal
+                <p className="mb-0" style={{
+                  fontSize: '14px',
+                  fontWeight: '400',
+                  color: 'rgba(255, 255, 255, 0.7)'
+                }}>
+                  Sign in to access data search and management portal
                 </p>
               </div>
             </div>
             <div className="card-body p-4">
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label htmlFor="email" className="form-label fw-semibold">
-                    <i className="fas fa-envelope text-muted me-2"></i>
+                  <label htmlFor="email" className="form-label" style={{
+                    fontSize: '15px',
+                    fontWeight: '500',
+                    color: '#fff'
+                  }}>
+                    <i className="fas fa-envelope me-2" style={{ fontSize: '16px', color: '#fff' }}></i>
                     Email Address
                   </label>
                   <input
@@ -97,17 +219,26 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{ 
-                      padding: '12px 16px', 
-                      fontSize: '1rem',
-                      borderRadius: '12px',
-                      border: '2px solid #e9ecef'
+                      fontSize: '14px',
+                      fontWeight: '400',
+                      color: '#333',
+                      minHeight: '48px',
+                      padding: '8px 12px',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                     }}
                   />
                 </div>
 
                 <div className="mb-4">
-                  <label htmlFor="password" className="form-label fw-semibold">
-                    <i className="fas fa-lock text-muted me-2"></i>
+                  <label htmlFor="password" className="form-label" style={{
+                    fontSize: '15px',
+                    fontWeight: '500',
+                    color: '#fff'
+                  }}>
+                    <i className="fas fa-lock me-2" style={{ fontSize: '16px', color: '#fff' }}></i>
                     Password
                   </label>
                   <input
@@ -121,10 +252,15 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     style={{ 
-                      padding: '12px 16px', 
-                      fontSize: '1rem',
-                      borderRadius: '12px',
-                      border: '2px solid #e9ecef'
+                      fontSize: '14px',
+                      fontWeight: '400',
+                      color: '#333',
+                      minHeight: '48px',
+                      padding: '8px 12px',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                     }}
                   />
                 </div>
@@ -142,10 +278,14 @@ export default function LoginPage() {
                   className="btn btn-primary btn-lg w-100"
                   style={{ 
                     padding: '12px 24px', 
-                    fontSize: '1.1rem',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    color: '#fff',
                     borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    border: 'none'
+                    background: 'linear-gradient(135deg, #20c997 0%, #17a2b8 100%)',
+                    border: 'none',
+                    boxShadow: '0 4px 15px rgba(32, 201, 151, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                    transition: 'all 0.3s ease'
                   }}
                 >
                   {loading ? (

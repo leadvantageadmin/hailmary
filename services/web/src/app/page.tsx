@@ -30,14 +30,53 @@ export default function Home() {
   }, [router]);
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-20 h-20 bg-white opacity-10 rounded-full animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-16 h-16 bg-white opacity-10 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-20 w-24 h-24 bg-white opacity-10 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-40 right-10 w-12 h-12 bg-white opacity-10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-      </div>
+    <div className="min-h-screen" style={{ 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Glass morphism background elements */}
+      <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+        background: `
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%)
+        `,
+        filter: 'blur(1px)'
+      }}></div>
+      
+      {/* CSS for typography and glass morphism effects */}
+      <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        
+        * {
+          font-family: 'Inter', sans-serif;
+        }
+        
+        /* Ensure FontAwesome icons are not affected by font-family */
+        .fas, .far, .fab, .fal, .fad, .fa, i[class*="fa-"] {
+          font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "Font Awesome 6 Brands" !important;
+          font-style: normal !important;
+          font-variant: normal !important;
+          text-rendering: auto !important;
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        body {
+          font-size: 14px;
+          font-weight: 400;
+          color: #333;
+        }
+        
+        /* Main title */
+        h1 {
+          font-size: 18px;
+          font-weight: 600;
+          color: #fff;
+        }
+      `}</style>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center">
         <div className="text-center animate-fade-in">

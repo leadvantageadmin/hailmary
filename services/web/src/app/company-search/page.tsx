@@ -276,22 +276,231 @@ function CompanySearchPageContent() {
   return (
     <div className="min-vh-100" style={{ 
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      fontFamily: 'var(--font-primary, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)'
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      {/* Glass morphism background elements */}
+      <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+        background: `
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%)
+        `,
+        filter: 'blur(1px)'
+      }}></div>
+      
+      {/* CSS for typography and hover effects */}
+      <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        
+        * {
+          font-family: 'Inter', sans-serif;
+        }
+        
+        /* Ensure FontAwesome icons are not affected by font-family */
+        .fas, .far, .fab, .fal, .fad, .fa, i[class*="fa-"] {
+          font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "Font Awesome 6 Brands" !important;
+          font-style: normal !important;
+          font-variant: normal !important;
+          text-rendering: auto !important;
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        body {
+          font-size: 14px;
+          font-weight: 400;
+          color: #333;
+        }
+        .search-btn:hover {
+          background: linear-gradient(135deg, #1dd1a1 0%, #0ea5e9 100%) !important;
+          box-shadow: 0 6px 25px rgba(32, 201, 151, 0.6) !important;
+          transform: translateY(-2px);
+        }
+        .search-btn:active {
+          transform: translateY(0px);
+        }
+        .form-control:focus {
+          border-color: #20c997 !important;
+          box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25) !important;
+        }
+        .clear-btn:hover {
+          background: rgba(102, 126, 234, 0.1) !important;
+          border-color: rgba(102, 126, 234, 0.5) !important;
+          color: #000 !important;
+        }
+        .sortable-header:hover {
+          color: #20c997 !important;
+        }
+        .sortable-header:hover .fas.fa-sort {
+          opacity: 1 !important;
+        }
+        .table tbody tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+        .table tbody tr:hover {
+          background-color: #e8f4fd !important;
+        }
+        .card:hover {
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+          transform: translateY(-1px);
+          transition: all 0.3s ease;
+        }
+        .dropdown-item:hover {
+          font-weight: 500 !important;
+          color: #000 !important;
+        }
+        
+        /* Header dropdown button hover and open states */
+        .dropdown-toggle:hover,
+        .dropdown-toggle.show {
+          color: #000 !important;
+        }
+        
+        .dropdown-toggle:hover *,
+        .dropdown-toggle.show * {
+          color: #000 !important;
+        }
+        .table td {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+        .table td a {
+          font-size: 14px;
+          font-weight: 400;
+          color: #007bff;
+          text-decoration: none;
+        }
+        .table td a:hover {
+          text-decoration: underline;
+        }
+        
+        /* Table column headers */
+        .table th {
+          font-size: 13px;
+          font-weight: 600;
+          color: #fff;
+          background-color: #000;
+          border-bottom: 2px solid #dee2e6;
+        }
+        
+        /* Section label headers (accordion buttons) */
+        .accordion-button {
+          background-color: #000 !important;
+          color: #fff !important;
+          border: none !important;
+        }
+        
+        .accordion-button:not(.collapsed) {
+          background-color: #000 !important;
+          color: #fff !important;
+          box-shadow: none !important;
+        }
+        
+        .accordion-button:focus {
+          background-color: #000 !important;
+          color: #fff !important;
+          box-shadow: none !important;
+        }
+        
+        /* Ensure all text and icons in accordion buttons are white */
+        .accordion-button * {
+          color: #fff !important;
+        }
+        
+        .accordion-button i {
+          color: #fff !important;
+        }
+        
+        /* Ensure all text and icons in table headers are white */
+        .table th {
+          color: #fff !important;
+        }
+        
+        .table th * {
+          color: #fff !important;
+        }
+        
+        .table th i {
+          color: #fff !important;
+        }
+        
+        .table th span {
+          color: #fff !important;
+        }
+        
+        /* Ensure accordion arrows are white */
+        .accordion-button::after {
+          filter: brightness(0) invert(1) !important;
+        }
+        
+        .accordion-button:not(.collapsed)::after {
+          filter: brightness(0) invert(1) !important;
+        }
+        
+        /* Prevent phone column text wrapping */
+        .table td:nth-child(9) {
+          white-space: nowrap;
+        }
+        
+        /* Pagination button styling to match glass morphism */
+        .pagination .page-link {
+          background: rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: #000 !important;
+          border-radius: 8px !important;
+          margin: 0 2px !important;
+          transition: all 0.3s ease !important;
+          padding: 8px 14px !important;
+          font-size: 14px !important;
+        }
+        
+        .pagination .page-link:hover {
+          background: rgba(102, 126, 234, 0.2) !important;
+          border-color: rgba(102, 126, 234, 0.3) !important;
+          color: #000 !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        .pagination .page-item.active .page-link {
+          background: rgba(102, 126, 234, 0.3) !important;
+          border-color: rgba(102, 126, 234, 0.5) !important;
+          color: #000 !important;
+          font-weight: 600 !important;
+        }
+      `}</style>
       {/* Header */}
-      <div className="container-fluid py-4">
-        <div className="row align-items-center">
-          <div className="col">
-            <div className="d-flex align-items-center">
-              <div className="me-4">
-                <h1 className="text-white fw-bold mb-0" style={{ fontFamily: 'var(--font-primary)', fontSize: '2rem' }}>
-                  <i className="fas fa-building me-3"></i>
-                  HailMary
-                </h1>
-              </div>
+      <header 
+        className="text-white shadow-sm"
+        style={{
+          background: 'rgba(102, 126, 234, 0.15)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          position: 'relative',
+          zIndex: 10
+        }}
+      >
+        <div className="container-fluid" style={{ paddingLeft: '3.5rem', paddingRight: '3.5rem' }}>
+          <div className="d-flex justify-content-between align-items-center py-3">
+            <div>
+              <h2 className="text-white mb-2" style={{ 
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#fff'
+              }}>
+                Company Direct Lookup
+              </h2>
+              <p className="mb-0" style={{ 
+                fontSize: '12px',
+                fontWeight: '400',
+                color: 'rgba(255, 255, 255, 0.7)'
+              }}>
+                Search by company name or domain
+              </p>
             </div>
-          </div>
-          <div className="col-auto">
             <div className="d-flex gap-2 align-items-center">
               {/* Company Dropdown */}
               <div className="dropdown">
@@ -300,36 +509,43 @@ function CompanySearchPageContent() {
                   type="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
-                  style={{ fontSize: '1.1em' }}
+                        style={{ 
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#fff'
+                        }}
                 >
                   <i className="fas fa-building me-2"></i>
                   Company
                 </button>
                 <ul className="dropdown-menu" style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
+                  background: 'rgba(102, 126, 234, 0.2)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                 }}>
                   <li>
                     <button 
                       className="dropdown-item text-white"
                       onClick={() => router.push('/company-search')}
-                      style={{ 
-                        background: 'transparent',
-                        border: 'none',
-                        transition: 'background-color 0.2s ease',
-                        padding: '12px 20px',
-                        minHeight: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '0.95em'
-                      }}
+                             style={{ 
+                               background: 'transparent',
+                               border: 'none',
+                               transition: 'background-color 0.2s ease',
+                               padding: '12px 20px',
+                               minHeight: '48px',
+                               display: 'flex',
+                               alignItems: 'center',
+                               fontSize: '14px',
+                               fontWeight: '400',
+                               color: '#333'
+                             }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                       <i className="fas fa-building me-2"></i>
-                      Company Search
+                      Direct Search
                     </button>
                   </li>
                 </ul>
@@ -342,31 +558,38 @@ function CompanySearchPageContent() {
                   type="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
-                  style={{ fontSize: '1.1em' }}
+                        style={{ 
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#fff'
+                        }}
                 >
                   <i className="fas fa-user me-2"></i>
                   Prospect
                 </button>
                 <ul className="dropdown-menu" style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
+                  background: 'rgba(102, 126, 234, 0.2)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                 }}>
                   <li>
                     <button 
                       className="dropdown-item text-white"
                       onClick={() => router.push('/direct-search')}
-                      style={{ 
-                        background: 'transparent',
-                        border: 'none',
-                        transition: 'background-color 0.2s ease',
-                        padding: '12px 20px',
-                        minHeight: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '0.95em'
-                      }}
+                             style={{ 
+                               background: 'transparent',
+                               border: 'none',
+                               transition: 'background-color 0.2s ease',
+                               padding: '12px 20px',
+                               minHeight: '48px',
+                               display: 'flex',
+                               alignItems: 'center',
+                               fontSize: '14px',
+                               fontWeight: '400',
+                               color: '#333'
+                             }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
@@ -378,16 +601,18 @@ function CompanySearchPageContent() {
                     <button 
                       className="dropdown-item text-white"
                       onClick={() => router.push('/search')}
-                      style={{ 
-                        background: 'transparent',
-                        border: 'none',
-                        transition: 'background-color 0.2s ease',
-                        padding: '12px 20px',
-                        minHeight: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '0.95em'
-                      }}
+                             style={{ 
+                               background: 'transparent',
+                               border: 'none',
+                               transition: 'background-color 0.2s ease',
+                               padding: '12px 20px',
+                               minHeight: '48px',
+                               display: 'flex',
+                               alignItems: 'center',
+                               fontSize: '14px',
+                               fontWeight: '400',
+                               color: '#333'
+                             }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
@@ -402,69 +627,115 @@ function CompanySearchPageContent() {
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       <div className="container-fluid py-4">
         <div className="row justify-content-center">
           <div className="col-lg-8">
-            <div className="card shadow-lg border-0" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+            <div className="card shadow-lg" style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
               {/* Header */}
-              <div className="card-header text-center py-4" style={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                border: 'none'
-              }}>
-                <div>
-                  <h2 className="text-white fw-bold mb-2" style={{ fontFamily: 'var(--font-primary)', fontSize: '1.65rem' }}>
+              <div 
+                className="card-header border-0 p-4"
+                style={{
+                  background: 'rgba(102, 126, 234, 0.2)',
+                  backdropFilter: 'blur(15px)',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '16px 16px 0 0'
+                }}
+              >
+                <div className="d-flex align-items-center">
+                  <i className="fas fa-building text-white me-3" style={{ fontSize: '18px' }}></i>
+                  <h5 className="mb-0 text-white" style={{ 
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
                     Company Search
-                  </h2>
-                  <p className="text-white-50 mb-0" style={{ fontSize: '0.99em' }}>
-                    Search for company details and associated prospects
-                  </p>
+                  </h5>
                 </div>
               </div>
 
               {/* Search Form */}
-              <div className="card-body p-4">
+              <div className="card-body p-3">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold text-dark">
-                      <i className="fas fa-building text-primary me-2"></i>
-                      Company Name
+                    <label className="form-label" style={{ 
+                      fontSize: '15px',
+                      fontWeight: '500',
+                      color: '#fff'
+                    }}>
+                      <i className="fas fa-building me-2" style={{ fontSize: '16px', color: '#fff' }}></i>Company Name
                     </label>
                     <TypeAheadInputBootstrapMultiSelect
                       value={companyName ? [companyName] : []}
                       onChange={handleCompanyNameChange}
                       field="company"
                       placeholder="Enter company name..."
-                      className="form-control"
+                      className="form-control form-control-lg"
+                      style={{ 
+                        fontSize: '14px',
+                        fontWeight: '400',
+                        color: '#333',
+                        minHeight: '48px',
+                        padding: '8px 12px',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
+                      }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold text-dark">
-                      <i className="fas fa-globe text-primary me-2"></i>
-                      Domain
+                    <label className="form-label" style={{ 
+                      fontSize: '15px',
+                      fontWeight: '500',
+                      color: '#fff'
+                    }}>
+                      <i className="fas fa-globe me-2" style={{ fontSize: '16px', color: '#fff' }}></i>Domain
                     </label>
                     <TypeAheadInputBootstrapMultiSelect
                       value={domain ? [domain] : []}
                       onChange={handleDomainChange}
                       field="domain"
                       placeholder="Enter company domain..."
-                      className="form-control"
+                      className="form-control form-control-lg"
+                      style={{ 
+                        fontSize: '14px',
+                        fontWeight: '400',
+                        color: '#333',
+                        minHeight: '48px',
+                        padding: '8px 12px',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
+                      }}
                     />
                   </div>
                 </div>
 
-                <div className="d-grid gap-2 mt-4">
+                <div className="d-flex gap-2 mt-4">
                   <button
                     onClick={handleSearch}
                     disabled={loading || (!companyName.trim() && !domain.trim())}
-                    className="btn btn-primary"
+                    className="btn btn-primary search-btn flex-fill"
                     style={{ 
-                      padding: '12px 24px', 
-                      fontSize: '1rem',
+                      padding: '12px 16px', 
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      color: '#fff',
                       borderRadius: '12px',
-                      background: 'var(--gradient-primary)',
-                      border: 'none'
+                      background: 'linear-gradient(135deg, #20c997 0%, #17a2b8 100%)',
+                      border: 'none',
+                      boxShadow: '0 4px 15px rgba(32, 201, 151, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                      transition: 'all 0.3s ease',
+                      width: '50%'
                     }}
                   >
                     {loading ? (
@@ -479,6 +750,31 @@ function CompanySearchPageContent() {
                       </div>
                     )}
                   </button>
+                  <button
+                    onClick={() => {
+                      setCompanyName('');
+                      setDomain('');
+                      setCompanyDetails(null);
+                      setProspects([]);
+                      setError('');
+                    }}
+                    className="btn clear-btn flex-fill"
+                    style={{ 
+                      padding: '12px 16px', 
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      color: '#fff',
+                      borderRadius: '12px',
+                      background: 'transparent',
+                      border: '1px solid rgba(102, 126, 234, 0.3)',
+                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                      transition: 'all 0.3s ease',
+                      width: '50%'
+                    }}
+                  >
+                    <i className="fas fa-times me-2"></i>
+                    Clear
+                  </button>
                 </div>
 
                 {error && (
@@ -492,14 +788,29 @@ function CompanySearchPageContent() {
 
             {/* Company Details */}
             {companyDetails && (
-              <div className="card shadow-lg border-0 mt-4" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-                <div className="card-header" style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none'
-                }}>
+              <div className="card shadow-lg mt-4" style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                <div 
+                  className="card-header border-0 p-4"
+                  style={{
+                    background: 'rgba(102, 126, 234, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '16px 16px 0 0'
+                  }}
+                >
                   <div className="d-flex align-items-center">
                     <i className="fas fa-building text-white me-3" style={{ fontSize: '18px' }}></i>
-                    <h5 className="mb-0 fw-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
+                    <h5 className="mb-0 text-white" style={{ 
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      color: '#333'
+                    }}>
                       Company Details
                     </h5>
                   </div>
@@ -568,18 +879,37 @@ function CompanySearchPageContent() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
 
-            {/* Prospects Table */}
-            {prospects.length > 0 && (
-              <div className="card shadow-lg border-0 mt-4" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-                <div className="card-header" style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none'
-                }}>
+        {/* Full Width Prospects Table */}
+        {prospects.length > 0 && (
+          <div className="row mt-4">
+            <div className="col-12">
+              <div className="card shadow-lg mt-4" style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                <div 
+                  className="card-header border-0 p-4"
+                  style={{
+                    background: 'rgba(102, 126, 234, 0.2)',
+                    backdropFilter: 'blur(15px)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '16px 16px 0 0'
+                  }}
+                >
                   <div className="d-flex align-items-center justify-content-between">
                     <div className="d-flex align-items-center">
                       <i className="fas fa-users text-white me-3" style={{ fontSize: '18px' }}></i>
-                      <h5 className="mb-0 fw-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
+                      <h5 className="mb-0 text-white" style={{ 
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#333'
+                      }}>
                         Associated Prospects
                       </h5>
                     </div>
@@ -591,26 +921,26 @@ function CompanySearchPageContent() {
                   </div>
                 </div>
                 <div className="card-body p-0">
-                  <div className="table-responsive">
-                    <table className="table table-hover mb-0">
+                  <div style={{ width: '100%', overflowX: 'auto' }}>
+                    <table className="table table-hover mb-0" style={{ width: '100%', minWidth: '100%' }}>
                       <thead style={{ marginTop: '0' }}>
                         <tr>
-                          <th className="fw-bold text-center" style={{ width: '60px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-hashtag me-2"></i>
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-user me-2"></i>Name
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '160px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-briefcase me-2"></i>Job Title
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-layer-group me-2"></i>Job Level
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '140px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-sitemap me-2"></i>Department
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-map-marker-alt me-2"></i>Location
                           </th>
                           <th className="fw-bold text-center" style={{ width: '200px', whiteSpace: 'nowrap', fontSize: '11px' }}>
@@ -619,7 +949,7 @@ function CompanySearchPageContent() {
                           <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-phone me-2"></i>Phone
                           </th>
-                          <th className="fw-bold text-center" style={{ width: '100px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          <th className="fw-bold text-center" style={{ whiteSpace: 'nowrap', fontSize: '11px' }}>
                             <i className="fas fa-eye me-2"></i>Actions
                           </th>
                         </tr>
@@ -698,9 +1028,9 @@ function CompanySearchPageContent() {
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -352,22 +352,231 @@ function SearchPageContent() {
   }
 
   return (
-    <div className="min-vh-100" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+    <div className="min-vh-100" style={{ 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Glass morphism background elements */}
+      <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+        background: `
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%)
+        `,
+        filter: 'blur(1px)'
+      }}></div>
+      
+      {/* CSS for typography and hover effects */}
+      <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+        
+        * {
+          font-family: 'Inter', sans-serif;
+        }
+        
+        /* Ensure FontAwesome icons are not affected by font-family */
+        .fas, .far, .fab, .fal, .fad, .fa, i[class*="fa-"] {
+          font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "Font Awesome 6 Brands" !important;
+          font-style: normal !important;
+          font-variant: normal !important;
+          text-rendering: auto !important;
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        body {
+          font-size: 14px;
+          font-weight: 400;
+          color: #333;
+        }
+        .search-btn:hover {
+          background: linear-gradient(135deg, #1dd1a1 0%, #0ea5e9 100%) !important;
+          box-shadow: 0 6px 25px rgba(32, 201, 151, 0.6) !important;
+          transform: translateY(-2px);
+        }
+        .search-btn:active {
+          transform: translateY(0px);
+        }
+        .form-control:focus {
+          border-color: #20c997 !important;
+          box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25) !important;
+        }
+        .clear-btn:hover {
+          background: rgba(102, 126, 234, 0.1) !important;
+          border-color: rgba(102, 126, 234, 0.5) !important;
+          color: #000 !important;
+        }
+        .sortable-header:hover {
+          color: #20c997 !important;
+        }
+        .sortable-header:hover .fas.fa-sort {
+          opacity: 1 !important;
+        }
+        .table tbody tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+        .table tbody tr:hover {
+          background-color: #e8f4fd !important;
+        }
+        .card:hover {
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+          transform: translateY(-1px);
+          transition: all 0.3s ease;
+        }
+        .dropdown-item:hover {
+          font-weight: 500 !important;
+          color: #000 !important;
+        }
+        
+        /* Header dropdown button hover and open states */
+        .dropdown-toggle:hover,
+        .dropdown-toggle.show {
+          color: #000 !important;
+        }
+        
+        .dropdown-toggle:hover *,
+        .dropdown-toggle.show * {
+          color: #000 !important;
+        }
+        .table td {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+        .table td a {
+          font-size: 14px;
+          font-weight: 400;
+          color: #007bff;
+          text-decoration: none;
+        }
+        .table td a:hover {
+          text-decoration: underline;
+        }
+        
+        /* Table column headers */
+        .table th {
+          font-size: 13px;
+          font-weight: 600;
+          color: #fff;
+          background-color: #000;
+          border-bottom: 2px solid #dee2e6;
+        }
+        
+        /* Section label headers (accordion buttons) */
+        .accordion-button {
+          background-color: #000 !important;
+          color: #fff !important;
+          border: none !important;
+        }
+        
+        .accordion-button:not(.collapsed) {
+          background-color: #000 !important;
+          color: #fff !important;
+          box-shadow: none !important;
+        }
+        
+        .accordion-button:focus {
+          background-color: #000 !important;
+          color: #fff !important;
+          box-shadow: none !important;
+        }
+        
+        /* Ensure all text and icons in accordion buttons are white */
+        .accordion-button * {
+          color: #fff !important;
+        }
+        
+        .accordion-button i {
+          color: #fff !important;
+        }
+        
+        /* Ensure all text and icons in table headers are white */
+        .table th {
+          color: #fff !important;
+        }
+        
+        .table th * {
+          color: #fff !important;
+        }
+        
+        .table th i {
+          color: #fff !important;
+        }
+        
+        .table th span {
+          color: #fff !important;
+        }
+        
+        /* Ensure accordion arrows are white */
+        .accordion-button::after {
+          filter: brightness(0) invert(1) !important;
+        }
+        
+        .accordion-button:not(.collapsed)::after {
+          filter: brightness(0) invert(1) !important;
+        }
+        
+        /* Prevent phone column text wrapping */
+        .table td:nth-child(9) {
+          white-space: nowrap;
+        }
+        
+        /* Pagination button styling to match glass morphism */
+        .pagination .page-link {
+          background: rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: #000 !important;
+          border-radius: 8px !important;
+          margin: 0 2px !important;
+          transition: all 0.3s ease !important;
+          padding: 8px 14px !important;
+          font-size: 14px !important;
+        }
+        
+        .pagination .page-link:hover {
+          background: rgba(102, 126, 234, 0.2) !important;
+          border-color: rgba(102, 126, 234, 0.3) !important;
+          color: #000 !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        .pagination .page-item.active .page-link {
+          background: rgba(102, 126, 234, 0.3) !important;
+          border-color: rgba(102, 126, 234, 0.5) !important;
+          color: #000 !important;
+          font-weight: 600 !important;
+        }
+      `}</style>
       {/* Header */}
       <header 
-        className="bg-primary text-white shadow-sm"
+        className="text-white shadow-sm"
         style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+          background: 'rgba(102, 126, 234, 0.15)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          position: 'relative',
+          zIndex: 10
         }}
       >
         <div className="container-fluid" style={{ paddingLeft: '3.5rem', paddingRight: '3.5rem' }}>
           <div className="d-flex justify-content-between align-items-center py-3">
             <div>
-              <h2 className="text-white fw-bold mb-2" style={{ fontFamily: 'var(--font-primary)', fontSize: '1.65rem' }}>
-                Advance Data Search
+              <h2 className="text-white mb-2" style={{ 
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#fff'
+              }}>
+                Prospect Advance Search
               </h2>
-              <p className="text-white-50 mb-0" style={{ fontSize: '0.99em' }}>
-                Welcome back, {user.firstName} {user.lastName}
+              <p className="mb-0" style={{ 
+                fontSize: '12px',
+                fontWeight: '400',
+                color: 'rgba(255, 255, 255, 0.7)'
+              }}>
+                Search by company, industry, employee size, and more
               </p>
             </div>
             <div className="d-flex gap-2 align-items-center">
@@ -378,36 +587,43 @@ function SearchPageContent() {
                   type="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
-                  style={{ fontSize: '1.1em' }}
+                        style={{ 
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#fff'
+                        }}
                 >
                   <i className="fas fa-building me-2"></i>
                   Company
                 </button>
                 <ul className="dropdown-menu" style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
+                  background: 'rgba(102, 126, 234, 0.2)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                 }}>
                   <li>
                     <button 
                       className="dropdown-item text-white"
                       onClick={() => router.push('/company-search')}
-                      style={{ 
-                        background: 'transparent',
-                        border: 'none',
-                        transition: 'background-color 0.2s ease',
-                        padding: '12px 20px',
-                        minHeight: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '0.95em'
-                      }}
+                             style={{ 
+                               background: 'transparent',
+                               border: 'none',
+                               transition: 'background-color 0.2s ease',
+                               padding: '12px 20px',
+                               minHeight: '48px',
+                               display: 'flex',
+                               alignItems: 'center',
+                               fontSize: '14px',
+                               fontWeight: '400',
+                               color: '#333'
+                             }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                       <i className="fas fa-building me-2"></i>
-                      Company Search
+                      Direct Search
                     </button>
                   </li>
                 </ul>
@@ -420,31 +636,38 @@ function SearchPageContent() {
                   type="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
-                  style={{ fontSize: '1.1em' }}
+                        style={{ 
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#fff'
+                        }}
                 >
                   <i className="fas fa-user me-2"></i>
                   Prospect
                 </button>
                 <ul className="dropdown-menu" style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
+                  background: 'rgba(102, 126, 234, 0.2)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                 }}>
                   <li>
                     <button 
                       className="dropdown-item text-white"
                       onClick={() => router.push('/direct-search')}
-                      style={{ 
-                        background: 'transparent',
-                        border: 'none',
-                        transition: 'background-color 0.2s ease',
-                        padding: '12px 20px',
-                        minHeight: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '0.95em'
-                      }}
+                             style={{ 
+                               background: 'transparent',
+                               border: 'none',
+                               transition: 'background-color 0.2s ease',
+                               padding: '12px 20px',
+                               minHeight: '48px',
+                               display: 'flex',
+                               alignItems: 'center',
+                               fontSize: '14px',
+                               fontWeight: '400',
+                               color: '#333'
+                             }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
@@ -456,16 +679,18 @@ function SearchPageContent() {
                     <button 
                       className="dropdown-item text-white"
                       onClick={() => router.push('/search')}
-                      style={{ 
-                        background: 'transparent',
-                        border: 'none',
-                        transition: 'background-color 0.2s ease',
-                        padding: '12px 20px',
-                        minHeight: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '0.95em'
-                      }}
+                             style={{ 
+                               background: 'transparent',
+                               border: 'none',
+                               transition: 'background-color 0.2s ease',
+                               padding: '12px 20px',
+                               minHeight: '48px',
+                               display: 'flex',
+                               alignItems: 'center',
+                               fontSize: '14px',
+                               fontWeight: '400',
+                               color: '#333'
+                             }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
@@ -486,17 +711,29 @@ function SearchPageContent() {
         <div className="row g-4">
           {/* Search Filters */}
           <div className="col-lg-3">
-            <div className="card shadow-lg border-0">
+                  <div className="card shadow-lg" style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '16px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}>
               <div 
                 className="card-header border-0 p-4"
                 style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'rgba(102, 126, 234, 0.2)',
+                  backdropFilter: 'blur(15px)',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '16px 16px 0 0'
                 }}
               >
                 <div className="d-flex align-items-center">
                   <i className="fas fa-filter text-white me-3" style={{ fontSize: '18px' }}></i>
-                  <h5 className="mb-0 fw-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
+                  <h5 className="mb-0 text-white" style={{ 
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333'
+                  }}>
                     Search Filters
                   </h5>
                 </div>
@@ -513,7 +750,13 @@ function SearchPageContent() {
                         data-bs-target="#companyProfile" 
                         aria-expanded="true" 
                         aria-controls="companyProfile"
-                        style={{ backgroundColor: '#6c757d', color: 'white', borderRadius: '12px 12px 0 0', fontSize: '16px' }}
+                        style={{ 
+                          backgroundColor: '#6c757d', 
+                          color: 'white', 
+                          borderRadius: '12px 12px 0 0', 
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
                       >
                         <i className="fas fa-building me-2"></i>
                         Company Profile
@@ -522,7 +765,11 @@ function SearchPageContent() {
                     <div id="companyProfile" className="accordion-collapse collapse show">
                       <div className="accordion-body">
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-building me-2 text-muted"></i>Company
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -532,17 +779,24 @@ function SearchPageContent() {
                             placeholder="Microsoft, Google"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-industry me-2 text-muted"></i>Industry
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -552,56 +806,70 @@ function SearchPageContent() {
                             placeholder="Technology, Healthcare"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
+                        <div className="mb-2">
+                          <label className="form-label fw-semibold" style={{ fontSize: '12px', color: '#6c757d' }}>
+                            <i className="fas fa-users me-2"></i>Employee Size Range
+                          </label>
+                        </div>
                         <div className="row g-2">
                           <div className="col-6">
-                            <label className="form-label fw-semibold" style={{ fontSize: '11px' }}>
-                              <i className="fas fa-users me-2 text-muted"></i>Min Employee Size
+                            <label className="form-label fw-semibold" style={{ fontSize: '10px', color: '#6c757d' }}>
+                              Min
                             </label>
                             <input
                               type="number"
                               min="0"
                               className="form-control form-control-lg"
-                              style={{ 
-                                fontSize: '11px',
-                                minHeight: '48px',
-                                padding: '8px 12px',
-                                border: '1px solid #dee2e6',
-                                borderRadius: '24px',
-                                backgroundColor: '#ffffff'
-                              }}
+                            style={{ 
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
+                              minHeight: '48px',
+                              padding: '8px 12px',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
+                            }}
                               value={filters.minEmployeeSize || ''}
                               onChange={(e) => setFilters({...filters, minEmployeeSize: parseInt(e.target.value) || 0})}
-                              placeholder="50"
+                              placeholder="Min"
                             />
                           </div>
                           <div className="col-6">
-                            <label className="form-label fw-semibold" style={{ fontSize: '11px' }}>
-                              <i className="fas fa-users me-2 text-muted"></i>Max Employee Size
+                            <label className="form-label fw-semibold" style={{ fontSize: '10px', color: '#6c757d' }}>
+                              Max
                             </label>
                             <input
                               type="number"
                               min="0"
                               className="form-control form-control-lg"
-                              style={{ 
-                                fontSize: '11px',
-                                minHeight: '48px',
-                                padding: '8px 12px',
-                                border: '1px solid #dee2e6',
-                                borderRadius: '24px',
-                                backgroundColor: '#ffffff'
-                              }}
+                            style={{ 
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
+                              minHeight: '48px',
+                              padding: '8px 12px',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
+                            }}
                               value={filters.maxEmployeeSize || ''}
                               onChange={(e) => setFilters({...filters, maxEmployeeSize: parseInt(e.target.value) || 0})}
-                              placeholder="500"
+                              placeholder="Max"
                             />
                           </div>
                         </div>
@@ -619,7 +887,13 @@ function SearchPageContent() {
                         data-bs-target="#jobProfile" 
                         aria-expanded="false" 
                         aria-controls="jobProfile"
-                        style={{ backgroundColor: '#6c757d', color: 'white', borderRadius: '12px 12px 0 0', fontSize: '16px' }}
+                        style={{ 
+                          backgroundColor: '#6c757d', 
+                          color: 'white', 
+                          borderRadius: '12px 12px 0 0', 
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
                       >
                         <i className="fas fa-briefcase me-2"></i>
                         Job Profile
@@ -628,7 +902,11 @@ function SearchPageContent() {
                     <div id="jobProfile" className="accordion-collapse collapse">
                       <div className="accordion-body">
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-briefcase me-2 text-muted"></i>Job Title
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -638,17 +916,24 @@ function SearchPageContent() {
                             placeholder="Software Engineer, Manager"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-layer-group me-2 text-muted"></i>Job Title Level
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -658,17 +943,24 @@ function SearchPageContent() {
                             placeholder="Senior, Director"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-sitemap me-2 text-muted"></i>Department
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -678,12 +970,15 @@ function SearchPageContent() {
                             placeholder="Engineering, Sales"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
@@ -701,7 +996,13 @@ function SearchPageContent() {
                         data-bs-target="#location" 
                         aria-expanded="false" 
                         aria-controls="location"
-                        style={{ backgroundColor: '#6c757d', color: 'white', borderRadius: '12px 12px 0 0', fontSize: '16px' }}
+                        style={{ 
+                          backgroundColor: '#6c757d', 
+                          color: 'white', 
+                          borderRadius: '12px 12px 0 0', 
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
                       >
                         <i className="fas fa-map-marker-alt me-2"></i>
                         Location
@@ -710,7 +1011,11 @@ function SearchPageContent() {
                     <div id="location" className="accordion-collapse collapse">
                       <div className="accordion-body">
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-globe me-2 text-muted"></i>Country
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -720,17 +1025,24 @@ function SearchPageContent() {
                             placeholder="United States"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-map-marked-alt me-2 text-muted"></i>State
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -740,17 +1052,24 @@ function SearchPageContent() {
                             placeholder="California, New York"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold" style={{ fontSize: '12px' }}>
+                          <label className="form-label" style={{ 
+                            fontSize: '13px',
+                            fontWeight: '400',
+                            color: '#555'
+                          }}>
                             <i className="fas fa-map-marker-alt me-2 text-muted"></i>City
                           </label>
                           <TypeAheadInputBootstrapMultiSelect
@@ -760,12 +1079,15 @@ function SearchPageContent() {
                             placeholder="San Francisco, New York"
                             className="form-control form-control-lg"
                             style={{ 
-                              fontSize: '11px',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: '#333',
                               minHeight: '48px',
                               padding: '8px 12px',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '24px',
-                              backgroundColor: '#ffffff'
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '8px',
+                              backgroundColor: '#ffffff',
+                              transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                             }}
                           />
                         </div>
@@ -778,13 +1100,17 @@ function SearchPageContent() {
                   <button
                     onClick={handleSearch}
                     disabled={loading}
-                    className="btn btn-primary"
+                    className="btn btn-primary search-btn"
                     style={{ 
                       padding: '12px 24px', 
-                      fontSize: '1rem',
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      color: '#fff',
                       borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      border: 'none'
+                      background: 'linear-gradient(135deg, #20c997 0%, #17a2b8 100%)',
+                      border: 'none',
+                      boxShadow: '0 4px 15px rgba(32, 201, 151, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                      transition: 'all 0.3s ease'
                     }}
                   >
                     {loading ? (
@@ -801,11 +1127,17 @@ function SearchPageContent() {
                   </button>
                   <button
                     onClick={clearFilters}
-                    className="btn btn-outline-secondary"
+                    className="btn clear-btn"
                     style={{ 
                       padding: '12px 24px', 
-                      fontSize: '1rem',
-                      borderRadius: '12px'
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      color: '#fff',
+                      borderRadius: '12px',
+                      background: 'transparent',
+                      border: '1px solid rgba(102, 126, 234, 0.3)',
+                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                      transition: 'all 0.3s ease'
                     }}
                   >
                     <i className="fas fa-times me-2"></i>
@@ -818,28 +1150,41 @@ function SearchPageContent() {
 
           {/* Search Results */}
           <div className="col-lg-9">
-            <div className="card shadow-lg border-0">
+                  <div className="card shadow-lg" style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '16px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}>
               <div 
                 className="card-header border-0 p-4"
                 style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'rgba(102, 126, 234, 0.2)',
+                  backdropFilter: 'blur(15px)',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '16px 16px 0 0'
                 }}
               >
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
                     <i className="fas fa-list text-white me-3" style={{ fontSize: '18px' }}></i>
-                    <h5 className="mb-0 fw-bold text-white" style={{ fontFamily: 'var(--font-primary)' }}>
+                    <h5 className="mb-0 text-white" style={{ 
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      color: '#333'
+                    }}>
                       Search Results
                     </h5>
                   </div>
                   {pagination.totalResults > 0 && (
                     <div className="text-end">
-                      <div className="badge bg-white text-primary mb-1">
-                        {pagination.totalResults.toLocaleString()} total results
-                      </div>
-                      <div className="small text-white-50">
-                        Showing {((pagination.currentPage - 1) * pagination.pageSize) + 1}-{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalResults)} of {pagination.totalResults.toLocaleString()}
+                      <div className="small" style={{ 
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        color: '#000'
+                      }}>
+                        Showing {((pagination.currentPage - 1) * pagination.pageSize) + 1}-{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalResults)} of {pagination.totalResults.toLocaleString()} results
                       </div>
                     </div>
                   )}
@@ -857,42 +1202,124 @@ function SearchPageContent() {
                   </div>
                 ) : results.length > 0 ? (
                   <>
-                    <div className="card border-0 shadow-sm" style={{ borderRadius: '16px' }}>
+                    <div className="card shadow-sm" style={{ 
+                      borderRadius: '16px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}>
                       <div className="table-responsive" style={{ borderRadius: '16px 16px 0 0', overflowX: 'auto', overflowY: 'hidden' }}>
-                        <table className="table table-black table-hover table-striped mb-0" style={{ minWidth: '1200px', marginBottom: '0', marginTop: '0' }}>
+                        <table className="table table-hover mb-0" style={{ 
+                          minWidth: '1200px', 
+                          marginBottom: '0', 
+                          marginTop: '0',
+                          backgroundColor: '#ffffff'
+                        }}>
                         <thead style={{ marginTop: '0' }}>
                           <tr>
-                            <th className="fw-bold text-center" style={{ width: '60px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '60px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-hashtag me-2"></i>
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center sortable-header" style={{ 
+                              width: '180px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444',
+                              cursor: 'pointer',
+                              transition: 'color 0.3s ease'
+                            }}>
                               <i className="fas fa-user me-2"></i>Name
+                              <i className="fas fa-sort ms-2" style={{ fontSize: '10px', opacity: 0.6 }}></i>
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center sortable-header" style={{ 
+                              width: '150px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444',
+                              cursor: 'pointer',
+                              transition: 'color 0.3s ease'
+                            }}>
                               <i className="fas fa-building me-2"></i>Company
+                              <i className="fas fa-sort ms-2" style={{ fontSize: '10px', opacity: 0.6 }}></i>
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '160px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '160px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-briefcase me-2"></i>Job Title
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '120px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-layer-group me-2"></i>Job Level
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '140px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '140px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-sitemap me-2"></i>Department
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '180px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '180px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-map-marker-alt me-2"></i>Location
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '200px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '200px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-envelope me-2"></i>Email
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '150px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '150px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-phone me-2"></i>Phone
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '120px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '120px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-dollar-sign me-2"></i>Revenue
                             </th>
-                            <th className="fw-bold text-center" style={{ width: '100px', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                            <th className="text-center" style={{ 
+                              width: '100px', 
+                              whiteSpace: 'nowrap', 
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#444'
+                            }}>
                               <i className="fas fa-eye me-2"></i>Actions
                             </th>
                           </tr>
