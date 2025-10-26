@@ -137,3 +137,8 @@ services/*/config/generated/
 # Schema service (separate repo - ignore everything)
 services/schema/
 
+# Logstash checkpoint files (environment-specific)
+services/logstash/data/checkpoints/
+services/logstash/data/logs/
+services/logstash/data/schema/
+

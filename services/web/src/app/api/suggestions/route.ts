@@ -35,8 +35,11 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   const redis = getRedis();
   const cached = await redis.get(cacheKey);
   if (cached) {
+    console.log(`[CACHE HIT] Suggestions API - Key: ${cacheKey}`);
     return NextResponse.json(JSON.parse(cached));
   }
+  
+  console.log(`[CACHE MISS] Suggestions API - Key: ${cacheKey} - Querying Elasticsearch`);
 
   const client = getOpenSearchClient();
   await ensureIndex(process.env.ELASTICSEARCH_INDEX || 'company_prospect_view');
@@ -49,13 +52,13 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     'state': 'company_state',
     'companyName': 'company_name',
     'fullName': 'fullname',
-    // Keep new fields as-is
-    'firstName': 'firstName',
-    'lastName': 'lastName',
+    // Map to actual field names in Elasticsearch index
+    'firstName': 'firstname',
+    'lastName': 'lastname',
     'email': 'email',
     'domain': 'domain',
-    'jobTitle': 'jobTitle',
-    'jobTitleLevel': 'jobTitleLevel',
+    'jobTitle': 'jobtitle',
+    'jobTitleLevel': 'jobtitlelevel',
     'department': 'department',
     'industry': 'industry',
     'company_country': 'company_country',
@@ -133,6 +136,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     }).slice(0, limit);
     
     const response = { suggestions };
+    console.log(`[CACHE SET] Suggestions API - Key: ${cacheKey} - Stored in Redis with 300s TTL`);
     await redis.set(cacheKey, JSON.stringify(response), 'EX', 300); // Cache for 5 minutes
     return NextResponse.json(response);
   } catch (e: any) {

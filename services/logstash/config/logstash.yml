@@ -1,0 +1,37 @@
+# Logstash Configuration
+# Main configuration file for the Logstash service
+
+# Node settings
+node.name: hailmary-logstash
+
+# Path settings - specify where to find pipelines.yml
+path.settings: /usr/share/logstash/config
+
+# Pipeline settings
+pipeline.workers: ${LOGSTASH_PIPELINE_WORKERS:-2}
+pipeline.batch.size: ${LOGSTASH_PIPELINE_BATCH_SIZE:-1000}
+pipeline.batch.delay: ${LOGSTASH_PIPELINE_BATCH_DELAY:-50}
+
+# Queue settings
+queue.type: persisted
+queue.max_bytes: 1gb
+queue.max_events: 0
+
+# Logging settings
+log.level: info
+log.format: json
+
+# HTTP API settings
+http.host: 0.0.0.0
+http.port: ${LOGSTASH_HTTP_PORT:-9600}
+
+# Pipeline configuration
+pipeline.ecs_compatibility: v1
+
+
+# Performance settings
+pipeline.unsafe_shutdown: false
+
+# Memory settings
+xpack.monitoring.enabled: false
+xpack.management.enabled: false

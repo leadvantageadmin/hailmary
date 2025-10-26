@@ -66,8 +66,11 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   const redis = getRedis();
   const cached = await redis.get(cacheKey);
   if (cached) {
+    console.log(`[CACHE HIT] Search API - Key: ${cacheKey}`);
     return NextResponse.json(JSON.parse(cached));
   }
+  
+  console.log(`[CACHE MISS] Search API - Key: ${cacheKey} - Querying Elasticsearch`);
 
   const client = getOpenSearchClient();
   await ensureIndex(process.env.ELASTICSEARCH_INDEX || 'company_prospect_view');
@@ -193,8 +196,8 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
       return {
         id: h.sort?.[0] ?? source.company_id ?? h._id,
         salutation: source.salutation,
-        firstName: source.firstName,
-        lastName: source.lastName,
+        firstName: source.firstname || source.firstName,
+        lastName: source.lastname || source.lastName,
         email: source.email,
         company: source.company_name,
         companyDomain: source.domain,
@@ -203,13 +206,13 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
         country: source.prospect_country || source.company_country,
         phone: source.prospect_phone || source.company_phone,
         mobilePhone: source.prospect_mobilephone || source.company_mobilephone,
-        jobTitle: source.jobTitle,
-        jobTitleLevel: source.jobTitleLevel,
+        jobTitle: source.jobtitle || source.jobTitle,
+        jobTitleLevel: source.jobtitlelevel || source.jobTitleLevel,
         department: source.department,
         industry: source.industry,
         revenue: source.revenue ? parseFloat(source.revenue) : null,
-        minEmployeeSize: source.minEmployeeSize,
-        maxEmployeeSize: source.maxEmployeeSize,
+        minEmployeeSize: source.minemployeesize || source.minEmployeeSize,
+        maxEmployeeSize: source.maxemployeesize || source.maxEmployeeSize,
         // Include additional fields that might be useful
         address: source.prospect_address || source.company_address,
         zipCode: source.prospect_zipcode || source.company_zipcode,
@@ -235,6 +238,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
         hasPrevPage
       }
     };
+    console.log(`[CACHE SET] Search API - Key: ${cacheKey} - Stored in Redis with 60s TTL`);
     await redis.set(cacheKey, JSON.stringify(response), 'EX', 60);
     return NextResponse.json(response);
   } catch (e: any) {

@@ -1,0 +1,60 @@
+{
+  "index_patterns": ["company*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "analysis": {
+        "analyzer": {
+          "custom_analyzer": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "stop"]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "id": { "type": "keyword" },
+        "domain": { "type": "keyword" },
+        "website": { "type": "keyword" },
+        "name": { 
+          "type": "text", 
+          "analyzer": "standard",
+          "fields": {
+            "keyword": { "type": "keyword" },
+            "suggest": { 
+              "type": "completion",
+              "analyzer": "simple",
+              "preserve_separators": true,
+              "preserve_position_increments": true,
+              "max_input_length": 50
+            }
+          }
+        },
+        "industry": { 
+          "type": "keyword",
+          "fields": {
+            "text": { "type": "text", "analyzer": "standard" }
+          }
+        },
+        "revenue": { "type": "long" },
+        "size": { "type": "keyword" },
+        "address": { "type": "text", "analyzer": "standard" },
+        "city": { "type": "keyword" },
+        "state": { "type": "keyword" },
+        "country": { "type": "keyword" },
+        "zipCode": { "type": "keyword" },
+        "phone": { "type": "keyword" },
+        "mobilePhone": { "type": "keyword" },
+        "externalSource": { "type": "keyword" },
+        "externalId": { "type": "keyword" },
+        "createdAt": { "type": "date" },
+        "updatedAt": { "type": "date" },
+        "sync_source": { "type": "keyword" },
+        "sync_timestamp": { "type": "date" }
+      }
+    }
+  }
+}

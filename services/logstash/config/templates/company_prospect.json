@@ -1,0 +1,143 @@
+{
+  "index_patterns": ["company_prospect_view*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "analysis": {
+        "analyzer": {
+          "custom_analyzer": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "stop"]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "company_id": { "type": "keyword" },
+        "domain": { "type": "keyword" },
+        "company_name": { 
+          "type": "text", 
+          "analyzer": "standard",
+          "fields": {
+            "keyword": { "type": "keyword" },
+            "suggest": { 
+              "type": "completion",
+              "analyzer": "simple",
+              "preserve_separators": true,
+              "preserve_position_increments": true,
+              "max_input_length": 50
+            }
+          }
+        },
+        "industry": { 
+          "type": "keyword",
+          "fields": {
+            "text": { "type": "text", "analyzer": "standard" }
+          }
+        },
+        "revenue": { "type": "long" },
+        "company_size": { "type": "keyword" },
+        "company_address": { "type": "text", "analyzer": "standard" },
+        "company_city": { "type": "keyword" },
+        "company_state": { "type": "keyword" },
+        "company_country": { "type": "keyword" },
+        "company_zipcode": { "type": "keyword" },
+        "company_phone": { "type": "keyword" },
+        "company_mobilephone": { "type": "keyword" },
+        "company_externalsource": { "type": "keyword" },
+        "company_externalid": { "type": "keyword" },
+        "company_createdat": { "type": "date" },
+        "company_updatedat": { "type": "date" },
+        "prospect_id": { "type": "keyword" },
+        "salutation": { "type": "keyword" },
+        "fullname": { 
+          "type": "text", 
+          "analyzer": "standard",
+          "fields": {
+            "keyword": { "type": "keyword" },
+            "suggest": { 
+              "type": "completion",
+              "analyzer": "simple",
+              "preserve_separators": true,
+              "preserve_position_increments": true,
+              "max_input_length": 50
+            }
+          }
+        },
+        "email": { 
+          "type": "keyword",
+          "fields": {
+            "text": { "type": "text", "analyzer": "standard" }
+          }
+        },
+        "jobTitle": { 
+          "type": "text", 
+          "analyzer": "standard",
+          "fields": {
+            "keyword": { "type": "keyword" },
+            "suggest": { 
+              "type": "completion",
+              "analyzer": "simple",
+              "preserve_separators": true,
+              "preserve_position_increments": true,
+              "max_input_length": 50
+            }
+          }
+        },
+        "jobTitleLevel": { "type": "keyword" },
+        "department": { "type": "keyword" },
+        "jobTitleLink": { "type": "keyword" },
+        "prospect_address": { "type": "text", "analyzer": "standard" },
+        "prospect_city": { "type": "keyword" },
+        "prospect_state": { "type": "keyword" },
+        "prospect_country": { "type": "keyword" },
+        "prospect_zipcode": { "type": "keyword" },
+        "prospect_phone": { "type": "keyword" },
+        "prospect_mobilephone": { "type": "keyword" },
+        "companyId": { "type": "keyword" },
+        "prospect_externalsource": { "type": "keyword" },
+        "prospect_externalid": { "type": "keyword" },
+        "prospect_createdat": { "type": "date" },
+        "prospect_updatedat": { "type": "date" },
+        "companycontext": { 
+          "type": "text", 
+          "analyzer": "standard",
+          "fields": {
+            "keyword": { "type": "keyword" }
+          }
+        },
+        "last_updated": { "type": "date" },
+        "search_text": { 
+          "type": "text", 
+          "analyzer": "standard"
+        },
+        "company_suggest": { 
+          "type": "completion",
+          "analyzer": "simple",
+          "preserve_separators": true,
+          "preserve_position_increments": true,
+          "max_input_length": 50
+        },
+        "prospect_suggest": { 
+          "type": "completion",
+          "analyzer": "simple",
+          "preserve_separators": true,
+          "preserve_position_increments": true,
+          "max_input_length": 50
+        },
+        "job_title_suggest": { 
+          "type": "completion",
+          "analyzer": "simple",
+          "preserve_separators": true,
+          "preserve_position_increments": true,
+          "max_input_length": 50
+        },
+        "sync_source": { "type": "keyword" },
+        "sync_timestamp": { "type": "date" }
+      }
+    }
+  }
+}

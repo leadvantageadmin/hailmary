@@ -1,0 +1,11 @@
+- pipeline.id: company
+  path.config: "/usr/share/logstash/config/pipelines/company.conf"
+  pipeline.workers: 1
+
+- pipeline.id: prospect  
+  path.config: "/usr/share/logstash/config/pipelines/prospect.conf"
+  pipeline.workers: 1
+
+- pipeline.id: materialized
+  path.config: "/usr/share/logstash/config/pipelines/materialized.conf"
+  pipeline.workers: 1
