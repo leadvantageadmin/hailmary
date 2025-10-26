@@ -50,6 +50,7 @@ interface DirectSearchResult {
   lastName?: string;
   email?: string;
   company?: string;
+  companyDomain?: string;
   address?: string;
   city?: string;
   state?: string;
@@ -828,8 +829,46 @@ function DirectSearchPageContent() {
                         <div className="card-body">
                           <div className="row g-3">
                             <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">Company</label>
-                              <p className="fw-semibold text-dark mb-0">{result.company || '-'}</p>
+                              <label className="form-label small fw-semibold text-muted">Company Name</label>
+                              <p className="fw-semibold text-dark mb-2">{result.company || '-'}</p>
+                            </div>
+                            <div className="col-12">
+                              <label className="form-label small fw-semibold text-muted">Company Domain</label>
+                              <div className="d-flex align-items-center justify-content-between">
+                                <p className="fw-semibold text-dark mb-0 flex-grow-1">{result.companyDomain || '-'}</p>
+                                {result.companyDomain && (
+                                  <button
+                                    onClick={() => {
+                                      const companyDomain = result.companyDomain || '';
+                                      router.push(`/company-search?domain=${encodeURIComponent(companyDomain)}`);
+                                    }}
+                                    className="btn btn-outline-primary btn-sm rounded-pill"
+                                    style={{
+                                      fontSize: '12px',
+                                      fontWeight: '500',
+                                      padding: '4px 12px',
+                                      border: '1px solid #007bff',
+                                      color: '#007bff',
+                                      background: 'rgba(0, 123, 255, 0.1)',
+                                      transition: 'all 0.3s ease',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.background = '#007bff';
+                                      e.currentTarget.style.color = '#fff';
+                                      e.currentTarget.style.transform = 'translateY(-1px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.background = 'rgba(0, 123, 255, 0.1)';
+                                      e.currentTarget.style.color = '#007bff';
+                                      e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
+                                  >
+                                    <i className="fas fa-building me-1"></i>
+                                    View Company
+                                  </button>
+                                )}
+                              </div>
                             </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Job Title</label>

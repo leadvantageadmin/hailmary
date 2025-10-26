@@ -36,10 +36,11 @@ export async function POST(request: NextRequest) {
         }
       });
     } else if (domain) {
+      // For domain searches, use exact match since domains are unique identifiers
       company = await prisma.company.findFirst({
         where: {
           domain: {
-            contains: domain,
+            equals: domain,
             mode: 'insensitive'
           }
         }

@@ -42,6 +42,7 @@ export const GET = async (req: NextRequest, { params }: { params: { email: strin
       lastName: customerData.lastName,
       email: customerData.email,
       company: customerData.company_name,
+      companyDomain: customerData.domain,
       address: customerData.prospect_address || customerData.company_address,
       city: customerData.prospect_city || customerData.company_city,
       state: customerData.prospect_state || customerData.company_state,

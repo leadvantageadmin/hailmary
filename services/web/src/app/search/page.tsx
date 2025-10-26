@@ -113,6 +113,7 @@ interface DirectSearchResult {
   lastName?: string;
   email?: string;
   company?: string;
+  companyDomain?: string;
   city?: string;
   state?: string;
   country?: string;
@@ -1340,7 +1341,35 @@ function SearchPageContent() {
                                   </div>
                                 </td>
                                 <td className="text-center" style={{ fontSize: '11px' }}>
-                                  <span className="text-dark">{result.company}</span>
+                                  {result.companyDomain ? (
+                                    <button
+                                      onClick={() => router.push(`/company-search?domain=${encodeURIComponent(result.companyDomain || '')}`)}
+                                      className="btn btn-link p-0 text-decoration-none"
+                                      style={{
+                                        fontSize: '11px',
+                                        fontWeight: '600',
+                                        color: '#007bff',
+                                        border: 'none',
+                                        background: 'none',
+                                        textAlign: 'center',
+                                        cursor: 'pointer',
+                                        transition: 'color 0.3s ease'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.color = '#0056b3';
+                                        e.currentTarget.style.textDecoration = 'underline';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.color = '#007bff';
+                                        e.currentTarget.style.textDecoration = 'none';
+                                      }}
+                                      title={`View company details for ${result.company}`}
+                                    >
+                                      {result.company}
+                                    </button>
+                                  ) : (
+                                    <span className="text-dark">{result.company}</span>
+                                  )}
                                 </td>
                                 <td className="text-center" style={{ fontSize: '11px' }}>
                                   <span className="text-dark">{result.jobTitle || '-'}</span>

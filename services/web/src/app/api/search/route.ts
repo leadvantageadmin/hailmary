@@ -197,6 +197,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
         lastName: source.lastName,
         email: source.email,
         company: source.company_name,
+        companyDomain: source.domain,
         city: source.prospect_city || source.company_city,
         state: source.prospect_state || source.company_state,
         country: source.prospect_country || source.company_country,
