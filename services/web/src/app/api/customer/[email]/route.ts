@@ -21,48 +21,51 @@ export const GET = async (req: NextRequest, { params }: { params: { email: strin
   }
 
   try {
-    // Query the materialized view for exact email match
-    const result = await prisma.$queryRaw`
-      SELECT * FROM company_prospect_view 
-      WHERE email = ${email}
-      LIMIT 1
-    ` as any[];
+    // Query individual tables using Prisma ORM with relations
+    const prospect = await prisma.prospect.findFirst({
+      where: {
+        email: email
+      },
+      include: {
+        company: true
+      }
+    });
     
-    if (!result || result.length === 0) {
+    if (!prospect) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
 
-    const customerData = result[0];
+    const company = prospect.company;
     
-    // Map materialized view fields to the expected customer format
+    // Map individual table fields to the expected customer format
     const serializedCustomer = {
-      id: customerData.prospect_id || customerData.company_id,
-      salutation: customerData.salutation,
-      firstName: customerData.firstName,
-      lastName: customerData.lastName,
-      email: customerData.email,
-      company: customerData.company_name,
-      companyDomain: customerData.domain,
-      address: customerData.prospect_address || customerData.company_address,
-      city: customerData.prospect_city || customerData.company_city,
-      state: customerData.prospect_state || customerData.company_state,
-      country: customerData.prospect_country || customerData.company_country,
-      zipCode: customerData.prospect_zipcode || customerData.company_zipcode,
-      phone: customerData.prospect_phone || customerData.company_phone,
-      mobilePhone: customerData.prospect_mobilephone || customerData.company_mobilephone,
-      industry: customerData.industry,
-      jobTitleLevel: customerData.jobTitleLevel,
-      jobTitle: customerData.jobTitle,
-      department: customerData.department,
-      minEmployeeSize: customerData.minEmployeeSize,
-      maxEmployeeSize: customerData.maxEmployeeSize,
-      jobTitleLink: customerData.jobTitleLink,
-      employeeSizeLink: null, // Not available in materialized view
-      revenue: customerData.revenue ? customerData.revenue.toString() : null,
-      externalSource: customerData.prospect_externalsource || customerData.company_externalsource,
-      externalId: customerData.prospect_externalid || customerData.company_externalid,
-      createdAt: customerData.prospect_createdat || customerData.company_createdat,
-      updatedAt: customerData.prospect_updatedat || customerData.company_updatedat,
+      id: prospect.id,
+      salutation: prospect.salutation,
+      firstName: prospect.firstName,
+      lastName: prospect.lastName,
+      email: prospect.email,
+      company: company?.name || null,
+      companyDomain: company?.domain || null,
+      address: prospect.address || company?.address || null,
+      city: prospect.city || company?.city || null,
+      state: prospect.state || company?.state || null,
+      country: prospect.country || company?.country || null,
+      zipCode: prospect.zipCode || company?.zipCode || null,
+      phone: prospect.phone || company?.phone || null,
+      mobilePhone: prospect.mobilePhone || company?.mobilePhone || null,
+      industry: company?.industry || null,
+      jobTitleLevel: prospect.jobTitleLevel,
+      jobTitle: prospect.jobTitle,
+      department: prospect.department,
+      minEmployeeSize: company?.minEmployeeSize || null,
+      maxEmployeeSize: company?.maxEmployeeSize || null,
+      jobTitleLink: prospect.jobTitleLink,
+      employeeSizeLink: company?.employeeSizeLink || null,
+      revenue: company?.revenue ? company.revenue.toString() : null,
+      externalSource: prospect.externalSource || company?.externalSource || null,
+      externalId: prospect.externalId || company?.externalId || null,
+      createdAt: prospect.createdAt,
+      updatedAt: prospect.updatedAt,
     };
     
     return NextResponse.json({ customer: serializedCustomer });

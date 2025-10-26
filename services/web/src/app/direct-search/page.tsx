@@ -599,19 +599,48 @@ function DirectSearchPageContent() {
                     borderRadius: '16px 16px 0 0'
                   }}
                 >
-                  <div className="text-center">
-                    <h5 className="mb-0 text-white" style={{ 
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      color: '#333'
-                    }}>
-                      Direct Search Profile
-                    </h5>
-                    <div className="mt-2">
-                      <span className="badge bg-white text-primary fs-6">
-                        {result.salutation} {result.firstName} {result.lastName}
-                      </span>
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div className="text-center flex-grow-1">
+                      <h5 className="mb-0 text-white" style={{ 
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#333'
+                      }}>
+                        Direct Search Profile
+                      </h5>
+                      <div className="mt-2">
+                        <span className="badge bg-white text-primary fs-6">
+                          {result.salutation} {result.firstName} {result.lastName}
+                        </span>
+                      </div>
                     </div>
+                    {(user?.role === 'ADMIN' || user?.role === 'MODERATOR') && (
+                      <button
+                        onClick={() => router.push(`/edit-prospect?id=${result.id}`)}
+                        className="btn btn-outline-light btn-sm"
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          color: '#fff',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                        }}
+                      >
+                        <i className="fas fa-edit me-1"></i>
+                        Update Record
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="card-body p-4">
@@ -663,6 +692,20 @@ function DirectSearchPageContent() {
                               <label className="form-label small fw-semibold text-muted">Mobile Phone</label>
                               <p className="fw-semibold text-dark mb-0">{formatPhoneNumber(result.mobilePhone)}</p>
                             </div>
+                            {result.jobTitleLink && (
+                              <div className="col-12">
+                                <label className="form-label small fw-semibold text-muted">Job Title Link</label>
+                                <a 
+                                  href={result.jobTitleLink} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
+                                >
+                                  <i className="fas fa-external-link-alt me-2"></i>
+                                  View LinkedIn Profile
+                                </a>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -763,60 +806,6 @@ function DirectSearchPageContent() {
                                 {result.industry || '-'}
                               </span>
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Location & Company Size */}
-                    <div className="col-md-6">
-                      <div className="card h-100" style={{
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        backdropFilter: 'blur(15px)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '16px',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15)'
-                      }}>
-                        <div 
-                          className="card-header border-0 p-3"
-                          style={{
-                            background: 'rgba(102, 126, 234, 0.4)',
-                            backdropFilter: 'blur(20px)',
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
-                            borderRadius: '16px 16px 0 0'
-                          }}
-                        >
-                          <h6 className="mb-0 text-white d-flex align-items-center" style={{ 
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#fff'
-                          }}>
-                            <i className="fas fa-map-marker-alt me-2" style={{ fontSize: '16px', color: '#fff' }}></i>
-                            Location & Company Size
-                          </h6>
-                        </div>
-                        <div className="card-body">
-                          <div className="row g-3">
-                            <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">Address</label>
-                              <p className="fw-semibold text-dark mb-0">{result.address || '-'}</p>
-                            </div>
-                            <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">City</label>
-                              <p className="fw-semibold text-dark mb-0">{result.city || '-'}</p>
-                            </div>
-                            <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">State</label>
-                              <p className="fw-semibold text-dark mb-0">{result.state || '-'}</p>
-                            </div>
-                            <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">Country</label>
-                              <p className="fw-semibold text-dark mb-0">{result.country || '-'}</p>
-                            </div>
-                            <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">ZIP Code</label>
-                              <p className="fw-semibold text-dark mb-0">{result.zipCode || '-'}</p>
-                            </div>
                             <div className="col-12">
                               <label className="form-label small fw-semibold text-muted">Employee Size</label>
                               <p className="fw-semibold text-dark mb-0">
@@ -843,8 +832,8 @@ function DirectSearchPageContent() {
                       </div>
                     </div>
 
-                    {/* Additional Information */}
-                    <div className="col-md-6">
+                    {/* Location */}
+                    <div className="col-12">
                       <div className="card h-100" style={{
                         background: 'rgba(255, 255, 255, 0.2)',
                         backdropFilter: 'blur(15px)',
@@ -866,52 +855,37 @@ function DirectSearchPageContent() {
                             fontWeight: '600',
                             color: '#fff'
                           }}>
-                            <i className="fas fa-info-circle me-2" style={{ fontSize: '16px', color: '#fff' }}></i>
-                            Additional Information
+                            <i className="fas fa-map-marker-alt me-2" style={{ fontSize: '16px', color: '#fff' }}></i>
+                            Location
                           </h6>
                         </div>
                         <div className="card-body">
                           <div className="row g-3">
-                            <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">External Source</label>
-                              <p className="fw-semibold text-dark mb-0">{result.externalSource || '-'}</p>
+                            <div className="col-md-6">
+                              <label className="form-label small fw-semibold text-muted">Address</label>
+                              <p className="fw-semibold text-dark mb-0">{result.address || '-'}</p>
                             </div>
-                            <div className="col-12">
-                              <label className="form-label small fw-semibold text-muted">External ID</label>
-                              <p className="fw-semibold text-dark mb-0">{result.externalId || '-'}</p>
+                            <div className="col-md-3">
+                              <label className="form-label small fw-semibold text-muted">City</label>
+                              <p className="fw-semibold text-dark mb-0">{result.city || '-'}</p>
                             </div>
-                            {result.jobTitleLink && (
-                              <div className="col-12">
-                                <label className="form-label small fw-semibold text-muted">Job Title Link</label>
-                                <a 
-                                  href={result.jobTitleLink} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
-                                >
-                                  <i className="fas fa-external-link-alt me-2"></i>
-                                  View LinkedIn Profile
-                                </a>
-                              </div>
-                            )}
-                            {result.employeeSizeLink && (
-                              <div className="col-12">
-                                <label className="form-label small fw-semibold text-muted">Employee Size Link</label>
-                                <a 
-                                  href={result.employeeSizeLink} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
-                                >
-                                  <i className="fas fa-external-link-alt me-2"></i>
-                                  View Company Profile
-                                </a>
-                              </div>
-                            )}
+                            <div className="col-md-3">
+                              <label className="form-label small fw-semibold text-muted">State</label>
+                              <p className="fw-semibold text-dark mb-0">{result.state || '-'}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label small fw-semibold text-muted">Country</label>
+                              <p className="fw-semibold text-dark mb-0">{result.country || '-'}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label small fw-semibold text-muted">ZIP Code</label>
+                              <p className="fw-semibold text-dark mb-0">{result.zipCode || '-'}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>

@@ -673,15 +673,44 @@ function CompanySearchPageContent() {
                     borderRadius: '16px 16px 0 0'
                   }}
                 >
-                  <div className="d-flex align-items-center">
-                    <i className="fas fa-building text-white me-3" style={{ fontSize: '18px' }}></i>
-                    <h5 className="mb-0 text-white" style={{ 
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      color: '#333'
-                    }}>
-                      Company Details
-                    </h5>
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center">
+                      <i className="fas fa-building text-white me-3" style={{ fontSize: '18px' }}></i>
+                      <h5 className="mb-0 text-white" style={{ 
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#333'
+                      }}>
+                        Company Details
+                      </h5>
+                    </div>
+                    {(user?.role === 'ADMIN' || user?.role === 'MODERATOR') && (
+                      <button
+                        onClick={() => router.push(`/edit-company?id=${companyDetails.id}`)}
+                        className="btn btn-outline-light btn-sm"
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          color: '#fff',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                        }}
+                      >
+                        <i className="fas fa-edit me-1"></i>
+                        Update Record
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="card-body p-4">
