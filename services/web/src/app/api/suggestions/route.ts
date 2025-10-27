@@ -47,9 +47,9 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   // Map old field names to new materialized view field names
   const fieldMapping: Record<string, string> = {
     'company': 'company_name',
-    'country': 'company_country',
-    'city': 'company_city',
-    'state': 'company_state',
+    'country': 'prospect_country', // Use prospect fields for location
+    'city': 'prospect_city', // Use prospect fields for location
+    'state': 'prospect_state', // Use prospect fields for location
     'companyName': 'company_name',
     'fullName': 'fullname',
     // Map to actual field names in Elasticsearch index
@@ -95,11 +95,25 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
         query: {
           bool: {
             should: fieldVariations.flatMap(fieldName => [
-              // Prefix match for partial suggestions
+              // Prefix match for partial suggestions - try multiple case variations
               {
                 prefix: {
                   [fieldName]: {
                     value: query.toLowerCase()
+                  }
+                }
+              },
+              {
+                prefix: {
+                  [fieldName]: {
+                    value: query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
+                  }
+                }
+              },
+              {
+                prefix: {
+                  [fieldName]: {
+                    value: query.toUpperCase()
                   }
                 }
               },
@@ -113,11 +127,25 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
                   }
                 }
               },
-              // Wildcard match for partial word matching
+              // Wildcard match for partial word matching - try multiple case variations
               {
                 wildcard: {
                   [fieldName]: {
                     value: `*${query.toLowerCase()}*`
+                  }
+                }
+              },
+              {
+                wildcard: {
+                  [fieldName]: {
+                    value: `*${query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()}*`
+                  }
+                }
+              },
+              {
+                wildcard: {
+                  [fieldName]: {
+                    value: `*${query.toUpperCase()}*`
                   }
                 }
               }

@@ -77,57 +77,43 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
 
   const mustFilters: any[] = [];
   
-  // Helper function to create partial match queries
-  const createPartialMatchQuery = (field: string, values: string[]) => {
+  // Helper function to create exact match queries (since users pick from typeahead)
+  const createExactMatchQuery = (field: string, values: string[]) => {
     if (values.length === 1) {
-      // Single value - use match query for better partial matching
-      const searchValue = values[0];
+      // Single value - use term query for exact matching
       const query = { 
-        match: { 
-          [field]: {
-            query: searchValue,
-            operator: "and",
-            fuzziness: "AUTO"
-          }
+        term: { 
+          [field]: values[0]
         } 
       };
       return query;
     } else {
-      // Multiple values - use bool query with should clauses
+      // Multiple values - use terms query for exact matching
       const query = {
-        bool: {
-          should: values.map(value => ({
-            match: { 
-              [field]: {
-                query: value,
-                operator: "and",
-                fuzziness: "AUTO"
-              }
-            }
-          })),
-          minimum_should_match: 1
+        terms: {
+          [field]: values
         }
       };
       return query;
     }
   };
 
-  // Map old customer fields to new materialized view fields
-  if (filters.company?.length) mustFilters.push(createPartialMatchQuery('company_name', filters.company));
-  if (filters.country?.length) mustFilters.push(createPartialMatchQuery('company_country', filters.country));
-  if (filters.city?.length) mustFilters.push(createPartialMatchQuery('company_city', filters.city));
-  if (filters.state?.length) mustFilters.push(createPartialMatchQuery('company_state', filters.state));
-  if (filters.jobTitle?.length) mustFilters.push(createPartialMatchQuery('jobTitle', filters.jobTitle));
-  if (filters.jobTitleLevel?.length) mustFilters.push(createPartialMatchQuery('jobTitleLevel', filters.jobTitleLevel));
-  if (filters.department?.length) mustFilters.push(createPartialMatchQuery('department', filters.department));
+  // Map old customer fields to new materialized view fields - all exact matching
+  if (filters.company?.length) mustFilters.push(createExactMatchQuery('company_name', filters.company));
+  if (filters.country?.length) mustFilters.push(createExactMatchQuery('prospect_country', filters.country));
+  if (filters.city?.length) mustFilters.push(createExactMatchQuery('prospect_city', filters.city));
+  if (filters.state?.length) mustFilters.push(createExactMatchQuery('prospect_state', filters.state));
+  if (filters.jobTitle?.length) mustFilters.push(createExactMatchQuery('jobTitle', filters.jobTitle));
+  if (filters.jobTitleLevel?.length) mustFilters.push(createExactMatchQuery('jobTitleLevel', filters.jobTitleLevel));
+  if (filters.department?.length) mustFilters.push(createExactMatchQuery('department', filters.department));
   
-  // New materialized view specific fields
-  if (filters.firstName?.length) mustFilters.push(createPartialMatchQuery('firstName', filters.firstName));
-  if (filters.lastName?.length) mustFilters.push(createPartialMatchQuery('lastName', filters.lastName));
-  if (filters.fullName?.length) mustFilters.push(createPartialMatchQuery('fullname', filters.fullName));
-  if (filters.email?.length) mustFilters.push(createPartialMatchQuery('email', filters.email));
-  if (filters.companyName?.length) mustFilters.push(createPartialMatchQuery('company_name', filters.companyName));
-  if (filters.domain?.length) mustFilters.push(createPartialMatchQuery('domain', filters.domain));
+  // New materialized view specific fields - all exact matching
+  if (filters.firstName?.length) mustFilters.push(createExactMatchQuery('firstName', filters.firstName));
+  if (filters.lastName?.length) mustFilters.push(createExactMatchQuery('lastName', filters.lastName));
+  if (filters.fullName?.length) mustFilters.push(createExactMatchQuery('fullname', filters.fullName));
+  if (filters.email?.length) mustFilters.push(createExactMatchQuery('email', filters.email));
+  if (filters.companyName?.length) mustFilters.push(createExactMatchQuery('company_name', filters.companyName));
+  if (filters.domain?.length) mustFilters.push(createExactMatchQuery('domain', filters.domain));
   if (filters.minEmployeeSize?.length) {
     // For numeric employee size, use range queries on minEmployeeSize
     if (filters.minEmployeeSize.length === 1) {
@@ -163,7 +149,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
       });
     }
   }
-  if (filters.industry?.length) mustFilters.push(createPartialMatchQuery('industry', filters.industry));
+  if (filters.industry?.length) mustFilters.push(createExactMatchQuery('industry', filters.industry));
 
   const sort = [{ 'company_id': 'asc' }];
   const from = (page.number - 1) * page.size;
