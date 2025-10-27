@@ -8,7 +8,7 @@ const updateUserSchema = z.object({
   password: z.string().min(6).optional(),
   firstName: z.string().min(1).optional(),
   lastName: z.string().min(1).optional(),
-  role: z.enum(['ADMIN', 'USER']).optional()
+  role: z.enum(['ADMIN', 'USER', 'MODERATOR']).optional()
 });
 
 // GET /api/users/[id] - Get user by ID (admin only)

@@ -8,7 +8,7 @@ const createUserSchema = z.object({
   password: z.string().min(6),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  role: z.enum(['ADMIN', 'USER']).optional()
+  role: z.enum(['ADMIN', 'USER', 'MODERATOR']).optional()
 });
 
 // GET /api/users - Get all users (admin only)
