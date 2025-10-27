@@ -77,43 +77,79 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
 
   const mustFilters: any[] = [];
   
-  // Helper function to create exact match queries (since users pick from typeahead)
+  // Field type definitions - explicit lists for clarity and maintainability
+  const KEYWORD_FIELDS = [
+    'prospect_country', 'prospect_city', 'prospect_state', 
+    'jobTitleLevel', 'department', 'email', 'domain', 'industry'
+  ];
+  
+  const TEXT_FIELDS_WITH_KEYWORD = [
+    'company_name', 'jobTitle', 'jobtitle', 'firstName', 'firstname', 
+    'lastName', 'lastname', 'fullname'
+  ];
+  
+  // Helper function to create exact match queries
   const createExactMatchQuery = (field: string, values: string[]) => {
+    const searchField = TEXT_FIELDS_WITH_KEYWORD.includes(field) ? `${field}.keyword` : field;
+    
     if (values.length === 1) {
-      // Single value - use term query for exact matching
-      const query = { 
-        term: { 
-          [field]: values[0]
-        } 
-      };
-      return query;
+      return { term: { [searchField]: values[0] } };
     } else {
-      // Multiple values - use terms query for exact matching
-      const query = {
-        terms: {
-          [field]: values
-        }
-      };
-      return query;
+      return { terms: { [searchField]: values } };
     }
   };
 
-  // Map old customer fields to new materialized view fields - all exact matching
+  // Helper function to create queries that search both old and new field naming conventions
+  const createDualFieldQuery = (oldField: string, newField: string, values: string[]) => {
+    const oldSearchField = TEXT_FIELDS_WITH_KEYWORD.includes(oldField) ? `${oldField}.keyword` : oldField;
+    const newSearchField = TEXT_FIELDS_WITH_KEYWORD.includes(newField) ? `${newField}.keyword` : newField;
+    
+    if (values.length === 1) {
+      return {
+        bool: {
+          should: [
+            { term: { [oldSearchField]: values[0] } },
+            { term: { [newSearchField]: values[0] } }
+          ],
+          minimum_should_match: 1
+        }
+      };
+    } else {
+      return {
+        bool: {
+          should: [
+            { terms: { [oldSearchField]: values } },
+            { terms: { [newSearchField]: values } }
+          ],
+          minimum_should_match: 1
+        }
+      };
+    }
+  };
+
+  // Map old customer fields to new materialized view fields
   if (filters.company?.length) mustFilters.push(createExactMatchQuery('company_name', filters.company));
   if (filters.country?.length) mustFilters.push(createExactMatchQuery('prospect_country', filters.country));
   if (filters.city?.length) mustFilters.push(createExactMatchQuery('prospect_city', filters.city));
   if (filters.state?.length) mustFilters.push(createExactMatchQuery('prospect_state', filters.state));
-  if (filters.jobTitle?.length) mustFilters.push(createExactMatchQuery('jobTitle', filters.jobTitle));
+  
+  // Handle jobTitle - search both old (jobTitle) and new (jobtitle) fields
+  if (filters.jobTitle?.length) mustFilters.push(createDualFieldQuery('jobTitle', 'jobtitle', filters.jobTitle));
+  
+  // Other single fields
   if (filters.jobTitleLevel?.length) mustFilters.push(createExactMatchQuery('jobTitleLevel', filters.jobTitleLevel));
   if (filters.department?.length) mustFilters.push(createExactMatchQuery('department', filters.department));
   
-  // New materialized view specific fields - all exact matching
-  if (filters.firstName?.length) mustFilters.push(createExactMatchQuery('firstName', filters.firstName));
-  if (filters.lastName?.length) mustFilters.push(createExactMatchQuery('lastName', filters.lastName));
+  // Handle firstName/lastName - search both old (firstName/lastName) and new (firstname/lastname) fields
+  if (filters.firstName?.length) mustFilters.push(createDualFieldQuery('firstName', 'firstname', filters.firstName));
+  if (filters.lastName?.length) mustFilters.push(createDualFieldQuery('lastName', 'lastname', filters.lastName));
+  
+  // Other fields
   if (filters.fullName?.length) mustFilters.push(createExactMatchQuery('fullname', filters.fullName));
   if (filters.email?.length) mustFilters.push(createExactMatchQuery('email', filters.email));
   if (filters.companyName?.length) mustFilters.push(createExactMatchQuery('company_name', filters.companyName));
   if (filters.domain?.length) mustFilters.push(createExactMatchQuery('domain', filters.domain));
+  if (filters.industry?.length) mustFilters.push(createExactMatchQuery('industry', filters.industry));
   if (filters.minEmployeeSize?.length) {
     // For numeric employee size, use range queries on minEmployeeSize
     if (filters.minEmployeeSize.length === 1) {
