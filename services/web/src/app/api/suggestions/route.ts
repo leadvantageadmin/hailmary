@@ -57,8 +57,8 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     'lastName': 'lastname',
     'email': 'email',
     'domain': 'domain',
-    'jobTitle': 'jobtitle',
-    'jobTitleLevel': 'jobtitlelevel',
+    'jobTitle': 'jobTitle', // Keep camelCase for PGSync data compatibility
+    'jobTitleLevel': 'jobTitleLevel', // Keep camelCase for PGSync data compatibility
     'department': 'department',
     'industry': 'industry',
     'company_country': 'company_country',
@@ -70,6 +70,23 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   const elasticsearchField = fieldMapping[field] || field;
 
   try {
+    // Support both camelCase and lowercase field names
+    const getFieldVariations = (fieldName: string) => {
+      const variations = [fieldName];
+      if (fieldName === 'jobTitle') {
+        variations.push('jobtitle');
+      } else if (fieldName === 'jobTitleLevel') {
+        variations.push('jobtitlelevel');
+      } else if (fieldName === 'firstName') {
+        variations.push('firstname');
+      } else if (fieldName === 'lastName') {
+        variations.push('lastname');
+      }
+      return variations;
+    };
+
+    const fieldVariations = getFieldVariations(elasticsearchField);
+    
     // Use search to get matching documents and extract unique values
     const searchParams = {
       index: process.env.ELASTICSEARCH_INDEX || 'company_prospect_view',
@@ -77,11 +94,11 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
         size: 100, // Get more results to find unique values
         query: {
           bool: {
-            should: [
+            should: fieldVariations.flatMap(fieldName => [
               // Prefix match for partial suggestions
               {
                 prefix: {
-                  [elasticsearchField]: {
+                  [fieldName]: {
                     value: query.toLowerCase()
                   }
                 }
@@ -89,7 +106,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
               // Fuzzy match for typos and variations
               {
                 match: {
-                  [elasticsearchField]: {
+                  [fieldName]: {
                     query: query,
                     fuzziness: "AUTO",
                     operator: "or"
@@ -99,12 +116,12 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
               // Wildcard match for partial word matching
               {
                 wildcard: {
-                  [elasticsearchField]: {
+                  [fieldName]: {
                     value: `*${query.toLowerCase()}*`
                   }
                 }
               }
-            ],
+            ]),
             minimum_should_match: 1
           }
         }
@@ -112,7 +129,15 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     };
 
     const result = await client.search(searchParams as any);
-    const allValues = result.hits?.hits?.map((hit: any) => hit._source[elasticsearchField]).filter((value: any) => value && typeof value === 'string' && value.trim() !== '') as string[] || [];
+    const allValues = result.hits?.hits?.map((hit: any) => {
+      // Try to get value from any of the field variations
+      for (const fieldName of fieldVariations) {
+        if (hit._source[fieldName]) {
+          return hit._source[fieldName];
+        }
+      }
+      return null;
+    }).filter((value: any) => value && typeof value === 'string' && value.trim() !== '') as string[] || [];
     
     // Get unique values and prioritize them
     const uniqueValues: string[] = [...new Set(allValues)];
