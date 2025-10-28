@@ -10,10 +10,6 @@ generator js_client {
   binaryTargets = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
-generator py_client {
-  provider = "prisma-client-py"
-}
-
 model Customer {
   id              String   @id @default(cuid())
   salutation      String?
