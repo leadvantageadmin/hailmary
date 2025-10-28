@@ -85,7 +85,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   
   const TEXT_FIELDS_WITH_KEYWORD = [
     'company_name', 'jobTitle', 'jobtitle', 'firstName', 'firstname', 
-    'lastName', 'lastname', 'fullname'
+    'lastName', 'lastname', 'fullname', 'jobtitlelevel'
   ];
   
   // Helper function to create exact match queries
@@ -136,8 +136,8 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
   // Handle jobTitle - search both old (jobTitle) and new (jobtitle) fields
   if (filters.jobTitle?.length) mustFilters.push(createDualFieldQuery('jobTitle', 'jobtitle', filters.jobTitle));
   
-  // Other single fields
-  if (filters.jobTitleLevel?.length) mustFilters.push(createExactMatchQuery('jobTitleLevel', filters.jobTitleLevel));
+  // Handle jobTitleLevel - search both old (jobTitleLevel) and new (jobtitlelevel) fields
+  if (filters.jobTitleLevel?.length) mustFilters.push(createDualFieldQuery('jobTitleLevel', 'jobtitlelevel', filters.jobTitleLevel));
   if (filters.department?.length) mustFilters.push(createExactMatchQuery('department', filters.department));
   
   // Handle firstName/lastName - search both old (firstName/lastName) and new (firstname/lastname) fields

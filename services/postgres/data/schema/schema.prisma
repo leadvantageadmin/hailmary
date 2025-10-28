@@ -96,6 +96,7 @@ model Prospect {
   email           String?
   jobTitle        String?
   jobTitleLevel   String?
+  jobTitleLevelId Int?
   department      String?
   jobTitleLink    String?
   address         String?
@@ -117,11 +118,40 @@ model Prospect {
   @@index([companyId])
   @@index([jobTitle])
   @@index([jobTitleLevel])
+  @@index([jobTitleLevelId])
   @@index([department])
   @@index([country])
   @@index([city])
   @@index([state])
   @@unique([externalSource, externalId])
+}
+
+model JobTitleLevelDefinition {
+  level         Int      @id
+  jobTitleLevel String   @unique
+  examples      String?
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  jobTitleMaps  JobTitleLevelMap[]
+
+  @@index([jobTitleLevel])
+  @@map("JobTitleLevelDefinition")
+}
+
+model JobTitleLevelMap {
+  originalJobTitleLevel String   @id
+  level                 Int
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  jobTitleLevelDefinition JobTitleLevelDefinition @relation(fields: [level], references: [level], onDelete: Cascade)
+
+  @@index([level])
+  @@map("JobTitleLevelMap")
 }
 
 enum UserRole {

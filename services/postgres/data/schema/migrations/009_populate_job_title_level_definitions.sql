@@ -1,0 +1,40 @@
+-- Migration 009: Populate Job Title Level Definition Data
+-- Inserts standardized job title level definitions from CSV data
+
+-- Insert JobTitleLevelDefinition data
+INSERT INTO "JobTitleLevelDefinition" ("level", "jobTitleLevel", "examples", "description")
+VALUES 
+(1, 'C-Level Executive', 'CEO, CFO, COO, CTO, CMO, CIO, CSO, CHRO, Chief Growth Officer', 'Chief officers and C-level executives who lead entire organizations or major divisions'),
+(2, 'Board / Governance', 'Board Member, Chairman, Chairperson, Director (Board), Advisor', 'Board members and governance roles responsible for organizational oversight and strategic direction'),
+(3, 'President / Partner / Founder', 'President, Managing Partner, Co-Founder, Country Head', 'Presidents, partners, and founders who hold top leadership positions in organizations'),
+(4, 'Executive VP (EVP)', 'EVP of Sales, EVP of Marketing, EVP Operations', 'Executive Vice Presidents who report directly to C-level executives and lead major business units'),
+(5, 'Senior VP (SVP)', 'Senior Vice President, Group SVP', 'Senior Vice Presidents who manage large departments or business functions'),
+(6, 'Vice President (VP)', 'VP of Sales, VP Marketing, Regional VP, VP Business Dev', 'Vice Presidents who lead specific departments, regions, or business functions'),
+(7, 'Assistant / Associate VP (AVP)', 'AVP – Operations, Assistant Vice President', 'Assistant and Associate Vice Presidents who support VP-level executives'),
+(8, 'Director / Senior Director', 'Director of Marketing, Senior Director – HR', 'Directors and Senior Directors who manage departments and lead teams of managers'),
+(9, 'Associate Director / Senior Manager', 'Associate Director, Senior Manager, Program Lead', 'Associate Directors and Senior Managers who lead specific programs or teams'),
+(10, 'Manager / Lead', 'Marketing Manager, Sales Manager, Team Lead', 'Managers and Team Leads who directly supervise individual contributors'),
+(11, 'Principal / Senior Staff', 'Principal Engineer, Senior Consultant', 'Principal-level individual contributors and senior staff with specialized expertise'),
+(12, 'Individual Contributor', 'Software Engineer, Data Analyst, Marketing Executive', 'Individual contributors who perform specialized work without direct reports'),
+(13, 'Associate / Coordinator / Executive', 'HR Associate, Marketing Coordinator, Sales Executive', 'Associates, coordinators, and executives in entry to mid-level individual contributor roles'),
+(14, 'Intern / Trainee', 'Marketing Intern, HR Trainee', 'Interns and trainees in learning or entry-level positions'),
+(15, 'Freelancer / Advisor / Undefined', 'Freelancer, Advisor, Consultant', 'Freelancers, advisors, consultants, and undefined roles')
+ON CONFLICT ("level") DO UPDATE SET
+    "jobTitleLevel" = EXCLUDED."jobTitleLevel",
+    "examples" = EXCLUDED."examples",
+    "description" = EXCLUDED."description",
+    "updatedAt" = CURRENT_TIMESTAMP;
+
+-- Verify data insertion
+DO $$
+DECLARE
+    record_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO record_count FROM "JobTitleLevelDefinition";
+    
+    IF record_count = 15 THEN
+        RAISE NOTICE 'Successfully inserted 15 job title level definitions';
+    ELSE
+        RAISE WARNING 'Expected 15 records, but found % records', record_count;
+    END IF;
+END $$;

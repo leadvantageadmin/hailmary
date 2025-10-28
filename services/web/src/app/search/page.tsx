@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import TypeAheadInputBootstrapMultiSelect from '@/components/TypeAheadInputBootstrapMultiSelect';
+import JobTitleLevelMultiSelect from '@/components/JobTitleLevelMultiSelect';
 import Header from '@/components/Header';
 
 // Utility function to format revenue from whole dollars to display format
@@ -172,6 +173,32 @@ function SearchPageContent() {
     totalResults: 0,
     pageSize: 25
   });
+
+  // Helper functions to check if accordion sections have values
+  const hasCompanyProfileValues = (): boolean => {
+    return (
+      (filters.company && filters.company.length > 0) ||
+      (filters.industry && filters.industry.length > 0) ||
+      (filters.minEmployeeSize !== undefined && filters.minEmployeeSize > 0) ||
+      (filters.maxEmployeeSize !== undefined && filters.maxEmployeeSize > 0)
+    );
+  };
+
+  const hasJobProfileValues = (): boolean => {
+    return (
+      (filters.jobTitle && filters.jobTitle.length > 0) ||
+      (filters.jobTitleLevel && filters.jobTitleLevel.length > 0) ||
+      (filters.department && filters.department.length > 0)
+    );
+  };
+
+  const hasLocationValues = (): boolean => {
+    return (
+      (filters.country && filters.country.length > 0) ||
+      (filters.state && filters.state.length > 0) ||
+      (filters.city && filters.city.length > 0)
+    );
+  };
 
   useEffect(() => {
     // Check authentication
@@ -614,11 +641,11 @@ function SearchPageContent() {
                   <div className="accordion-item mb-3" style={{ border: 'none', borderRadius: '12px', overflow: 'hidden' }}>
                     <h2 className="accordion-header">
                       <button 
-                        className="accordion-button" 
+                        className={`accordion-button ${hasCompanyProfileValues() ? '' : 'collapsed'}`}
                         type="button" 
                         data-bs-toggle="collapse" 
                         data-bs-target="#companyProfile" 
-                        aria-expanded="true" 
+                        aria-expanded={hasCompanyProfileValues()}
                         aria-controls="companyProfile"
                         style={{ 
                           backgroundColor: '#6c757d', 
@@ -632,7 +659,7 @@ function SearchPageContent() {
                         Company Profile
                       </button>
                     </h2>
-                    <div id="companyProfile" className="accordion-collapse collapse show">
+                    <div id="companyProfile" className={`accordion-collapse collapse ${hasCompanyProfileValues() ? 'show' : ''}`}>
                       <div className="accordion-body">
                         <div className="mb-3">
                           <label className="form-label" style={{ 
@@ -751,11 +778,11 @@ function SearchPageContent() {
                   <div className="accordion-item mb-3" style={{ border: 'none', borderRadius: '12px', overflow: 'hidden' }}>
                     <h2 className="accordion-header">
                       <button 
-                        className="accordion-button collapsed" 
+                        className={`accordion-button ${hasJobProfileValues() ? '' : 'collapsed'}`}
                         type="button" 
                         data-bs-toggle="collapse" 
                         data-bs-target="#jobProfile" 
-                        aria-expanded="false" 
+                        aria-expanded={hasJobProfileValues()}
                         aria-controls="jobProfile"
                         style={{ 
                           backgroundColor: '#6c757d', 
@@ -769,7 +796,7 @@ function SearchPageContent() {
                         Job Profile
                       </button>
                     </h2>
-                    <div id="jobProfile" className="accordion-collapse collapse">
+                    <div id="jobProfile" className={`accordion-collapse collapse ${hasJobProfileValues() ? 'show' : ''}`}>
                       <div className="accordion-body">
                         <div className="mb-3">
                           <label className="form-label" style={{ 
@@ -806,11 +833,10 @@ function SearchPageContent() {
                           }}>
                             <i className="fas fa-layer-group me-2 text-muted"></i>Job Title Level
                           </label>
-                          <TypeAheadInputBootstrapMultiSelect
+                          <JobTitleLevelMultiSelect
                             value={filters.jobTitleLevel}
                             onChange={(value) => setFilters({...filters, jobTitleLevel: value})}
-                            field="jobTitleLevel"
-                            placeholder="Senior, Director"
+                            placeholder="Select job title levels..."
                             className="form-control form-control-lg"
                             style={{ 
                               fontSize: '14px',
@@ -860,11 +886,11 @@ function SearchPageContent() {
                   <div className="accordion-item mb-3" style={{ border: 'none', borderRadius: '12px', overflow: 'hidden' }}>
                     <h2 className="accordion-header">
                       <button 
-                        className="accordion-button collapsed" 
+                        className={`accordion-button ${hasLocationValues() ? '' : 'collapsed'}`}
                         type="button" 
                         data-bs-toggle="collapse" 
                         data-bs-target="#location" 
-                        aria-expanded="false" 
+                        aria-expanded={hasLocationValues()}
                         aria-controls="location"
                         style={{ 
                           backgroundColor: '#6c757d', 
@@ -878,7 +904,7 @@ function SearchPageContent() {
                         Location
                       </button>
                     </h2>
-                    <div id="location" className="accordion-collapse collapse">
+                    <div id="location" className={`accordion-collapse collapse ${hasLocationValues() ? 'show' : ''}`}>
                       <div className="accordion-body">
                         <div className="mb-3">
                           <label className="form-label" style={{ 
