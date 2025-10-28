@@ -22,17 +22,33 @@ def generate_sql_inserts():
         with open(csv_file, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             
+            # Collect all entries first
+            entries = []
+            for row in reader:
+                original = row['Job Title Level from DB'].replace("'", "''")  # Escape single quotes
+                level = int(row['Level'])
+                entries.append((original, level))
+            
+            # Remove duplicates while preserving order
+            seen = set()
+            unique_entries = []
+            for original, level in entries:
+                if original not in seen:
+                    seen.add(original)
+                    unique_entries.append((original, level))
+            
+            print(f"Total entries in CSV: {len(entries)}")
+            print(f"Unique entries after deduplication: {len(unique_entries)}")
+            
             # Prepare INSERT statement
-            sql_statements.append("INSERT INTO \"JobTitleLevelMap\" (\"originalJobTitleLevel\", \"standardizedJobTitleLevel\", \"level\")")
+            sql_statements.append("TRUNCATE TABLE \"JobTitleLevelMap\";")
+            sql_statements.append("")
+            sql_statements.append("INSERT INTO \"JobTitleLevelMap\" (\"originalJobTitleLevel\", \"level\")")
             sql_statements.append("VALUES")
             
             values = []
-            for row in reader:
-                original = row['Job Title Level from DB'].replace("'", "''")  # Escape single quotes
-                standardized = row['Standard Job Title Level'].replace("'", "''")  # Escape single quotes
-                level = int(row['Level'])
-                
-                values.append(f"('{original}', '{standardized}', {level})")
+            for original, level in unique_entries:
+                values.append(f"('{original}', {level})")
             
             # Join values with commas and add semicolon
             sql_statements.append(",\n".join(values) + ";")
@@ -45,10 +61,10 @@ def generate_sql_inserts():
             sql_statements.append("BEGIN")
             sql_statements.append("    SELECT COUNT(*) INTO record_count FROM \"JobTitleLevelMap\";")
             sql_statements.append("    ")
-            sql_statements.append("    IF record_count = 151 THEN")
-            sql_statements.append("        RAISE NOTICE 'Successfully inserted 151 job title level mappings';")
+            sql_statements.append(f"    IF record_count = {len(unique_entries)} THEN")
+            sql_statements.append(f"        RAISE NOTICE 'Successfully inserted {len(unique_entries)} job title level mappings';")
             sql_statements.append("    ELSE")
-            sql_statements.append("        RAISE WARNING 'Expected 151 records, but found % records', record_count;")
+            sql_statements.append(f"        RAISE WARNING 'Expected {len(unique_entries)} records, but found % records', record_count;")
             sql_statements.append("    END IF;")
             sql_statements.append("END $$;")
             
